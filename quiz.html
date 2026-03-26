@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  quiz.html — 퀴즈 진행 페이지                                    ║
+║  담당: 팀원 A & 최신 통합 수정                                   ║
+║                                                              ║
+║  [리텐션 루프 연결 정보]                                         ║
+║  1. URL에서 category, mode 읽기 (result.html에서 전송됨)           ║
+║  2. data/{category}.js 불러와서 10문제 랜덤 추출                  ║
+║  3. 완료 후 result.html?category=..&mode=..&score=.. 로 이동      ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 퀴즈 진행</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    /* 팀원 A의 새로운 UI 스타일 적용 */
+    .quiz-header {
+      margin: 18px 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.98rem;
+      color: var(--color-text-light);
+    }
+
+    .quiz-title {
+      font-size: 1.35rem;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+
+    .question-card {
+      margin-bottom: 18px;
+      padding: 18px;
+      min-height: 130px;
+    }
+
+    .question-text {
+      font-size: 1.25rem;
+      line-height: 1.3;
+      color: var(--color-text);
+      margin-bottom: 10px;
+    }
+
+    .action-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      min-height: 24px;
+    }
+
+    .feedback.correct { color: #3AAA3A; }
+    .feedback.wrong { color: #D12E46; }
+    
+    /* 타이머 및 게이지 보강 */
+    .timer-wrap { margin-top: 10px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; }
+    .timer-fill { height: 100%; background: var(--color-primary); transition: width 1s linear; }
+    .timer-fill.urgent { background: #FF4D4D; }
+  </style>
+</head>
+<body>
+  <div class="bg-floats" aria-hidden="true">
+    <span>☁️</span><span>⭐</span><span>✨</span><span>☁️</span><span>🌙</span><span>💫</span><span>☁️</span><span>⭐</span><span>☁️</span><span>✨</span><span>🌙</span>
+  </div>
+
+  <div class="container">
+    <div class="quiz-header">
+      <div>
+        <span class="mode-badge" id="modeBadge">노말</span>
+        <span class="mode-badge" id="categoryBadge">카테고리</span>
+      </div>
+      <div id="progressText">1 / 10</div>
+    </div>
+
+    <div class="card question-card" id="questionCard">
+      <div class="question-title quiz-title" id="questionTitle">문제를 불러오는 중...</div>
+      <div class="timer-wrap">
+        <div class="timer-fill" id="timerFill" style="width: 100%"></div>
+      </div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="action-btns">
+      <button class="btn btn-normal" id="btnYes"><span>YES</span></button>
+      <button class="btn btn-hard" id="btnNo"><span>NO</span></button>
+    </div>
+
+    <div class="card gauge-wrap" style="margin-top: 18px;">
+      <div class="gauge-header">
+        <span class="gauge-label">현재 점수</span>
+        <span class="gauge-score" id="scoreText">0</span>
+      </div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="scoreFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-footer"><span class="gauge-grade-badge" id="scoreBadge">준비</span></div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * [리텐션 루프] URL 파라미터 수신부
+     * 결과 페이지에서 전달받은 카테고리와 모드를 설정합니다.
+     */
+    const params   = new URLSearchParams(window.location.search);
+    const category = (params.get('category') || 'pokemon').toLowerCase();
+    const mode     = (params.get('mode') || 'normal').toLowerCase();
+    const isHard   = mode === 'hard';
+    const totalQuestions = 10;
+    const maxScore = totalQuestions * (isHard ? 2 : 1);
+
+    const modeBadge = document.getElementById('modeBadge');
+    const categoryBadge = document.getElementById('categoryBadge');
+    const progressText = document.getElementById('progressText');
+    const questionTitle = document.getElementById('questionTitle');
+    const timerFill = document.getElementById('timerFill');
+    const feedback = document.getElementById('feedback');
+    const btnYes = document.getElementById('btnYes');
+    const btnNo = document.getElementById('btnNo');
+    const scoreText = document.getElementById('scoreText');
+    const scoreFill = document.getElementById('scoreFill');
+    const scoreBadge = document.getElementById('scoreBadge');
+
+    let currentIndex = 0;
+    let score = 0;
+    let quizQuestions = [];
+    let timerId = null;
+    let remainSec = 30;
+
+    modeBadge.textContent = isHard ? '하드' : '노말';
+    modeBadge.classList.add(isHard ? 'hard' : 'normal');
+    categoryBadge.textContent = category.replace(/^[a-z]/, c => c.toUpperCase());
+
+    function makeCategoryVariableName(categoryName) {
+      const key = categoryName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+      return `QUIZ_DATA_${key}`;
+    }
+
+    function shuffleArray(arr) {
+      const clone = [...arr];
+      for (let i = clone.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [clone[i], clone[j]] = [clone[j], clone[i]];
+      }
+      return clone;
+    }
+
+    function updateScoreUI() {
+      scoreText.textContent = score;
+      const width = Math.round((score / maxScore) * 100);
+      scoreFill.style.width = `${width}%`;
+      if (width >= 90) scoreBadge.textContent = '전설의 덕후';
+      else if (width >= 70) scoreBadge.textContent = '고인물';
+      else if (width >= 50) scoreBadge.textContent = '진성 팬';
+      else if (width >= 30) scoreBadge.textContent = '라이트 팬';
+      else scoreBadge.textContent = '입문자';
+    }
+
+    /**
+     * [리텐션 루프] 결과 페이지 이동
+     * 점수를 계산하여 결과 페이지로 최종 이동합니다.
+     */
+    function goToResult() {
+      const query = new URLSearchParams({ category, mode, score }).toString();
+      window.location.href = `result.html?${query}`;
+    }
+
+    function stopTimer() {
+      clearInterval(timerId);
+      timerId = null;
+    }
+
+    function startTimer() {
+      remainSec = 30;
+      timerFill.style.width = '100%';
+      timerFill.classList.remove('urgent');
+      timerId = setInterval(() => {
+        remainSec -= 1;
+        const percentage = Math.max((remainSec / 30) * 100, 0);
+        timerFill.style.width = `${percentage}%`;
+        if (remainSec <= 10) timerFill.classList.add('urgent');
+        if (remainSec <= 0) {
+          stopTimer();
+          showFeedback(false, '시간 초과! 자동 오답 처리되었습니다.');
+          setTimeout(() => nextQuestion(false), 700);
+        }
+      }, 1000);
+    }
+
+    function showFeedback(isCorrect, text) {
+      feedback.textContent = text;
+      feedback.classList.toggle('correct', isCorrect);
+      feedback.classList.toggle('wrong', !isCorrect);
+    }
+
+    function setQuestion() {
+      const item = quizQuestions[currentIndex];
+      if (!item) return;
+      progressText.textContent = `${currentIndex + 1} / ${totalQuestions}`;
+      questionTitle.textContent = item.q;
+      feedback.textContent = '';
+      feedback.classList.remove('correct', 'wrong');
+      startTimer();
+      btnYes.disabled = false;
+      btnNo.disabled = false;
+    }
+
+    function nextQuestion(wasCorrect) {
+      if (wasCorrect) {
+        score += isHard ? 2 : 1;
+      }
+      updateScoreUI();
+      stopTimer();
+      currentIndex += 1;
+      if (currentIndex >= quizQuestions.length || currentIndex >= totalQuestions) {
+        goToResult();
+        return;
+      }
+      setQuestion();
+    }
+
+    btnYes.addEventListener('click', () => {
+      if (!quizQuestions[currentIndex]) return;
+      stopTimer();
+      const isRight = quizQuestions[currentIndex].a === true;
+      showFeedback(isRight, isRight ? '정답입니다!' : '오답입니다!');
+      btnYes.disabled = true;
+      btnNo.disabled = true;
+      setTimeout(() => nextQuestion(isRight), 700);
+    });
+
+    btnNo.addEventListener('click', () => {
+      if (!quizQuestions[currentIndex]) return;
+      stopTimer();
+      const isRight = quizQuestions[currentIndex].a === false;
+      showFeedback(isRight, isRight ? '정답입니다!' : '오답입니다!');
+      btnYes.disabled = true;
+      btnNo.disabled = true;
+      setTimeout(() => nextQuestion(isRight), 700);
+    });
+
+    /**
+     * [리텐션 루프] 데이터 로딩 및 초기화
+     */
+    function loadQuizData() {
+      const script = document.createElement('script');
+      script.src = `data/${category}.js`;
+      script.onload = () => {
+        const quizDataVar = makeCategoryVariableName(category);
+        let quizData = window[quizDataVar] || globalThis[quizDataVar];
+        if (!quizData) {
+          try {
+            // const로 선언된 글로벌 변수에 접근하기 위해 eval 사용 (중요)
+            quizData = eval(quizDataVar);
+          } catch (e) {
+            console.warn('quizData eval 실패', e);
+          }
+        }
+
+        if (!quizData || !quizData[mode]) {
+          questionTitle.textContent = '데이터를 불러오는 데 실패했습니다.';
+          return;
+        }
+
+        const pool = quizData[mode];
+        quizQuestions = shuffleArray(pool).slice(0, totalQuestions);
+
+        updateScoreUI();
+        setQuestion();
+      };
+      script.onerror = () => {
+        questionTitle.textContent = '퀴즈 데이터를 불러올 수 없습니다.';
+      };
+      document.body.appendChild(script);
+    }
+
+    loadQuizData();
+  </script>
+</body>
+</html>
