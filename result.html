@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  result.html — 결과 페이지                                   ║
+║  담당: 팀원 B                                                 ║
+║                                                              ║
+║  이전 페이지에서 받는 URL 파라미터:                           ║
+║  ?category=pokemon&mode=hard&score=16                        ║
+║                                                              ║
+║  다음 페이지로 넘길 URL 파라미터:                             ║
+║  share.html?category=pokemon&mode=hard&score=16&grade=고인물 ║
+║                                                              ║
+║  구현해야 할 기능:                                            ║
+║  1. URL에서 category, mode, score 읽기                       ║
+║  2. 점수 → 정답률 계산 → 등급 결정                           ║
+║     (노말 만점 10점 / 하드 만점 20점 기준)                   ║
+║  3. IP별 커스텀 등급 타이틀 표시                              ║
+║     예) 포켓몬 10/10 → "포켓몬 마스터"                       ║
+║  4. 10문제 답지 공개 (맞힌 것 / 틀린 것 표시)                ║
+║  5. localStorage에 점수 저장 → dk_{category}_{mode} = score  ║
+║  6. 종합 덕력 현황 (완료한 카테고리 점수 합산)                ║
+║  7. 공유 카드 버튼 → share.html로 이동                       ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 결과</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    /* result.html 전용 스타일을 여기에 작성 */
+  </style>
+</head>
+<body>
+
+  <!-- TODO: 결과 화면 마크업 작성 -->
+
+  <!--
+    등급표 참고:
+    정답률 90% 이상 → 전설의 덕후
+    정답률 70% 이상 → 고인물
+    정답률 50% 이상 → 진성 팬
+    정답률 30% 이상 → 라이트 팬
+    정답률 0%  이상 → 입문자
+
+    IP별 커스텀 타이틀 예시:
+    포켓몬  10/10 → "포켓몬 마스터"   0~3/10 → "오박사도 너보단 낫다"
+    귀멸    10/10 → "히노카미 신락"   0~3/10 → "최종선발 탈락"
+    진격    10/10 → "자유의 날개"     0~3/10 → "벽 안에서 살아라"
+    산리오  10/10 → "산리오 퓨로랜드 관장" 0~3/10 → "쿠로미도 실망"
+    강철    10/10 → "현자의 돌 획득"  0~3/10 → "등가교환도 모름"
+  -->
+
+  <script>
+    // URL 파라미터 읽기 예시
+    const params   = new URLSearchParams(window.location.search);
+    const category = params.get('category'); // ex) 'pokemon'
+    const mode     = params.get('mode');     // ex) 'hard'
+    const score    = parseInt(params.get('score')); // ex) 16
+
+    // localStorage에 점수 저장 (재응시 불가 처리)
+    localStorage.setItem(`dk_${category}_${mode}`, score);
+
+    // TODO: 결과 로직 작성
+  </script>
+
+</body>
+</html>

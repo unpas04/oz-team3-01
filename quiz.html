@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  quiz.html — 퀴즈 진행 페이지                                ║
+║  담당: 팀원 A                                                 ║
+║                                                              ║
+║  이전 페이지에서 받는 URL 파라미터:                           ║
+║  ?category=pokemon&mode=hard                                 ║
+║                                                              ║
+║  다음 페이지로 넘길 URL 파라미터:                             ║
+║  result.html?category=pokemon&mode=hard&score=16             ║
+║                                                              ║
+║  구현해야 할 기능:                                            ║
+║  1. URL에서 category, mode 읽기                              ║
+║  2. data/{category}.js 불러와서 해당 모드 문제 20개 중 랜덤 10개 ║
+║  3. 문제 하나씩 표시 (YES / NO 버튼)                         ║
+║  4. 문제당 30초 타이머 → 초과 시 자동 오답                   ║
+║  5. 점수 계산 (노말: 정답당 1점 / 하드: 정답당 2점)           ║
+║  6. 10문제 완료 → result.html로 이동                         ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 퀴즈</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    /* quiz.html 전용 스타일을 여기에 작성 */
+  </style>
+</head>
+<body>
+
+  <!-- TODO: 퀴즈 화면 마크업 작성 -->
+
+  <!--
+    힌트 — 타이머 바 (common.css .timer-wrap 사용)
+    <div class="timer-wrap">
+      <div class="timer-fill" id="timerFill" style="width: 100%"></div>
+    </div>
+    JS에서 매초 width를 줄이고, 10초 이하면 .urgent 클래스 추가
+  -->
+
+  <!--
+    힌트 — 퀴즈 데이터 불러오기
+    <script src="data/pokemon.js"></script>  ← category에 맞게 동적으로 로드
+    그러면 QUIZ_DATA.normal / QUIZ_DATA.hard 배열 사용 가능
+  -->
+
+  <script>
+    // URL 파라미터 읽기 예시
+    const params   = new URLSearchParams(window.location.search);
+    const category = params.get('category'); // ex) 'pokemon'
+    const mode     = params.get('mode');     // ex) 'hard'
+
+    // TODO: 퀴즈 로직 작성
+  </script>
+
+</body>
+</html>

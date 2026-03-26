@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  덕력 감별소 — 프로젝트 파일 구조                            ║
+║                                                              ║
+║  📁 root/                                                    ║
+║  ├── index.html        ← 메인 페이지       (담당: 나)        ║
+║  ├── quiz.html         ← 퀴즈 진행 화면    (담당: 팀원 A)    ║
+║  ├── result.html       ← 결과 페이지       (담당: 팀원 B)    ║
+║  ├── common.css        ← 공통 스타일 (모든 페이지가 import)  ║
+║  └── assets/                                                 ║
+║      ├── sanrio.png    ← 산리오 카드 이미지  (담당: 나)      ║
+║      ├── pokemon.png   ← 포켓몬 카드 이미지  (담당: 팀원 A)  ║
+║      ├── aot.png       ← 진격 카드 이미지    (담당: 팀원 B)  ║
+║      ├── kimetsu.png   ← 귀멸 카드 이미지    (담당: 팀원 C)  ║
+║      └── fma.png       ← 강철 카드 이미지    (담당: 팀원 C)  ║
+║                                                              ║
+║  ── 페이지 간 데이터 전달 ──                                 ║
+║  index → quiz   : quiz.html?category=pokemon&mode=hard       ║
+║  quiz  → result : result.html?category=pokemon&mode=hard     ║
+║                             &score=16                        ║
+║                                                              ║
+║  ── localStorage 키 규칙 ──                                  ║
+║  dk_{category}_{mode}  예) dk_pokemon_hard = 16              ║
+║                                                              ║
+║  ── 점수 체계 ──                                             ║
+║  노말 정답 1점 / 하드 정답 2점                               ║
+║  카테고리당 최대 30점 (노말10 + 하드20) / 전체 만점 150점    ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 ✦</title>
+
+  <link rel="stylesheet" href="common.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ══════════════════════════════════════
+       index.html 전용 스타일
+       ══════════════════════════════════════ */
+
+    /* ── 배경 오버라이드: 흰색 베이스 ── */
+    body {
+      background: #EFF8FF;
+    }
+
+    /* 배경 블러 블롭 (CSS only) */
+    .bg-blobs {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    /* 우상단: 하늘색 */
+    .bg-blobs::before {
+      content: '';
+      position: absolute;
+      top: -140px; right: -140px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(147,210,255,0.42) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: blobDrift 12s ease-in-out infinite alternate;
+    }
+
+    /* 좌하단: 민트 */
+    .bg-blobs::after {
+      content: '';
+      position: absolute;
+      bottom: -120px; left: -120px;
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, rgba(160,230,210,0.32) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: blobDrift 16s ease-in-out infinite alternate-reverse;
+    }
+
+    /* 중앙 우하단: 연보라 (div로 추가) */
+    .bg-blob-extra {
+      position: fixed;
+      bottom: 20%; right: -80px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(200,180,255,0.22) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: blobDrift 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes blobDrift {
+      from { transform: translate(0, 0) scale(1);     }
+      to   { transform: translate(40px, 30px) scale(1.08); }
+    }
+
+    /* ── 픽셀 이모지 플로팅 ── */
+    .pixel-floats {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .pixel-floats span {
+      font-family: 'MonaEmoji', monospace;
+      position: absolute;
+      bottom: -60px;
+      opacity: 0;
+      animation: pixelFloat linear infinite;
+      user-select: none;
+      image-rendering: pixelated;
+    }
+
+    .pixel-floats span:nth-child(1)  { left:  6%; font-size: 1.6rem; animation-duration: 11s; animation-delay:  0s;   }
+    .pixel-floats span:nth-child(2)  { left: 16%; font-size: 1.2rem; animation-duration: 15s; animation-delay:  3s;   }
+    .pixel-floats span:nth-child(3)  { left: 26%; font-size: 1.8rem; animation-duration: 12s; animation-delay:  1s;   }
+    .pixel-floats span:nth-child(4)  { left: 38%; font-size: 1rem;   animation-duration: 17s; animation-delay:  5s;   }
+    .pixel-floats span:nth-child(5)  { left: 50%; font-size: 2rem;   animation-duration: 10s; animation-delay:  2s;   }
+    .pixel-floats span:nth-child(6)  { left: 60%; font-size: 1.3rem; animation-duration: 14s; animation-delay:  4s;   }
+    .pixel-floats span:nth-child(7)  { left: 70%; font-size: 1rem;   animation-duration: 16s; animation-delay:  6s;   }
+    .pixel-floats span:nth-child(8)  { left: 80%; font-size: 1.6rem; animation-duration: 13s; animation-delay:  1.5s; }
+    .pixel-floats span:nth-child(9)  { left: 88%; font-size: 1.2rem; animation-duration: 11s; animation-delay:  3.5s; }
+    .pixel-floats span:nth-child(10) { left: 94%; font-size: 1.8rem; animation-duration: 15s; animation-delay:  7s;   }
+
+    @keyframes pixelFloat {
+      0%   { transform: translateY(0) rotate(0deg);    opacity: 0;    }
+      6%   {                                            opacity: 0.55; }
+      92%  {                                            opacity: 0.55; }
+      100% { transform: translateY(-110vh) rotate(15deg); opacity: 0; }
+    }
+
+    /* ── 헤더 ── */
+    .main-header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 56px 20px 32px;
+    }
+
+    .header-tag {
+      display: inline-block;
+      background: linear-gradient(135deg, #FFE0EC, #F0D9FF);
+      color: #C060A0;
+      font-size: 0.78rem;
+      font-family: var(--font-en);
+      font-weight: 900;
+      letter-spacing: 2px;
+      padding: 5px 16px;
+      border-radius: var(--radius-full);
+      margin-bottom: 16px;
+    }
+
+    .main-title {
+      font-family: 'EF_jejudoldam', var(--font-ko);
+      font-size: 3rem;
+      background: linear-gradient(135deg, #FF6FA8 10%, #BF6FFF 90%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 0px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .main-subtitle {
+      font-size: 0.9rem;
+      color: #B08090;
+      font-family: 'MonaS12TextHK', var(--font-en);
+      letter-spacing: 0.5px;
+    }
+
+    /* ── 게이지 섹션 ── */
+    .gauge-section {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto 28px;
+      padding: 0 20px;
+    }
+
+    /* 게이지 카드 커스텀 */
+    .gauge-section .card {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 12px 32px rgba(255,133,161,0.12);
+      border: 1px solid rgba(255,182,212,0.3);
+    }
+
+    /* ── 카테고리 섹션 ── */
+    .category-section {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    .section-label {
+      font-size: 0.8rem;
+      color: #C0A0B0;
+      letter-spacing: 1.5px;
+      font-family: var(--font-en);
+      font-weight: 900;
+      margin-bottom: 16px;
+      padding-left: 2px;
+    }
+
+    /* ── 카테고리 그리드: 2열 ── */
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* 추가 예정 카드 */
+    .category-card-coming {
+      cursor: default;
+      overflow: hidden;
+      padding: 0;
+      background: white;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.04),
+        0 8px 20px rgba(0,0,0,0.05);
+      border: 2px dashed rgba(200,180,220,0.5);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 3 / 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: #C8B0CC;
+    }
+
+    .coming-icon {
+      font-size: 2rem;
+      opacity: 0.5;
+    }
+
+    .coming-text {
+      font-size: 0.82rem;
+      font-family: var(--font-en);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      opacity: 0.6;
+    }
+
+    /* ── 카테고리 카드 ── */
+    .category-card {
+      cursor: pointer;
+      overflow: hidden;
+      padding: 0;
+      border: none;
+      background: white;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.06),
+        0 12px 28px rgba(0,0,0,0.08);
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+                  box-shadow 0.3s ease;
+    }
+
+    .category-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08),
+        0 24px 48px rgba(255,133,161,0.22);
+    }
+
+    /* 카드 이미지 영역 */
+    .card-image-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+    }
+
+    .card-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .category-card:hover .card-image-wrap img {
+      transform: scale(1.05);
+    }
+
+    /* 이미지 없을 때 그라데이션 플레이스홀더 */
+    .card-image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+    }
+
+    /* IP별 플레이스홀더 색상 */
+    [data-category="sanrio"]  .card-image-placeholder { background: linear-gradient(160deg, #FFD6E7, #FFAEC9); }
+    [data-category="pokemon"] .card-image-placeholder { background: linear-gradient(160deg, #FFF3A3, #FFD700); }
+    [data-category="aot"]     .card-image-placeholder { background: linear-gradient(160deg, #C8D4A0, #8B9E5A); }
+    [data-category="kimetsu"] .card-image-placeholder { background: linear-gradient(160deg, #FFB3A0, #E8604A); }
+    [data-category="fma"]     .card-image-placeholder { background: linear-gradient(160deg, #FFE4A0, #C8A020); }
+
+    /* 이미지 위 그라데이션 오버레이 (하단 텍스트 가독성) */
+    .card-image-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 55%;
+      background: linear-gradient(to top, rgba(20,10,16,0.65) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* 이미지 위 하드 뱃지 */
+    .card-top-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* 카드 하단 텍스트 (이미지 위에 절대 위치) */
+    .card-body {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 2;
+      padding: 12px 14px;
+    }
+
+    .card-name {
+      font-size: 1rem;
+      color: white;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      margin-bottom: 5px;
+    }
+
+    .card-modes {
+      display: flex;
+      gap: 5px;
+    }
+
+    /* ── 모달 이미지 ── */
+    .modal-img-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.1),
+        0 16px 40px rgba(255,133,161,0.25);
+      border: 2.5px solid rgba(255,255,255,0.9);
+      outline: 1.5px solid rgba(255,133,161,0.2);
+    }
+
+    .modal-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      transition: transform 0.6s ease;
+    }
+
+    .modal-img-wrap:hover img {
+      transform: scale(1.04);
+    }
+
+    /* 이미지 하단 그라데이션 오버레이 */
+    .modal-img-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 45%;
+      background: linear-gradient(to top, rgba(20,10,30,0.55) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* 카테고리명 이미지 위에 오버레이 */
+    .modal-img-label {
+      position: absolute;
+      bottom: 14px;
+      left: 16px;
+      z-index: 2;
+      color: white;
+      font-size: 1.3rem;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      letter-spacing: 0.5px;
+    }
+
+    .modal-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ① 배경 블롭 -->
+  <div class="bg-blobs" aria-hidden="true"></div>
+  <div class="bg-blob-extra" aria-hidden="true"></div>
+
+  <!-- ② 픽셀 이모지 플로팅 -->
+  <div class="pixel-floats" aria-hidden="true">
+    <span>⭐</span>
+    <span>🌸</span>
+    <span>💫</span>
+    <span>🎀</span>
+    <span>✨</span>
+    <span>🌙</span>
+    <span>💕</span>
+    <span>⭐</span>
+    <span>🌸</span>
+    <span>🎀</span>
+  </div>
+
+  <!-- ② 헤더 -->
+  <header class="main-header">
+    <span class="header-tag">CHARACTER QUIZ</span>
+    <h1 class="main-title">덕력 감별소</h1>
+    <p class="main-subtitle">나의 진짜 덕력을 확인해봐 ✦</p>
+  </header>
+
+  <!-- ③ 덕력 게이지 -->
+  <section class="gauge-section">
+    <div class="card gauge-wrap">
+      <div class="gauge-header">
+        <span class="gauge-label">나의 덕력 게이지</span>
+        <span class="gauge-score">
+          <strong id="gaugeScore">0</strong> / <span id="gaugeMax">150</span>점
+        </span>
+      </div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="gaugeFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-footer">
+        <span class="gauge-grade-badge" id="gaugeBadge">아직 시작 전 ✦</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 카테고리 선택 -->
+  <main class="category-section">
+    <p class="section-label">SELECT CATEGORY</p>
+    <div class="category-grid">
+
+      <!-- 산리오 -->
+      <!-- 이미지: assets/main-cards/sanrio.png 에 파일 넣으면 자동 표시 -->
+      <div class="card category-card"
+           data-category="sanrio"
+           data-emoji="🎀"
+           data-name="산리오"
+           onclick="openModal(this)">
+        <div class="card-image-wrap">
+          <img src="assets/main-cards/sanrio.png" alt="산리오"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="card-image-placeholder" style="display:none">🎀</div>
+          <div class="card-body">
+            <div class="card-name">산리오</div>
+            <div class="card-modes">
+              <span class="mode-badge normal" id="badge2-sanrio-normal">노말</span>
+              <span class="mode-badge hard"   id="badge2-sanrio-hard">하드</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 포켓몬 -->
+      <div class="card category-card"
+           data-category="pokemon"
+           data-emoji="⚡"
+           data-name="포켓몬"
+           onclick="openModal(this)">
+        <div class="card-image-wrap">
+          <img src="assets/main-cards/pokemon.png" alt="포켓몬"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="card-image-placeholder" style="display:none">⚡</div>
+          <div class="card-body">
+            <div class="card-name">포켓몬</div>
+            <div class="card-modes">
+              <span class="mode-badge normal" id="badge2-pokemon-normal">노말</span>
+              <span class="mode-badge hard"   id="badge2-pokemon-hard">하드</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 진격의 거인 -->
+      <div class="card category-card"
+           data-category="aot"
+           data-emoji="⚔️"
+           data-name="진격의 거인"
+           onclick="openModal(this)">
+        <div class="card-image-wrap">
+          <img src="assets/main-cards/aot.png" alt="진격의 거인"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="card-image-placeholder" style="display:none">⚔️</div>
+          <div class="card-body">
+            <div class="card-name">진격의 거인</div>
+            <div class="card-modes">
+              <span class="mode-badge normal" id="badge2-aot-normal">노말</span>
+              <span class="mode-badge hard"   id="badge2-aot-hard">하드</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 귀멸의 칼날 -->
+      <div class="card category-card"
+           data-category="kimetsu"
+           data-emoji="🔥"
+           data-name="귀멸의 칼날"
+           onclick="openModal(this)">
+        <div class="card-image-wrap">
+          <img src="assets/main-cards/kimetsu.png" alt="귀멸의 칼날"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="card-image-placeholder" style="display:none">🔥</div>
+          <div class="card-body">
+            <div class="card-name">귀멸의 칼날</div>
+            <div class="card-modes">
+              <span class="mode-badge normal" id="badge2-kimetsu-normal">노말</span>
+              <span class="mode-badge hard"   id="badge2-kimetsu-hard">하드</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 강철의 연금술사 -->
+      <div class="card category-card"
+           data-category="fma"
+           data-emoji="⚗️"
+           data-name="강철의 연금술사"
+           onclick="openModal(this)">
+        <div class="card-image-wrap">
+          <img src="assets/main-cards/fma.png" alt="강철의 연금술사"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="card-image-placeholder" style="display:none">⚗️</div>
+          <div class="card-body">
+            <div class="card-name">강철의 연금술사</div>
+            <div class="card-modes">
+              <span class="mode-badge normal" id="badge2-fma-normal">노말</span>
+              <span class="mode-badge hard"   id="badge2-fma-hard">하드</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 추가 예정 -->
+      <div class="category-card-coming">
+        <div class="coming-icon">＋</div>
+        <div class="coming-text">COMING SOON</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ⑤ 난이도 선택 모달 -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+
+      <!-- 모달 상단 이미지 -->
+      <div class="modal-img-wrap" id="modalImgWrap">
+        <img id="modalImg" src="" alt=""
+             onerror="this.style.display='none'; document.getElementById('modalImgFallback').style.display='flex'">
+        <div class="modal-img-placeholder" id="modalImgFallback" style="display:none"></div>
+        <div class="modal-img-label" id="modalImgLabel"></div>
+      </div>
+
+      <p class="modal-subtitle">난이도를 선택해주세요</p>
+      <div class="modal-buttons">
+        <button class="btn btn-normal" id="btnNormal" onclick="startQuiz('normal')">
+          <span>⭐ 노말</span>
+          <small>문제당 1점</small>
+        </button>
+        <button class="btn btn-hard" id="btnHard" onclick="startQuiz('hard')">
+          <span>💀 하드</span>
+          <small>문제당 2점</small>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ── 상수 ── */
+    const CATEGORIES = ['sanrio', 'pokemon', 'aot', 'kimetsu', 'fma'];
+    const MAX_SCORE  = 150;
+
+    const GRADES = [
+      { min: 90, label: '전설의 덕후 ✦✦✦' },
+      { min: 70, label: '고인물 ✦✦✦'      },
+      { min: 50, label: '진성 팬 ✦✦'       },
+      { min: 30, label: '라이트 팬 ✦'       },
+      { min:  0, label: '입문자'             },
+    ];
+
+    let selectedCategory = '';
+    let selectedEmoji    = '';
+
+    /* ── 페이지 로드 ── */
+    window.addEventListener('DOMContentLoaded', () => {
+      updateBadges();
+      updateGauge();
+    });
+
+    /* 완료 뱃지 업데이트 */
+    function updateBadges() {
+      CATEGORIES.forEach(cat => {
+        ['normal', 'hard'].forEach(mode => {
+          const isDone = localStorage.getItem(`dk_${cat}_${mode}`) !== null;
+          if (!isDone) return;
+
+          const badge = document.getElementById(`badge2-${cat}-${mode}`);
+          if (badge) badge.classList.add('done');
+        });
+      });
+    }
+
+    /* 게이지 업데이트 */
+    function updateGauge() {
+      let total = 0;
+      CATEGORIES.forEach(cat => {
+        const n = parseInt(localStorage.getItem(`dk_${cat}_normal`) ?? 0);
+        const h = parseInt(localStorage.getItem(`dk_${cat}_hard`)   ?? 0);
+        total += (isNaN(n) ? 0 : n) + (isNaN(h) ? 0 : h);
+      });
+
+      const pct   = Math.min(100, Math.round((total / MAX_SCORE) * 100));
+      const grade = GRADES.find(g => pct >= g.min) ?? GRADES[GRADES.length - 1];
+
+      document.getElementById('gaugeFill').style.width  = pct + '%';
+      document.getElementById('gaugeScore').textContent = total;
+      document.getElementById('gaugeBadge').textContent = grade.label;
+    }
+
+    /* 모달 열기 */
+    function openModal(cardEl) {
+      selectedCategory = cardEl.dataset.category;
+      selectedEmoji    = cardEl.dataset.emoji;
+      const name       = cardEl.dataset.name;
+
+      document.getElementById('modalImgLabel').textContent = name;
+
+      // 모달 이미지 세팅
+      const imgEl      = document.getElementById('modalImg');
+      const fallbackEl = document.getElementById('modalImgFallback');
+      const wrapEl     = document.getElementById('modalImgWrap');
+
+      imgEl.src = `assets/main-cards/${selectedCategory}.png`;
+      imgEl.alt = name;
+      imgEl.style.display = 'block';
+      fallbackEl.style.display = 'none';
+      fallbackEl.textContent = selectedEmoji;
+
+      // IP별 플레이스홀더 색상 클래스
+      wrapEl.className = 'modal-img-wrap';
+      fallbackEl.style.background = '';
+
+      // 완료 버튼 비활성화
+      document.getElementById('btnNormal').disabled =
+        localStorage.getItem(`dk_${selectedCategory}_normal`) !== null;
+      document.getElementById('btnHard').disabled =
+        localStorage.getItem(`dk_${selectedCategory}_hard`) !== null;
+
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    /* 모달 닫기 */
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    /* 퀴즈 시작 */
+    function startQuiz(mode) {
+      if (!selectedCategory) return;
+      window.location.href = `quiz.html?category=${selectedCategory}&mode=${mode}`;
+    }
+
+    /* ESC */
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+</body>
+</html>

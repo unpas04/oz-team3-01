@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  share.html — 공유 카드 페이지                               ║
+║  담당: 팀원 C                                                 ║
+║                                                              ║
+║  이전 페이지에서 받는 URL 파라미터:                           ║
+║  ?category=pokemon&mode=hard&score=16&grade=고인물           ║
+║                                                              ║
+║  구현해야 할 기능:                                            ║
+║  1. URL 파라미터로 결과 카드 꾸미기                           ║
+║  2. 카드 디자인 (SNS 공유용, 세로형 권장)                     ║
+║  3. 이미지로 저장 버튼 (html2canvas 라이브러리 사용)          ║
+║  4. 링크 복사 버튼 (현재 URL 클립보드 복사)                   ║
+║  5. 메인으로 돌아가기 버튼                                    ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 공유하기</title>
+  <link rel="stylesheet" href="common.css" />
+
+  <!--
+    이미지 저장 기능에 html2canvas 라이브러리 필요
+    아래 스크립트 태그 주석 해제해서 사용:
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  -->
+
+  <style>
+    /* share.html 전용 스타일을 여기에 작성 */
+
+    /*
+      공유 카드 예시 구조:
+      .share-card {
+        width: 360px;
+        aspect-ratio: 9 / 16;  ← 인스타 스토리 비율
+        ...
+      }
+    */
+  </style>
+</head>
+<body>
+
+  <!-- TODO: 공유 카드 마크업 작성 -->
+
+  <!--
+    공유 카드에 들어갈 내용 예시:
+    - 덕력 감별소 로고
+    - 카테고리명 + 난이도
+    - 점수 (ex. 16 / 20)
+    - 등급 타이틀 (ex. 고인물)
+    - 별점 (★★★★☆)
+    - 한 줄 멘트
+    - assets/main-cards/{category}.png 이미지
+  -->
+
+  <!--
+    이미지 저장 버튼 예시:
+    <button class="btn btn-primary" onclick="saveImage()">이미지로 저장</button>
+
+    링크 복사 버튼 예시:
+    <button class="btn btn-normal" onclick="copyLink()">링크 복사</button>
+  -->
+
+  <script>
+    // URL 파라미터 읽기 예시
+    const params   = new URLSearchParams(window.location.search);
+    const category = params.get('category'); // ex) 'pokemon'
+    const mode     = params.get('mode');     // ex) 'hard'
+    const score    = params.get('score');    // ex) '16'
+    const grade    = params.get('grade');    // ex) '고인물'
+
+    // 링크 복사
+    function copyLink() {
+      navigator.clipboard.writeText(window.location.href)
+        .then(() => alert('링크가 복사됐어요!'));
+    }
+
+    // 이미지 저장 (html2canvas 사용)
+    function saveImage() {
+      // html2canvas(document.querySelector('.share-card')).then(canvas => {
+      //   const link = document.createElement('a');
+      //   link.download = '덕력감별소_결과.png';
+      //   link.href = canvas.toDataURL();
+      //   link.click();
+      // });
+    }
+
+    // TODO: 공유 카드 로직 작성
+  </script>
+
+</body>
+</html>
