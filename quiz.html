@@ -17,7 +17,7 @@
   <title>덕력 감별소 — 퀴즈 진행</title>
   <link rel="stylesheet" href="common.css" />
   <style>
-    
+
   /* 퀴즈 헤더 스타일 */
   .quiz-header {
     margin: 18px 0 12px;
@@ -40,7 +40,24 @@
     align-items: center;
     text-align: center;
     background: white;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 16px;
+    overflow: hidden;
     position: relative;
+  }
+
+  /* 배경 위에 텍스트가 잘 보이도록 반투명 오버레이 */
+  .question-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.4);
+    z-index: 1;
   }
 
   /* 퀴즈 텍스트 */
@@ -51,6 +68,8 @@
     margin: 0 0 25px 0;
     word-break: keep-all;
     width: 100%;
+    position: relative;
+    z-index: 2;
   }
 
   /* 타이머 바 */
@@ -60,7 +79,9 @@
     height: 8px; 
     background: #eee; 
     border-radius: 4px; 
-    overflow: hidden; 
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
   }
   
   .timer-fill { 
@@ -77,6 +98,8 @@
     font-size: 1.05rem;
     font-weight: bold;
     min-height: 24px;
+    position: relative;
+    z-index: 2;
   }
   .feedback.correct { color: #3AAA3A; }
   .feedback.wrong { color: #D12E46; }
@@ -89,7 +112,7 @@
     margin-top: 16px;
   }
 
-  /* 모바일 대응: 1:6:2:1 비율 유지 */
+  /* 모바일 대응: 1:6:1:2 비율 유지 */
   @media (max-width: 768px) {
     .container {
       display: grid;
@@ -179,6 +202,7 @@
     const scoreText = document.getElementById('scoreText');
     const scoreFill = document.getElementById('scoreFill');
     const scoreBadge = document.getElementById('scoreBadge');
+    const questionCard = document.getElementById('questionCard');
 
     let currentIndex = 0;
     let score = 0;
@@ -257,6 +281,14 @@
       if (!item) return;
       progressText.textContent = `${currentIndex + 1} / ${totalQuestions}`;
       questionTitle.textContent = item.q;
+      
+      // 배경 이미지 설정
+      if (item.img) {
+        questionCard.style.backgroundImage = `url('${item.img}')`;
+      } else {
+        questionCard.style.backgroundImage = 'none';
+      }
+      
       feedback.textContent = '';
       feedback.classList.remove('correct', 'wrong');
       startTimer();
@@ -298,9 +330,7 @@
       setTimeout(() => nextQuestion(isRight), 700);
     });
 
-    /**
-     * [리텐션 루프] 데이터 로딩 및 초기화
-     */
+    //[리텐션 루프] 데이터 로딩 및 초기화
     function loadQuizData() {
       const script = document.createElement('script');
       script.src = `data/${category}.js`;
