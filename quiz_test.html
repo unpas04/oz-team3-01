@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  quiz_test.html — 퀴즈 UI 테스트 페이지 (폴라로이드 프레임)        ║
+║  quiz.html은 건드리지 않음 / 이미지 item.img 지원 준비 완료       ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 퀴즈 진행</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    @font-face {
+      font-family: 'YPairingFont';
+      src: url('fonts/YPairingFont-Regular.ttf') format('truetype');
+      font-weight: normal;
+    }
+
+    @font-face {
+      font-family: 'YPairingFont';
+      src: url('fonts/YPairingFont-Bold.ttf') format('truetype');
+      font-weight: bold;
+    }
+
+    /* ── 회전 방사형 배경 ── */
+    @keyframes spinRays {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to   { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    body {
+      background: transparent; /* spinRays가 보이도록 */
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      width: 300vmax; height: 300vmax;
+      background: conic-gradient(
+        #87CEEB 0deg,   #87CEEB 18deg,
+        white    18deg, white    36deg,
+        #87CEEB 36deg,  #87CEEB 54deg,
+        white    54deg, white    72deg,
+        #87CEEB 72deg,  #87CEEB 90deg,
+        white    90deg, white    108deg,
+        #87CEEB 108deg, #87CEEB 126deg,
+        white    126deg,white    144deg,
+        #87CEEB 144deg, #87CEEB 162deg,
+        white    162deg,white    180deg,
+        #87CEEB 180deg, #87CEEB 198deg,
+        white    198deg,white    216deg,
+        #87CEEB 216deg, #87CEEB 234deg,
+        white    234deg,white    252deg,
+        #87CEEB 252deg, #87CEEB 270deg,
+        white    270deg,white    288deg,
+        #87CEEB 288deg, #87CEEB 306deg,
+        white    306deg,white    324deg,
+        #87CEEB 324deg, #87CEEB 342deg,
+        white    342deg,white    360deg
+      );
+      transform: translate(-50%, -50%);
+      animation: spinRays 10s linear infinite;
+      z-index: -1;
+    }
+
+    /* ── 컨테이너 여백 ── */
+    .container {
+      padding-bottom: 24px;
+    }
+
+    /* ── 헤더 ── */
+    .quiz-header {
+      padding: 14px 0 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.88rem;
+      color: var(--color-text-light);
+    }
+
+    /* ── 진행 도트 ── */
+    .progress-dots {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .progress-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1.5px solid rgba(135, 206, 235, 0.5);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .progress-dot.done {
+      background: #87CEEB;
+      border-color: #5aaed4;
+    }
+
+    .progress-dot.current {
+      background: var(--color-primary);
+      border-color: var(--color-primary-dark);
+      transform: scale(1.45);
+    }
+
+    /* ── 폴라로이드 프레임 ── */
+    .polaroid-outer {
+      margin-bottom: 14px;
+    }
+
+    .polaroid {
+      background: #fff;
+      padding: 10px 10px 52px;
+      border-radius: 3px;
+      box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.07),
+        0 8px 28px rgba(0, 0, 0, 0.13),
+        0 22px 52px rgba(0, 0, 0, 0.07);
+      transform: rotate(-0.8deg);
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 문제 바뀔 때 살짝 튕기는 효과 */
+    @keyframes polaroidPop {
+      0%   { transform: rotate(-0.8deg) scale(1); }
+      40%  { transform: rotate(0.6deg) scale(0.97); }
+      100% { transform: rotate(-0.8deg) scale(1); }
+    }
+
+    .polaroid.pop {
+      animation: polaroidPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 이미지 영역 */
+    .polaroid-img-area {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border-radius: 1px;
+      position: relative;
+    }
+
+    .polaroid-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* 플레이스홀더 */
+    .polaroid-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .ph-emoji { font-size: 4rem; }
+
+    .ph-label {
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 3px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    /* 카테고리별 그라데이션 */
+    .placeholder-fma      { background: linear-gradient(135deg, #FFEAA7, #FDCB6E, #E17055); }
+    .placeholder-aot      { background: linear-gradient(135deg, #55EFC4, #00B894, #2d3436); }
+    .placeholder-kimetsu  { background: linear-gradient(135deg, #FD79A8, #E84393, #6C5CE7); }
+    .placeholder-pokemon  { background: linear-gradient(135deg, #FFEAA7, #FFD700, #FF7675); }
+    .placeholder-sanrio   { background: linear-gradient(135deg, #FFB7D5, #FF85A1, #C084FC); }
+    .placeholder-default  { background: linear-gradient(135deg, #A29BFE, #6C5CE7, #74B9FF); }
+
+    /* 폴라로이드 하단 흰 여백 */
+    .polaroid-bottom {
+      position: absolute;
+      bottom: 0; left: 10px; right: 10px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .polaroid-q-num {
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 0.82rem;
+      color: var(--color-text-light);
+      letter-spacing: 1px;
+    }
+
+    /* ── 질문 카드 ── */
+    .question-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-card);
+      border: 1.5px solid var(--color-card-border);
+      padding: 16px 20px;
+      text-align: center;
+      margin-bottom: 10px;
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .question-text {
+      font-family: 'YPairingFont', sans-serif;
+      font-weight: bold;
+      font-size: 1.12rem;
+      line-height: 1.55;
+      color: var(--color-text);
+      word-break: keep-all;
+    }
+
+    /* ── 타이머 (common.css 오버라이드) ── */
+    .timer-wrap {
+      margin-bottom: 8px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    /* ── 피드백 ── */
+    .feedback {
+      text-align: center;
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 0.95rem;
+      font-weight: bold;
+      min-height: 26px;
+      margin-bottom: 10px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      display: inline-block;
+      align-self: center;
+      visibility: hidden;
+    }
+
+    .feedback.correct {
+      visibility: visible;
+      color: #2a7a2a;
+      background: rgba(200, 255, 200, 0.9);
+      border: 1.5px solid #3AAA3A;
+    }
+
+    .feedback.wrong {
+      visibility: visible;
+      color: #a01020;
+      background: rgba(255, 210, 210, 0.9);
+      border: 1.5px solid #D12E46;
+    }
+
+    /* 피드백 wrapper: 가운데 정렬용 */
+    .feedback-wrap {
+      display: flex;
+      justify-content: center;
+      min-height: 40px;
+      margin-bottom: 10px;
+    }
+
+    /* ── YES / NO 버튼 ── */
+    .action-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    #btnYes, #btnNo {
+      padding: 20px 12px;
+      font-size: 1.35rem;
+      letter-spacing: 3px;
+      font-family: 'YPairingFont', sans-serif;
+    }
+
+    /* ── 모바일 세로 화면 최적화 ── */
+    @media (max-height: 700px) {
+      .polaroid { padding-bottom: 38px; }
+      .polaroid-bottom { height: 38px; }
+      .question-card { padding: 12px 16px; min-height: 56px; }
+      .question-text { font-size: 1rem; }
+      #btnYes, #btnNo { padding: 15px 12px; font-size: 1.2rem; }
+      .progress-dots { margin-bottom: 8px; gap: 5px; }
+      .ph-emoji { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- 헤더 -->
+    <div class="quiz-header">
+      <div>
+        <span class="mode-badge" id="modeBadge">노말</span>
+        <span class="mode-badge" id="categoryBadge">카테고리</span>
+      </div>
+      <div id="progressText">1 / 10</div>
+    </div>
+
+    <!-- 진행 도트 -->
+    <div class="progress-dots" id="progressDots"></div>
+
+    <!-- 폴라로이드 프레임 -->
+    <div class="polaroid-outer">
+      <div class="polaroid" id="polaroidCard">
+        <div class="polaroid-img-area">
+          <img class="polaroid-img" id="polaroidImg" src="" alt="" style="display:none;">
+          <div class="polaroid-placeholder placeholder-default" id="polaroidPlaceholder">
+            <span class="ph-emoji" id="phEmoji">✨</span>
+            <span class="ph-label" id="phLabel">QUIZ</span>
+          </div>
+        </div>
+        <div class="polaroid-bottom">
+          <span class="polaroid-q-num" id="polaroidQNum">Q1 / 10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 질문 -->
+    <div class="question-card">
+      <div class="question-text" id="questionTitle">문제를 불러오는 중...</div>
+    </div>
+
+    <!-- 타이머 -->
+    <div class="timer-wrap">
+      <div class="timer-fill" id="timerFill" style="width: 100%"></div>
+    </div>
+
+    <!-- 피드백 -->
+    <div class="feedback-wrap">
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <!-- YES / NO -->
+    <div class="action-btns">
+      <button class="btn btn-normal" id="btnYes"><span>YES</span></button>
+      <button class="btn btn-hard"   id="btnNo"><span>NO</span></button>
+    </div>
+
+    <!-- 점수 게이지 -->
+    <div class="card gauge-wrap">
+      <div class="gauge-header">
+        <span class="gauge-label">현재 점수</span>
+        <span class="gauge-score" id="scoreText">0</span>
+      </div>
+      <div class="gauge-track">
+        <div class="gauge-fill" id="scoreFill" style="width: 0%"></div>
+      </div>
+      <div class="gauge-footer">
+        <span class="gauge-grade-badge" id="scoreBadge">준비</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /**
+     * [리텐션 루프] URL 파라미터 수신부
+     */
+    const params   = new URLSearchParams(window.location.search);
+    const category = (params.get('category') || 'aot').toLowerCase();
+    const mode     = (params.get('mode') || 'hard').toLowerCase();
+    const isHard   = mode === 'hard';
+    const timerSec = isHard ? 10 : 20;
+    const totalQuestions = 10;
+    const maxScore = totalQuestions * (isHard ? 2 : 1);
+
+    // 카테고리별 이미지 경로 (ga=FMA, ji=AOT, ku=Kimetsu)
+    const CATEGORY_IMAGES = {
+      fma: {
+        normal: [
+          'assets/quiz/ga-n-1.jpeg',
+          'assets/quiz/ga-n-2.jpeg',
+          'assets/quiz/ga-n-3.jpeg',
+          'assets/quiz/ga-n-4.jpeg',
+          'assets/quiz/ga-n-5.jpg',
+          'assets/quiz/ga-n-6.jpeg',
+          'assets/quiz/ga-n-7.jpeg',
+          'assets/quiz/ga-n-8.jpeg',
+          'assets/quiz/ga-n-9.jpg',
+          'assets/quiz/ga-n-10.jpg',
+        ],
+        hard: [
+          'assets/quiz/ga-h-1.jpeg',
+          'assets/quiz/ga-h-2.jpeg',
+          'assets/quiz/ga-h-3.jpg',
+          'assets/quiz/ga-h-4.jpeg',
+          'assets/quiz/ga-h-5.jpg',
+          'assets/quiz/ga-h-6.png',
+          'assets/quiz/ga-h-7.jpeg',
+          'assets/quiz/ga-h-8.jpeg',
+          'assets/quiz/ga-h-9.jpeg',
+          'assets/quiz/ga-h-10.jpg',
+        ],
+      },
+      aot: {
+        normal: [
+          'assets/quiz/ji-n-1.png',
+          'assets/quiz/ji-n-2.jpeg',
+          'assets/quiz/ji-n-3.jpeg',
+          'assets/quiz/ji-n-4.jpeg',
+          'assets/quiz/ji-n-5.jpeg',
+          'assets/quiz/ji-n-6.jpeg',
+          'assets/quiz/ji-n-7.jpeg',
+          'assets/quiz/ji-n-8.jpeg',
+          'assets/quiz/ji-n-9.png',
+          'assets/quiz/ji-n-10.jpeg',
+        ],
+        hard: [
+          'assets/quiz/ji-h-1.jpg',
+          'assets/quiz/ji-h-2.jpeg',
+          'assets/quiz/ji-h-3.jpeg',
+          'assets/quiz/ji-h-4.jpeg',
+          'assets/quiz/ji-h-5.jpg',
+          'assets/quiz/ji-h-6.jpeg',
+          'assets/quiz/ji-h-7.jpeg',
+          'assets/quiz/ji-h-8.jpeg',
+          'assets/quiz/ji-h-9.jpeg',
+          'assets/quiz/ji-h-10.jpeg',
+          'assets/quiz/ji-h-11.jpeg',
+        ],
+      },
+      kimetsu: {
+        normal: [
+          'assets/quiz/ku-n-1.jpeg',
+          'assets/quiz/ku-n-2.jpg',
+          'assets/quiz/ku-n-3.jpeg',
+          'assets/quiz/ku-n-4.jpeg',
+          'assets/quiz/ku-n-5.jpeg',
+          'assets/quiz/ku-n-6.jpeg',
+          'assets/quiz/ku-n-7.jpeg',
+          'assets/quiz/ku-n-8.jpeg',
+          'assets/quiz/ku-n-9.jpg',
+          'assets/quiz/ku-n-10.jpeg',
+          'assets/quiz/ku-n-11.jpeg',
+        ],
+        hard: [
+          'assets/quiz/ku-h-1.jpeg',
+          'assets/quiz/ku-h-2.jpg',
+          'assets/quiz/ku-h-3.jpeg',
+          'assets/quiz/ku-h-4.jpeg',
+          'assets/quiz/ku-h-5.jpeg',
+          'assets/quiz/ku-h-6.jpeg',
+          'assets/quiz/ku-h-7.jpeg',
+          'assets/quiz/ku-h-8.jpeg',
+          'assets/quiz/ku-h-9.jpg',
+          'assets/quiz/ku-h-10.jpeg',
+        ],
+      },
+    };
+
+    // 카테고리별 플레이스홀더 메타
+    const CATEGORY_META = {
+      fma:     { emoji: '⚗️',  label: 'FMA',     cls: 'placeholder-fma'     },
+      aot:     { emoji: '⚔️',  label: 'AOT',     cls: 'placeholder-aot'     },
+      kimetsu: { emoji: '🌸',  label: 'KIMETSU', cls: 'placeholder-kimetsu' },
+      pokemon: { emoji: '⚡',  label: 'POKÉMON', cls: 'placeholder-pokemon' },
+      sanrio:  { emoji: '🎀',  label: 'SANRIO',  cls: 'placeholder-sanrio'  },
+    };
+    const meta = CATEGORY_META[category] || { emoji: '✨', label: 'QUIZ', cls: 'placeholder-default' };
+
+    const modeBadge           = document.getElementById('modeBadge');
+    const categoryBadge       = document.getElementById('categoryBadge');
+    const progressText        = document.getElementById('progressText');
+    const progressDots        = document.getElementById('progressDots');
+    const polaroidCard        = document.getElementById('polaroidCard');
+    const polaroidImg         = document.getElementById('polaroidImg');
+    const polaroidPlaceholder = document.getElementById('polaroidPlaceholder');
+    const phEmoji             = document.getElementById('phEmoji');
+    const phLabel             = document.getElementById('phLabel');
+    const polaroidQNum        = document.getElementById('polaroidQNum');
+    const questionTitle       = document.getElementById('questionTitle');
+    const timerFill           = document.getElementById('timerFill');
+    const feedback            = document.getElementById('feedback');
+    const btnYes              = document.getElementById('btnYes');
+    const btnNo               = document.getElementById('btnNo');
+    const scoreText           = document.getElementById('scoreText');
+    const scoreFill           = document.getElementById('scoreFill');
+    const scoreBadge          = document.getElementById('scoreBadge');
+
+    let currentIndex = 0;
+    let score = 0;
+    let quizQuestions = [];
+    let timerId = null;
+    let remainSec = 0;
+    let answered = false;
+
+    // 배지 초기화
+    modeBadge.textContent = isHard ? '하드' : '노말';
+    modeBadge.classList.add(isHard ? 'hard' : 'normal');
+    const CATEGORY_NAMES = {
+      fma:     '강철의 연금술사',
+      aot:     '진격의 거인',
+      kimetsu: '귀멸의 칼날',
+      pokemon: '포켓몬',
+      sanrio:  '산리오',
+    };
+    categoryBadge.textContent = CATEGORY_NAMES[category] || category.replace(/^[a-z]/, c => c.toUpperCase());
+
+    // 플레이스홀더 카테고리 스타일 적용
+    polaroidPlaceholder.className = `polaroid-placeholder ${meta.cls}`;
+    phEmoji.textContent = meta.emoji;
+    phLabel.textContent = meta.label;
+
+    /* ── 진행 도트 ── */
+    function buildDots() {
+      progressDots.innerHTML = '';
+      for (let i = 0; i < totalQuestions; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'progress-dot' + (i === 0 ? ' current' : '');
+        dot.id = `dot-${i}`;
+        progressDots.appendChild(dot);
+      }
+    }
+
+    function updateDots() {
+      for (let i = 0; i < totalQuestions; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (!dot) continue;
+        dot.className = 'progress-dot';
+        if (i < currentIndex)      dot.classList.add('done');
+        else if (i === currentIndex) dot.classList.add('current');
+      }
+    }
+
+    function makeCategoryVariableName(categoryName) {
+      const key = categoryName.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+      return `QUIZ_DATA_${key}`;
+    }
+
+    function shuffleArray(arr) {
+      const clone = [...arr];
+      for (let i = clone.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [clone[i], clone[j]] = [clone[j], clone[i]];
+      }
+      return clone;
+    }
+
+    function updateScoreUI() {
+      scoreText.textContent = score;
+      const width = Math.round((score / maxScore) * 100);
+      scoreFill.style.width = `${width}%`;
+      if (width >= 90)      scoreBadge.textContent = '전설의 덕후';
+      else if (width >= 70) scoreBadge.textContent = '고인물';
+      else if (width >= 50) scoreBadge.textContent = '진성 팬';
+      else if (width >= 30) scoreBadge.textContent = '라이트 팬';
+      else                  scoreBadge.textContent = '입문자';
+    }
+
+    /**
+     * [리텐션 루프] 결과 페이지 이동
+     */
+    function goToResult() {
+      const query = new URLSearchParams({ category, mode, score }).toString();
+      window.location.href = `result.html?${query}`;
+    }
+
+    function stopTimer() {
+      clearInterval(timerId);
+      timerId = null;
+    }
+
+    function startTimer() {
+      remainSec = timerSec;
+      timerFill.style.width = '100%';
+      timerFill.classList.remove('urgent');
+      timerId = setInterval(() => {
+        remainSec -= 1;
+        const pct = Math.max((remainSec / timerSec) * 100, 0);
+        timerFill.style.width = `${pct}%`;
+        if (remainSec <= 5) timerFill.classList.add('urgent');
+        if (remainSec <= 0) {
+          if (answered) return;
+          answered = true;
+          stopTimer();
+          showFeedback(false, '시간 초과! ⏰ 자동 오답 처리');
+          setTimeout(() => nextQuestion(false), 800);
+        }
+      }, 1000);
+    }
+
+    function showFeedback(isCorrect, text) {
+      feedback.textContent = text;
+      feedback.classList.toggle('correct', isCorrect);
+      feedback.classList.toggle('wrong', !isCorrect);
+    }
+
+    function setQuestion() {
+      const item = quizQuestions[currentIndex];
+      if (!item) return;
+
+      progressText.textContent = `${currentIndex + 1} / ${totalQuestions}`;
+      polaroidQNum.textContent  = `Q${currentIndex + 1} / ${totalQuestions}`;
+      updateDots();
+
+      // 폴라로이드 튕김 애니메이션
+      polaroidCard.classList.remove('pop');
+      void polaroidCard.offsetWidth; // reflow
+      polaroidCard.classList.add('pop');
+
+      // 이미지 처리: 카테고리 이미지 맵 → item.img → 플레이스홀더 순으로 fallback
+      const imgList = CATEGORY_IMAGES[category]?.[mode];
+      const imgSrc  = (imgList && imgList[currentIndex]) || item.img || null;
+      if (imgSrc) {
+        polaroidImg.src = imgSrc;
+        polaroidImg.style.display = 'block';
+        polaroidPlaceholder.style.display = 'none';
+      } else {
+        polaroidImg.style.display = 'none';
+        polaroidPlaceholder.style.display = 'flex';
+      }
+
+      answered = false;
+      questionTitle.textContent = item.q;
+      feedback.textContent = '';
+      feedback.classList.remove('correct', 'wrong');
+      startTimer();
+      btnYes.disabled = false;
+      btnNo.disabled = false;
+    }
+
+    function nextQuestion(wasCorrect) {
+      if (wasCorrect) score += isHard ? 2 : 1;
+      updateScoreUI();
+      stopTimer();
+      currentIndex += 1;
+      if (currentIndex >= quizQuestions.length || currentIndex >= totalQuestions) {
+        goToResult();
+        return;
+      }
+      setQuestion();
+    }
+
+    btnYes.addEventListener('click', () => {
+      if (!quizQuestions[currentIndex] || answered) return;
+      answered = true;
+      stopTimer();
+      const isRight = quizQuestions[currentIndex].a === true;
+      showFeedback(isRight, isRight ? '정답입니다! ✨' : '오답입니다! 💦');
+      btnYes.disabled = true;
+      btnNo.disabled = true;
+      setTimeout(() => nextQuestion(isRight), 800);
+    });
+
+    btnNo.addEventListener('click', () => {
+      if (!quizQuestions[currentIndex] || answered) return;
+      answered = true;
+      stopTimer();
+      const isRight = quizQuestions[currentIndex].a === false;
+      showFeedback(isRight, isRight ? '정답입니다! ✨' : '오답입니다! 💦');
+      btnYes.disabled = true;
+      btnNo.disabled = true;
+      setTimeout(() => nextQuestion(isRight), 800);
+    });
+
+    /**
+     * [리텐션 루프] 데이터 로딩 및 초기화
+     */
+    function loadQuizData() {
+      const script = document.createElement('script');
+      script.src = `data/${category}.js`;
+      script.onload = () => {
+        const quizDataVar = makeCategoryVariableName(category);
+        let quizData = window[quizDataVar] || globalThis[quizDataVar];
+        if (!quizData) {
+          try {
+            // const로 선언된 글로벌 변수에 접근하기 위해 eval 사용 (중요)
+            quizData = eval(quizDataVar);
+          } catch (e) {
+            console.warn('quizData eval 실패', e);
+          }
+        }
+        if (!quizData || !quizData[mode]) {
+          questionTitle.textContent = '데이터를 불러오는 데 실패했습니다.';
+          return;
+        }
+        const pool = quizData[mode];
+        quizQuestions = pool.slice(0, totalQuestions);
+        buildDots();
+        updateScoreUI();
+        setQuestion();
+      };
+      script.onerror = () => {
+        questionTitle.textContent = '퀴즈 데이터를 불러올 수 없습니다.';
+      };
+      document.body.appendChild(script);
+    }
+
+    loadQuizData();
+  </script>
+</body>
+</html>
