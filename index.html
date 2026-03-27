@@ -29,13 +29,25 @@
 ╚══════════════════════════════════════════════════════════════╝
 -->
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>덕력 감별소 ✦</title>
 
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-X5GXS72Q8V"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-X5GXS72Q8V');
+  </script>
+
   <link rel="stylesheet" href="common.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@700;800;900&display=swap"
+    rel="stylesheet" />
 
   <style>
     /* ══════════════════════════════════════
@@ -60,9 +72,11 @@
     .bg-blobs::before {
       content: '';
       position: absolute;
-      top: -140px; right: -140px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(147,210,255,0.42) 0%, transparent 70%);
+      top: -140px;
+      right: -140px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(147, 210, 255, 0.42) 0%, transparent 70%);
       border-radius: 50%;
       animation: blobDrift 12s ease-in-out infinite alternate;
     }
@@ -71,9 +85,11 @@
     .bg-blobs::after {
       content: '';
       position: absolute;
-      bottom: -120px; left: -120px;
-      width: 440px; height: 440px;
-      background: radial-gradient(circle, rgba(160,230,210,0.32) 0%, transparent 70%);
+      bottom: -120px;
+      left: -120px;
+      width: 440px;
+      height: 440px;
+      background: radial-gradient(circle, rgba(160, 230, 210, 0.32) 0%, transparent 70%);
       border-radius: 50%;
       animation: blobDrift 16s ease-in-out infinite alternate-reverse;
     }
@@ -81,9 +97,11 @@
     /* 중앙 우하단: 연보라 (div로 추가) */
     .bg-blob-extra {
       position: fixed;
-      bottom: 20%; right: -80px;
-      width: 320px; height: 320px;
-      background: radial-gradient(circle, rgba(200,180,255,0.22) 0%, transparent 70%);
+      bottom: 20%;
+      right: -80px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(200, 180, 255, 0.22) 0%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
       z-index: 0;
@@ -91,8 +109,13 @@
     }
 
     @keyframes blobDrift {
-      from { transform: translate(0, 0) scale(1);     }
-      to   { transform: translate(40px, 30px) scale(1.08); }
+      from {
+        transform: translate(0, 0) scale(1);
+      }
+
+      to {
+        transform: translate(40px, 30px) scale(1.08);
+      }
     }
 
     /* ── 픽셀 이모지 플로팅 ── */
@@ -114,22 +137,94 @@
       image-rendering: pixelated;
     }
 
-    .pixel-floats span:nth-child(1)  { left:  6%; font-size: 1.6rem; animation-duration: 11s; animation-delay:  0s;   }
-    .pixel-floats span:nth-child(2)  { left: 16%; font-size: 1.2rem; animation-duration: 15s; animation-delay:  3s;   }
-    .pixel-floats span:nth-child(3)  { left: 26%; font-size: 1.8rem; animation-duration: 12s; animation-delay:  1s;   }
-    .pixel-floats span:nth-child(4)  { left: 38%; font-size: 1rem;   animation-duration: 17s; animation-delay:  5s;   }
-    .pixel-floats span:nth-child(5)  { left: 50%; font-size: 2rem;   animation-duration: 10s; animation-delay:  2s;   }
-    .pixel-floats span:nth-child(6)  { left: 60%; font-size: 1.3rem; animation-duration: 14s; animation-delay:  4s;   }
-    .pixel-floats span:nth-child(7)  { left: 70%; font-size: 1rem;   animation-duration: 16s; animation-delay:  6s;   }
-    .pixel-floats span:nth-child(8)  { left: 80%; font-size: 1.6rem; animation-duration: 13s; animation-delay:  1.5s; }
-    .pixel-floats span:nth-child(9)  { left: 88%; font-size: 1.2rem; animation-duration: 11s; animation-delay:  3.5s; }
-    .pixel-floats span:nth-child(10) { left: 94%; font-size: 1.8rem; animation-duration: 15s; animation-delay:  7s;   }
+    .pixel-floats span:nth-child(1) {
+      left: 6%;
+      font-size: 1.6rem;
+      animation-duration: 11s;
+      animation-delay: 0s;
+    }
+
+    .pixel-floats span:nth-child(2) {
+      left: 16%;
+      font-size: 1.2rem;
+      animation-duration: 15s;
+      animation-delay: 3s;
+    }
+
+    .pixel-floats span:nth-child(3) {
+      left: 26%;
+      font-size: 1.8rem;
+      animation-duration: 12s;
+      animation-delay: 1s;
+    }
+
+    .pixel-floats span:nth-child(4) {
+      left: 38%;
+      font-size: 1rem;
+      animation-duration: 17s;
+      animation-delay: 5s;
+    }
+
+    .pixel-floats span:nth-child(5) {
+      left: 50%;
+      font-size: 2rem;
+      animation-duration: 10s;
+      animation-delay: 2s;
+    }
+
+    .pixel-floats span:nth-child(6) {
+      left: 60%;
+      font-size: 1.3rem;
+      animation-duration: 14s;
+      animation-delay: 4s;
+    }
+
+    .pixel-floats span:nth-child(7) {
+      left: 70%;
+      font-size: 1rem;
+      animation-duration: 16s;
+      animation-delay: 6s;
+    }
+
+    .pixel-floats span:nth-child(8) {
+      left: 80%;
+      font-size: 1.6rem;
+      animation-duration: 13s;
+      animation-delay: 1.5s;
+    }
+
+    .pixel-floats span:nth-child(9) {
+      left: 88%;
+      font-size: 1.2rem;
+      animation-duration: 11s;
+      animation-delay: 3.5s;
+    }
+
+    .pixel-floats span:nth-child(10) {
+      left: 94%;
+      font-size: 1.8rem;
+      animation-duration: 15s;
+      animation-delay: 7s;
+    }
 
     @keyframes pixelFloat {
-      0%   { transform: translateY(0) rotate(0deg);    opacity: 0;    }
-      6%   {                                            opacity: 0.55; }
-      92%  {                                            opacity: 0.55; }
-      100% { transform: translateY(-110vh) rotate(15deg); opacity: 0; }
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+
+      6% {
+        opacity: 0.55;
+      }
+
+      92% {
+        opacity: 0.55;
+      }
+
+      100% {
+        transform: translateY(-110vh) rotate(15deg);
+        opacity: 0;
+      }
     }
 
     /* ── 헤더 ── */
@@ -184,8 +279,8 @@
     /* 게이지 카드 커스텀 */
     .gauge-section .card {
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 12px 32px rgba(255,133,161,0.12);
-      border: 1px solid rgba(255,182,212,0.3);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 12px 32px rgba(255, 133, 161, 0.12);
+      border: 1px solid rgba(255, 182, 212, 0.3);
     }
 
     /* ── 카테고리 섹션 ── */
@@ -221,9 +316,9 @@
       padding: 0;
       background: white;
       box-shadow:
-        0 2px 6px rgba(0,0,0,0.04),
-        0 8px 20px rgba(0,0,0,0.05);
-      border: 2px dashed rgba(200,180,220,0.5);
+        0 2px 6px rgba(0, 0, 0, 0.04),
+        0 8px 20px rgba(0, 0, 0, 0.05);
+      border: 2px dashed rgba(200, 180, 220, 0.5);
       border-radius: var(--radius-lg);
       aspect-ratio: 3 / 4;
       display: flex;
@@ -255,17 +350,17 @@
       border: none;
       background: white;
       box-shadow:
-        0 2px 6px rgba(0,0,0,0.06),
-        0 12px 28px rgba(0,0,0,0.08);
-      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
-                  box-shadow 0.3s ease;
+        0 2px 6px rgba(0, 0, 0, 0.06),
+        0 12px 28px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease;
     }
 
     .category-card:hover {
       transform: translateY(-6px) scale(1.01);
       box-shadow:
-        0 4px 12px rgba(0,0,0,0.08),
-        0 24px 48px rgba(255,133,161,0.22);
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 24px 48px rgba(255, 133, 161, 0.22);
     }
 
     /* 카드 이미지 영역 */
@@ -300,26 +395,43 @@
     }
 
     /* IP별 플레이스홀더 색상 */
-    [data-category="sanrio"]  .card-image-placeholder { background: linear-gradient(160deg, #FFD6E7, #FFAEC9); }
-    [data-category="pokemon"] .card-image-placeholder { background: linear-gradient(160deg, #FFF3A3, #FFD700); }
-    [data-category="aot"]     .card-image-placeholder { background: linear-gradient(160deg, #C8D4A0, #8B9E5A); }
-    [data-category="kimetsu"] .card-image-placeholder { background: linear-gradient(160deg, #FFB3A0, #E8604A); }
-    [data-category="fma"]     .card-image-placeholder { background: linear-gradient(160deg, #FFE4A0, #C8A020); }
+    [data-category="sanrio"] .card-image-placeholder {
+      background: linear-gradient(160deg, #FFD6E7, #FFAEC9);
+    }
+
+    [data-category="pokemon"] .card-image-placeholder {
+      background: linear-gradient(160deg, #FFF3A3, #FFD700);
+    }
+
+    [data-category="aot"] .card-image-placeholder {
+      background: linear-gradient(160deg, #C8D4A0, #8B9E5A);
+    }
+
+    [data-category="kimetsu"] .card-image-placeholder {
+      background: linear-gradient(160deg, #FFB3A0, #E8604A);
+    }
+
+    [data-category="fma"] .card-image-placeholder {
+      background: linear-gradient(160deg, #FFE4A0, #C8A020);
+    }
 
     /* 이미지 위 그라데이션 오버레이 (하단 텍스트 가독성) */
     .card-image-wrap::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       height: 55%;
-      background: linear-gradient(to top, rgba(20,10,16,0.65) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(20, 10, 16, 0.65) 0%, transparent 100%);
       pointer-events: none;
     }
 
     /* 이미지 위 하드 뱃지 */
     .card-top-badge {
       position: absolute;
-      top: 10px; right: 10px;
+      top: 10px;
+      right: 10px;
       z-index: 2;
       display: flex;
       flex-direction: column;
@@ -329,7 +441,9 @@
     /* 카드 하단 텍스트 (이미지 위에 절대 위치) */
     .card-body {
       position: absolute;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       z-index: 2;
       padding: 12px 14px;
     }
@@ -337,7 +451,7 @@
     .card-name {
       font-size: 1rem;
       color: white;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
       margin-bottom: 5px;
     }
 
@@ -355,10 +469,10 @@
       overflow: hidden;
       margin-bottom: 20px;
       box-shadow:
-        0 4px 12px rgba(0,0,0,0.1),
-        0 16px 40px rgba(255,133,161,0.25);
-      border: 2.5px solid rgba(255,255,255,0.9);
-      outline: 1.5px solid rgba(255,133,161,0.2);
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        0 16px 40px rgba(255, 133, 161, 0.25);
+      border: 2.5px solid rgba(255, 255, 255, 0.9);
+      outline: 1.5px solid rgba(255, 133, 161, 0.2);
     }
 
     .modal-img-wrap img {
@@ -377,9 +491,11 @@
     .modal-img-wrap::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       height: 45%;
-      background: linear-gradient(to top, rgba(20,10,30,0.55) 0%, transparent 100%);
+      background: linear-gradient(to top, rgba(20, 10, 30, 0.55) 0%, transparent 100%);
       pointer-events: none;
     }
 
@@ -391,7 +507,7 @@
       z-index: 2;
       color: white;
       font-size: 1.3rem;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
       letter-spacing: 0.5px;
     }
 
@@ -405,6 +521,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- ① 배경 블롭 -->
@@ -457,100 +574,82 @@
 
       <!-- 산리오 -->
       <!-- 이미지: assets/main-cards/sanrio.png 에 파일 넣으면 자동 표시 -->
-      <div class="card category-card"
-           data-category="sanrio"
-           data-emoji="🎀"
-           data-name="산리오"
-           onclick="openModal(this)">
+      <div class="card category-card" data-category="sanrio" data-emoji="🎀" data-name="산리오" onclick="openModal(this)">
         <div class="card-image-wrap">
           <img src="assets/main-cards/sanrio.png" alt="산리오"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="card-image-placeholder" style="display:none">🎀</div>
           <div class="card-body">
             <div class="card-name">산리오</div>
             <div class="card-modes">
               <span class="mode-badge normal" id="badge2-sanrio-normal">노말</span>
-              <span class="mode-badge hard"   id="badge2-sanrio-hard">하드</span>
+              <span class="mode-badge hard" id="badge2-sanrio-hard">하드</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 포켓몬 -->
-      <div class="card category-card"
-           data-category="pokemon"
-           data-emoji="⚡"
-           data-name="포켓몬"
-           onclick="openModal(this)">
+      <div class="card category-card" data-category="pokemon" data-emoji="⚡" data-name="포켓몬" onclick="openModal(this)">
         <div class="card-image-wrap">
           <img src="assets/main-cards/pokemon.png" alt="포켓몬"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="card-image-placeholder" style="display:none">⚡</div>
           <div class="card-body">
             <div class="card-name">포켓몬</div>
             <div class="card-modes">
               <span class="mode-badge normal" id="badge2-pokemon-normal">노말</span>
-              <span class="mode-badge hard"   id="badge2-pokemon-hard">하드</span>
+              <span class="mode-badge hard" id="badge2-pokemon-hard">하드</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 진격의 거인 -->
-      <div class="card category-card"
-           data-category="aot"
-           data-emoji="⚔️"
-           data-name="진격의 거인"
-           onclick="openModal(this)">
+      <div class="card category-card" data-category="aot" data-emoji="⚔️" data-name="진격의 거인" onclick="openModal(this)">
         <div class="card-image-wrap">
           <img src="assets/main-cards/aot.png" alt="진격의 거인"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="card-image-placeholder" style="display:none">⚔️</div>
           <div class="card-body">
             <div class="card-name">진격의 거인</div>
             <div class="card-modes">
               <span class="mode-badge normal" id="badge2-aot-normal">노말</span>
-              <span class="mode-badge hard"   id="badge2-aot-hard">하드</span>
+              <span class="mode-badge hard" id="badge2-aot-hard">하드</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 귀멸의 칼날 -->
-      <div class="card category-card"
-           data-category="kimetsu"
-           data-emoji="🔥"
-           data-name="귀멸의 칼날"
-           onclick="openModal(this)">
+      <div class="card category-card" data-category="kimetsu" data-emoji="🔥" data-name="귀멸의 칼날"
+        onclick="openModal(this)">
         <div class="card-image-wrap">
           <img src="assets/main-cards/kimetsu.png" alt="귀멸의 칼날"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="card-image-placeholder" style="display:none">🔥</div>
           <div class="card-body">
             <div class="card-name">귀멸의 칼날</div>
             <div class="card-modes">
               <span class="mode-badge normal" id="badge2-kimetsu-normal">노말</span>
-              <span class="mode-badge hard"   id="badge2-kimetsu-hard">하드</span>
+              <span class="mode-badge hard" id="badge2-kimetsu-hard">하드</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 강철의 연금술사 -->
-      <div class="card category-card"
-           data-category="fma"
-           data-emoji="⚗️"
-           data-name="강철의 연금술사"
-           onclick="openModal(this)">
+      <div class="card category-card" data-category="fma" data-emoji="⚗️" data-name="강철의 연금술사"
+        onclick="openModal(this)">
         <div class="card-image-wrap">
           <img src="assets/main-cards/fma.png" alt="강철의 연금술사"
-               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
           <div class="card-image-placeholder" style="display:none">⚗️</div>
           <div class="card-body">
             <div class="card-name">강철의 연금술사</div>
             <div class="card-modes">
               <span class="mode-badge normal" id="badge2-fma-normal">노말</span>
-              <span class="mode-badge hard"   id="badge2-fma-hard">하드</span>
+              <span class="mode-badge hard" id="badge2-fma-hard">하드</span>
             </div>
           </div>
         </div>
@@ -573,7 +672,7 @@
       <!-- 모달 상단 이미지 -->
       <div class="modal-img-wrap" id="modalImgWrap">
         <img id="modalImg" src="" alt=""
-             onerror="this.style.display='none'; document.getElementById('modalImgFallback').style.display='flex'">
+          onerror="this.style.display='none'; document.getElementById('modalImgFallback').style.display='flex'">
         <div class="modal-img-placeholder" id="modalImgFallback" style="display:none"></div>
         <div class="modal-img-label" id="modalImgLabel"></div>
       </div>
@@ -595,18 +694,18 @@
   <script>
     /* ── 상수 ── */
     const CATEGORIES = ['sanrio', 'pokemon', 'aot', 'kimetsu', 'fma'];
-    const MAX_SCORE  = 150;
+    const MAX_SCORE = 150;
 
     const GRADES = [
       { min: 90, label: '전설의 덕후 ✦✦✦' },
-      { min: 70, label: '고인물 ✦✦✦'      },
-      { min: 50, label: '진성 팬 ✦✦'       },
-      { min: 30, label: '라이트 팬 ✦'       },
-      { min:  0, label: '입문자'             },
+      { min: 70, label: '고인물 ✦✦✦' },
+      { min: 50, label: '진성 팬 ✦✦' },
+      { min: 30, label: '라이트 팬 ✦' },
+      { min: 0, label: '입문자' },
     ];
 
     let selectedCategory = '';
-    let selectedEmoji    = '';
+    let selectedEmoji = '';
 
     /* ── 페이지 로드 ── */
     window.addEventListener('DOMContentLoaded', () => {
@@ -632,14 +731,14 @@
       let total = 0;
       CATEGORIES.forEach(cat => {
         const n = parseInt(localStorage.getItem(`dk_${cat}_normal`) ?? 0);
-        const h = parseInt(localStorage.getItem(`dk_${cat}_hard`)   ?? 0);
+        const h = parseInt(localStorage.getItem(`dk_${cat}_hard`) ?? 0);
         total += (isNaN(n) ? 0 : n) + (isNaN(h) ? 0 : h);
       });
 
-      const pct   = Math.min(100, Math.round((total / MAX_SCORE) * 100));
+      const pct = Math.min(100, Math.round((total / MAX_SCORE) * 100));
       const grade = GRADES.find(g => pct >= g.min) ?? GRADES[GRADES.length - 1];
 
-      document.getElementById('gaugeFill').style.width  = pct + '%';
+      document.getElementById('gaugeFill').style.width = pct + '%';
       document.getElementById('gaugeScore').textContent = total;
       document.getElementById('gaugeBadge').textContent = grade.label;
     }
@@ -647,15 +746,15 @@
     /* 모달 열기 */
     function openModal(cardEl) {
       selectedCategory = cardEl.dataset.category;
-      selectedEmoji    = cardEl.dataset.emoji;
-      const name       = cardEl.dataset.name;
+      selectedEmoji = cardEl.dataset.emoji;
+      const name = cardEl.dataset.name;
 
       document.getElementById('modalImgLabel').textContent = name;
 
       // 모달 이미지 세팅
-      const imgEl      = document.getElementById('modalImg');
+      const imgEl = document.getElementById('modalImg');
       const fallbackEl = document.getElementById('modalImgFallback');
-      const wrapEl     = document.getElementById('modalImgWrap');
+      const wrapEl = document.getElementById('modalImgWrap');
 
       imgEl.src = `assets/main-cards/${selectedCategory}.png`;
       imgEl.alt = name;
@@ -693,4 +792,5 @@
     });
   </script>
 </body>
+
 </html>
