@@ -23,7 +23,7 @@ const QUIZ_DATA_KIMETSU = {
     { q: "렌고쿠 쿄쥬로는 무한열차 편의 핵심 인물이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-normal/ku-n-10.jpeg", explanation: "무한열차 편에서는 렌고쿠가 핵심 주인공입니다." }
   ],
   hard: [
-    { q: "히노카미 신락은 불꽃의 호흡에서 파생됐다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-hard/ku-h-1.jpeg", explanation: "히노카미 신락은 태양 호흡에서 파생된 기술입니다." },
+    { q: "히노카미 카구라는 불꽃의 호흡에서 파생됐다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-hard/ku-h-1.jpeg", explanation: "히노카미 신락은 태양 호흡에서 파생된 기술입니다." },
     { q: "탄지로의 귀걸이는 화투 문양을 닮았다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-hard/ku-h-2.jpg", explanation: "귀걸이는 화투 문양을 닮은 디자인입니다." },
     { q: "상현의 3 혈귀의 이름은 아카자이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-hard/ku-h-3.jpeg", explanation: "아카자는 상현(上弦)의 3번 혈귀입니다." },
     { q: "충주 코쵸우 시노부는 혈귀의 목을 베지 못한다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-hard/ku-h-4.jpeg", explanation: "시노부는 체술로 처치하지만 혈귀 목을 베진 못합니다." },
