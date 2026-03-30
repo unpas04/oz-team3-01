@@ -153,7 +153,7 @@
      * result.html
      * 퀴즈 결과 로직 및 데이터 바인딩 (모듈화 완료)
      */
-    const { evaluateGrade, getCategoryTitle, CATEGORY_MAP, calculatePercentile, formatDate } = window.DataModule;
+    const { evaluateQuizResult, getCategoryTitle, formatDate, calculatePercentile } = window.DataModule;
     const { saveQuizResult } = window.StorageModule;
     const { animateCount, showToast, initVisualEffects, createConfetti } = window.UIModule;
     const ShareModule = window.ShareModule;
@@ -162,11 +162,12 @@
     const category = params.get('category') || 'sanrio';
     const mode = params.get('mode') || 'normal';
     const score = parseInt(params.get('score')) || 0;
-    const maxScore = mode === 'hard' ? 20 : 10;
-    const scorePct = Math.round((score / maxScore) * 100);
-
-    const gradeInfo = evaluateGrade(category, scorePct);
-    saveQuizResult({ category, mode, score, maxScore, grade: gradeInfo.title });
+    
+    // 모듈화된 통합 평가 함수 호출
+    const { gradeInfo, scorePct, displayMax } = evaluateQuizResult(category, mode, score);
+    
+    // 데이터 저장 (표시용 만점으로 저장하여 메인 페이지와 연동)
+    saveQuizResult({ category, mode, score, maxScore: displayMax, grade: gradeInfo.title });
 
     document.addEventListener('DOMContentLoaded', () => {
       const catTitle = getCategoryTitle(category);
@@ -179,9 +180,9 @@
       badge.classList.add(gradeClass);
       
       document.getElementById('gradeTitle').textContent = gradeInfo.title;
-      document.getElementById('gradeDesc').textContent = gradeInfo.desc;
+      document.getElementById('gradeDesc').innerHTML = gradeInfo.desc;
       document.getElementById('gradeQuote').textContent = gradeInfo.quote;
-      document.getElementById('maxScore').textContent = `/ ${maxScore}`;
+      document.getElementById('maxScore').textContent = `/ ${displayMax}`;
 
       // 이미지 로드 (Fallback 지원)
       const resImg = document.getElementById('resImg');

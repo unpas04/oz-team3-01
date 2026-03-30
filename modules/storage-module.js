@@ -25,6 +25,9 @@
     
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(0, 50)));
     
+    // 하위 호환성 유지: 개별 키 방식으로도 점수 저장 (기존 index.html 연동용)
+    localStorage.setItem(`dk_${category}_${mode}`, score.toString());
+    
     return newEntry;
   }
 

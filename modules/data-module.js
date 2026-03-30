@@ -67,6 +67,30 @@
     return cat.grades.find(g => scorePct >= g.min);
   }
 
+  /**
+   * 퀴즈 결과를 종합적으로 평가 (20점 통합 표준 적용 및 특별 메시지 처리)
+   * @param {string} category 
+   * @param {string} mode 
+   * @param {number} score 
+   * @returns {object} { gradeInfo, scorePct, displayMax }
+   */
+  function evaluateQuizResult(category, mode, score) {
+    const EVAL_STANDARD = 20;
+    const displayMax = (mode === 'hard') ? 20 : 10;
+    const scorePct = Math.round((score / EVAL_STANDARD) * 100);
+    
+    // 원본 데이터 보호를 위해 클론(Clone)
+    const rawGradeInfo = evaluateGrade(category, scorePct);
+    const gradeInfo = { ...rawGradeInfo }; 
+
+    // 노말 모드 만점 시 특별 메시지 추가
+    if (mode === 'normal' && score >= 10) {
+      gradeInfo.desc = `올백! 대단한 실력이네요! ${gradeInfo.desc} <br><strong>더 높은 등급을 위해선 하드 모드에 도전하세요!</strong>`;
+    }
+
+    return { gradeInfo, scorePct, displayMax };
+  }
+
   function getGradeLabel(category, scorePct) {
     const grade = evaluateGrade(category, scorePct);
     return grade ? grade.label : 'D';
@@ -102,6 +126,7 @@
   window.DataModule = {
     CATEGORY_MAP,
     evaluateGrade,
+    evaluateQuizResult,
     getGradeLabel,
     getCategoryTitle,
     getAllCategories,

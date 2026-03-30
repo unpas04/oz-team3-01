@@ -703,6 +703,9 @@
     </div>
   </div>
 
+  <!-- 모듈 로드 -->
+  <script src="modules/storage-module.js"></script>
+
   <script>
     /* ── 상수 ── */
     const CATEGORIES = ['sanrio', 'pokemon', 'aot', 'kimetsu', 'fma'];
@@ -727,32 +730,34 @@
 
     /* 완료 뱃지 업데이트 */
     function updateBadges() {
+      if (!window.StorageModule) return;
+      const { isQuizDone } = window.StorageModule;
+
       CATEGORIES.forEach(cat => {
         ['normal', 'hard'].forEach(mode => {
-          const isDone = localStorage.getItem(`dk_${cat}_${mode}`) !== null;
-          if (!isDone) return;
-
-          const badge = document.getElementById(`badge2-${cat}-${mode}`);
-          if (badge) badge.classList.add('done');
+          if (isQuizDone(cat, mode)) {
+            const badge = document.getElementById(`badge2-${cat}-${mode}`);
+            if (badge) badge.classList.add('done');
+          }
         });
       });
     }
 
     /* 게이지 업데이트 */
     function updateGauge() {
-      let total = 0;
-      CATEGORIES.forEach(cat => {
-        const n = parseInt(localStorage.getItem(`dk_${cat}_normal`) ?? 0);
-        const h = parseInt(localStorage.getItem(`dk_${cat}_hard`) ?? 0);
-        total += (isNaN(n) ? 0 : n) + (isNaN(h) ? 0 : h);
-      });
+      if (!window.StorageModule) return;
+      const total = window.StorageModule.getTotalScore();
 
       const pct = Math.min(100, Math.round((total / MAX_SCORE) * 100));
       const grade = GRADES.find(g => pct >= g.min) ?? GRADES[GRADES.length - 1];
 
-      document.getElementById('gaugeFill').style.width = pct + '%';
-      document.getElementById('gaugeScore').textContent = total;
-      document.getElementById('gaugeBadge').textContent = grade.label;
+      const gaugeFill = document.getElementById('gaugeFill');
+      const gaugeScore = document.getElementById('gaugeScore');
+      const gaugeBadge = document.getElementById('gaugeBadge');
+
+      if (gaugeFill) gaugeFill.style.width = pct + '%';
+      if (gaugeScore) gaugeScore.textContent = total;
+      if (gaugeBadge) gaugeBadge.textContent = grade.label;
     }
 
     /* 모달 열기 */
@@ -779,10 +784,10 @@
       fallbackEl.style.background = '';
 
       // 완료 버튼 비활성화
-      document.getElementById('btnNormal').disabled =
-        localStorage.getItem(`dk_${selectedCategory}_normal`) !== null;
-      document.getElementById('btnHard').disabled =
-        localStorage.getItem(`dk_${selectedCategory}_hard`) !== null;
+      if (window.StorageModule) {
+        document.getElementById('btnNormal').disabled = window.StorageModule.isQuizDone(selectedCategory, 'normal');
+        document.getElementById('btnHard').disabled = window.StorageModule.isQuizDone(selectedCategory, 'hard');
+      }
 
       document.getElementById('modalOverlay').classList.add('active');
     }
