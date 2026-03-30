@@ -50,6 +50,16 @@
     rel="stylesheet" />
 
   <style>
+    @font-face {
+      font-family: 'YPairingFont';
+      src: url('fonts/YPairingFont-Regular.ttf') format('truetype');
+      font-weight: normal;
+    }
+    @font-face {
+      font-family: 'YPairingFont';
+      src: url('fonts/YPairingFont-Bold.ttf') format('truetype');
+      font-weight: bold;
+    }
     /* ══════════════════════════════════════
        index.html 전용 스타일
        ══════════════════════════════════════ */
@@ -449,6 +459,8 @@
     }
 
     .card-name {
+      font-family: 'YPairingFont', var(--font-ko);
+      font-weight: bold;
       font-size: 1rem;
       color: white;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
