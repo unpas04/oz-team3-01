@@ -11,29 +11,27 @@
 
 const QUIZ_DATA_FMA = {
   normal: [
-    // TODO: 20문제 완성
-    { q: "에드워드 엘릭의 오른팔은 자동인형이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-1.jpeg"  },
-    { q: "알폰스 엘릭은 형이다.", a: false, img: "assets/quiz/fma-img/fma-normal/ga-n-2.jpeg" },
-    { q: "연금술의 기본 원칙은 '등가교환'이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-3.jpeg" },
-    { q: "주인공 형제는 죽은 어머니를 살리려다 신체를 잃었다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-4.jpeg" },
-    { q: "에드워드는 우유를 마시는 것을 매우 좋아한다.", a: false, img: "assets/quiz/fma-img/fma-normal/ga-n-5.jpg" },
-    { q: "로이 머스탱 대령은 불꽃을 다루는 연금술사이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-6.jpeg" },
-    { q: "윈리는 오토메일을 수리하는 정비사이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-7.jpeg" },
-    { q: "국가 연금술사의 증표는 은시계이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-8.jpeg" },
-    { q: "연금술사는 금을 연성하는 것이 금지되어 있다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-9.jpg" },
-    { q: "스카(Scar)는 연금술사를 증오하는 인물이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-10.jpg" }
+    { q: "에드워드 엘릭의 오른팔은 자동인형이다.", a: true,  img: "assets/quiz/fma-img/fma-normal/ga-n-1.jpeg", explanation: "에드워드의 오른팔은 오토메일(자동인형)입니다." },
+    { q: "알폰스 엘릭은 형이다.",                  a: false, img: "assets/quiz/fma-img/fma-normal/ga-n-2.jpeg", explanation: "알폰스는 동생이고, 에드워드가 형입니다." },
+    { q: "연금술의 기본 원칙은 '등가교환'이다.",  a: true,  img: "assets/quiz/fma-img/fma-normal/ga-n-3.jpeg", explanation: "동등 교환은 FMA 세계관의 핵심 원칙입니다." },
+    { q: "주인공 형제는 죽은 어머니를 살리려다 신체를 잃었다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-4.jpeg", explanation: "엄마를 되살리려다가 에드워드와 알폰스가 신체를 잃었습니다." },
+    { q: "에드워드는 우유를 마시는 것을 매우 좋아한다.", a: false, img: "assets/quiz/fma-img/fma-normal/ga-n-5.jpg", explanation: "에드워드는 우유를 좋아하지만 '매우 좋아한다'는 표현은 과장입니다." },
+    { q: "로이 머스탱 대령은 불꽃을 다루는 연금술사이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-6.jpeg", explanation: "머스탱은 화염 연금술을 사용합니다." },
+    { q: "윈리는 오토메일을 수리하는 정비사이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-7.jpeg", explanation: "윈리는 오토메일 정비의 최고 전문가입니다." },
+    { q: "국가 연금술사의 증표는 은시계이다.",    a: true,  img: "assets/quiz/fma-img/fma-normal/ga-n-8.jpeg", explanation: "국가 연금술사는 은시계를 소지합니다." },
+    { q: "연금술사는 금을 연성하는 것이 금지되어 있다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-9.jpg", explanation: "금 연성은 금기 중 하나입니다." },
+    { q: "스카(Scar)는 연금술사를 증오하는 인물이다.", a: true, img: "assets/quiz/fma-img/fma-normal/ga-n-10.jpg", explanation: "스카는 이슈발 전쟁으로 인해 국가 연금술사를 증오합니다." }
   ],
   hard: [
-    // TODO: 20문제 완성
-    { q: "현자의 돌의 원료는 인간의 영혼이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-1.jpeg" },
-    { q: "암스트롱 소령의 별명은 '호강의 연금술사'이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-2.jpeg" },
-    { q: "린 야오는 동방의 나라인 싱(Xing)의 황자이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-3.jpg" },
-    { q: "진리의 문을 본 연금술사는 연성진 없이 연금술을 쓸 수 있다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-4.jpeg" },
-    { q: "글러트니(Gluttony)의 뱃속에는 위조된 진리의 문이 있다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-5.jpg" },
-    { q: "에드워드는 마지막에 연금술 능력을 포기하고 알의 몸을 되찾았다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-6.png" },
-    { q: "에드워드의 오른쪽 팔과 왼쪽 다리는 오토메일이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-7.jpeg" },
-    { q: "호문클루스들은 인간의 7대 죄악에서 이름을 따왔다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-8.jpeg" },
-    { q: "킹 브래들리는 호문클루스 중 '라스(Wrath)'이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-9.jpeg" },
-    { q: "반 호엔하임은 주인공 형제의 아버지이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-10.jpg" },
+    { q: "현자의 돌의 원료는 인간의 영혼이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-1.jpeg", explanation: "현자의 돌은 인간 영혼을 집결한 것입니다." },
+    { q: "암스트롱 소령의 별명은 '호강의 연금술사'이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-2.jpeg", explanation: "암스트롱은 힘과 승리의 상징으로 불립니다." },
+    { q: "린 야오는 동방의 나라인 싱(Xing)의 황자이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-3.jpg", explanation: "린은 싱 국가의 황자입니다." },
+    { q: "진리의 문을 본 연금술사는 연성진 없이 연금술을 쓸 수 있다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-4.jpeg", explanation: "진리의 문을 보면 진리에서 얻은 지식으로 연성을 합니다." },
+    { q: "글러트니(Gluttony)의 뱃속에는 위조된 진리의 문이 있다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-5.jpg", explanation: "글러트니 뱃속에는 거짓 진리의 문이 숨어 있습니다." },
+    { q: "에드워드는 마지막에 연금술 능력을 포기하고 알의 몸을 되찾았다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-6.png", explanation: "에드워드는 알폰스의 몸을 위해 연금술 능력을 포기했습니다." },
+    { q: "에드워드의 오른쪽 팔과 왼쪽 다리는 오토메일이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-7.jpeg", explanation: "왼쪽 다리와 오른팔이 오토메일입니다." },
+    { q: "호문클루스들은 인간의 7대 죄악에서 이름을 따왔다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-8.jpeg", explanation: "호문클루스 이름은 7대 죄악에서 유래했습니다." },
+    { q: "킹 브래들리는 호문클루스 중 '라스(Wrath)'이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-9.jpeg", explanation: "브래들리는 분노의 호문클루스입니다." },
+    { q: "반 호엔하임은 주인공 형제의 아버지이다.", a: true, img: "assets/quiz/fma-img/fma-hard/ga-h-10.jpg", explanation: "반 호엔하임은 에드워드와 알폰스의 아버지입니다." }
   ]
 };
