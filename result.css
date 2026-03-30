@@ -1,0 +1,562 @@
+body {
+  background: #EFF8FF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 80px;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ── 배경 비주얼 (Background Visuals) ── */
+.bg-visuals {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-blob {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 70%, transparent 100%);
+  filter: blur(80px);
+  border-radius: 50%;
+  animation: blobMove 20s infinite alternate ease-in-out;
+}
+
+.bg-blob.secondary {
+  width: 400px; height: 400px;
+  right: -100px; bottom: -100px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%);
+  animation-delay: -5s;
+}
+
+@keyframes blobMove {
+  from { transform: translate(-10%, -10%) scale(1); }
+  to { transform: translate(10%, 10%) scale(1.2); }
+}
+
+/* Floating Items */
+.floating-item {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0.15;
+  user-select: none;
+  animation: floatItem var(--duration) infinite ease-in-out;
+  filter: grayscale(0.5);
+}
+
+@keyframes floatItem {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-100px) rotate(20deg); }
+}
+
+/* Confetti */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background-color: #f2d74e;
+  z-index: 10001;
+  top: -10px;
+  animation: confettiFall var(--duration) linear forwards;
+}
+
+@keyframes confettiFall {
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.result-container {
+  margin-top: 30px;
+  animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 결과 카드 (Glassmorphism) */
+.result-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 30px 24px;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+}
+
+.grade-badge-wrap {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+/* 등급별 뱃지 스타일 */
+.gauge-grade-badge {
+  display: inline-block;
+  padding: 6px 18px;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: var(--transition);
+}
+
+.grade-S { background: linear-gradient(135deg, #FFD700, #FFA500); box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); animation: shine 2s infinite; }
+.grade-A { background: linear-gradient(135deg, #FF6B6B, #EE5253); }
+.grade-B { background: linear-gradient(135deg, #48DBFB, #2E86DE); }
+.grade-C { background: linear-gradient(135deg, #1DD1A1, #10AC84); }
+.grade-D { background: linear-gradient(135deg, #A4B0BE, #747D8C); }
+
+@keyframes shine {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.2) drop-shadow(0 0 10px gold); }
+  100% { filter: brightness(1); }
+}
+
+.grade-title {
+  font-family: 'EF_jejudoldam', var(--font-ko);
+  font-size: 2.1rem;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+  word-break: keep-all;
+}
+
+.grade-description {
+  font-size: 1rem;
+  color: var(--color-text-light);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding: 0 10px;
+  word-break: keep-all;
+  font-weight: 700;
+}
+
+.grade-quote {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: #7C3AED;
+  background: #F5F3FF;
+  padding: 12px 15px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+  border-left: 4px solid #8B5CF6;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.result-image-area {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 250px;
+  margin: 0 auto 24px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid white;
+}
+
+.result-image-area img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.score-display-wrap {
+  background: #F8FAFC;
+  border-radius: 20px;
+  padding: 24px;
+  border: 2px dashed #E2E8F0;
+  margin-bottom: 15px;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+  display: block;
+  text-transform: uppercase;
+}
+
+.score-text-big {
+  font-size: 3.5rem;
+  font-weight: 950;
+  font-family: var(--font-en);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.score-text-total {
+  font-size: 1.2rem;
+  color: #CBD5E1;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
+/* 공유 섹션 */
+.share-container {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+  width: 100%;
+}
+
+.share-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #94A3B8;
+  margin-bottom: 16px;
+  display: block;
+  text-align: center;
+}
+
+.share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.s-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  padding: 0;
+}
+
+.s-btn img {
+  width: 60%; height: 60%;
+  object-fit: contain;
+}
+
+.s-btn.kakao     { background: #FEE500; }
+.s-btn.instagram { background: #E4405F; } /* 인스타 브랜드 컬러로 고정 */
+.s-btn.x         { background: #000; } 
+.s-btn.url       { background: #F1F5F9; color: #64748B; font-size: 1.2rem; }
+
+/* 추천 섹션 스타일 (통합을 위해 기존 스타일 삭제 후 버튼 스타일링 강화) */
+.random-section {
+  margin-top: 30px;
+  width: 100%;
+}
+
+/* ── 이미지 저장용 오타쿠 등록증 (License Card) ── */
+#export-area {
+  position: absolute;
+  top: -9999px; left: -9999px;
+  padding: 40px;
+  box-sizing: border-box;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.otaku-license {
+  width: 700px;
+  height: 420px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  border: 8px solid #fff;
+  font-family: 'Nunito', var(--font-ko);
+}
+
+/* 배경 테마 (Category Specific) */
+.otaku-license::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100px;
+  background: linear-gradient(90deg, #6366F1, #A855F7);
+  z-index: 1;
+}
+
+/* 포켓몬 테마 */
+.otaku-license.pokemon::before { background: linear-gradient(90deg, #FF1F1F, #FFD700); }
+/* 산리오 테마 */
+.otaku-license.sanrio::before { background: linear-gradient(90deg, #FF99CC, #FFCCE5); }
+/* 귀멸 테마 */
+.otaku-license.kimetsu::before { background: linear-gradient(90deg, #1A1A1A, #4A0E0E); }
+/* 진격 테마 */
+.otaku-license.aot::before { background: linear-gradient(90deg, #4B3621, #8B4513); }
+/* 강철 테마 */
+.otaku-license.fma::before { background: linear-gradient(90deg, #2C3E50, #BDC3C7); }
+
+.license-header {
+  position: relative;
+  z-index: 2;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  color: white;
+}
+
+.license-header h1 {
+  font-size: 1.8rem;
+  font-family: 'EF_jejudoldam';
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.license-header .logo-text { font-weight: 900; opacity: 0.8; font-size: 0.9rem; }
+
+.license-body {
+  flex: 1;
+  display: flex;
+  padding: 30px 40px;
+  z-index: 2;
+  background: white;
+  gap: 30px;
+}
+
+.license-photo {
+  width: 180px;
+  height: 220px;
+  background: #f8fafc;
+  border: 3px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+}
+
+.license-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+.license-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+}
+
+.info-row { display: flex; flex-direction: column; gap: 4px; }
+.info-label { font-size: 0.7rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; }
+.info-value { font-size: 1.4rem; font-weight: 950; color: #1E293B; word-break: keep-all; }
+.info-value.rank { font-family: 'EF_jejudoldam'; color: #6366F1; font-size: 1.8rem; }
+
+.license-footer {
+  height: 60px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #64748B;
+  border-top: 1px solid #e2e8f0;
+}
+
+.certified-stamp {
+  position: absolute;
+  right: 40px;
+  bottom: 80px;
+  width: 100px;
+  height: 100px;
+  border: 4px solid rgba(220, 38, 38, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(220, 38, 38, 0.6);
+  font-family: 'EF_jejudoldam';
+  font-size: 1.2rem;
+  transform: rotate(-15deg);
+  pointer-events: none;
+  user-select: none;
+}
+.certified-stamp::after {
+  content: 'OFFICIAL';
+  position: absolute;
+  font-size: 0.6rem;
+  top: 15px;
+}
+
+/* QR Code for License */
+.license-qr-wrap {
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  background: white;
+  padding: 4px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 11;
+}
+.license-qr-wrap #qrcode {
+  width: 50px;
+  height: 50px;
+}
+.license-qr-wrap span {
+  font-size: 8px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: -0.5px;
+}
+
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.btn-secondary { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+
+/* 랜덤 액션 버튼 */
+.random-section { width: 100%; margin-top: 24px; padding: 0 10px; }
+.btn-random-big {
+  width: 100%;
+  padding: 24px;
+  background: linear-gradient(135deg, #6366F1 0%, #A855F7 100%);
+  color: white;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.3);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-random-big:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4); }
+.btn-random-big span { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
+.btn-random-big small { font-size: 0.8rem; opacity: 0.8; font-weight: 600; }
+
+/* ── 증명서 모달 (Certificate Modal) ── */
+#certModal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: modalFadeIn 0.4s ease;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.modal-content {
+  max-width: 90%;
+  max-height: 80%;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.modal-content img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+.modal-hint {
+  color: white;
+  text-align: center;
+  margin-bottom: 24px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.modal-hint p { margin: 4px 0; font-weight: 700; }
+.modal-hint .primary { font-size: 1.1rem; color: #6EE7B7; }
+.modal-hint .secondary { font-size: 0.85rem; opacity: 0.7; }
+
+.btn-close-modal {
+  background: white;
+  color: #1E293B;
+  padding: 12px 30px;
+  border-radius: 50px;
+  font-weight: 950;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-close-modal:hover { transform: scale(1.05); background: #F8FAFC; }
+
+/* ── 랭킹 게이지 (Ranking Gauge) ── */
+.ranking-section {
+  width: 100%;
+  margin-top: 10px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.ranking-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 12px;
+}
+
+.ranking-label span {
+  font-size: 1.4rem;
+  color: #6366F1;
+  font-family: 'EF_jejudoldam';
+}
+
+.gauge-container {
+  width: 100%;
+  height: 12px;
+  background: #E2E8F0;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gauge-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #6366F1 0%, #A855F7 100%);
+  border-radius: 10px;
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gauge-hint {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  margin-top: 8px;
+  font-weight: 600;
+}

@@ -5,421 +5,280 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>덕력 감별소 — 결과</title>
   <link rel="stylesheet" href="common.css" />
-  <style>
-    /* ── result.html 전용 스타일 ── */
-    body {
-      background: #EFF8FF;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-bottom: 60px;
-    }
-
-    .result-container {
-      margin-top: 30px;
-      animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* 결과 카드 (Glassmorphism) */
-    .result-card {
-      position: relative;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      padding: 30px 24px;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .result-decoration {
-      position: absolute;
-      top: -20px; right: -20px;
-      font-size: 5rem;
-      opacity: 0.15;
-      transform: rotate(15deg);
-      pointer-events: none;
-    }
-
-    .grade-badge-wrap {
-      margin-top: 10px;
-      margin-bottom: 16px;
-    }
-
-    .grade-title {
-      font-family: 'EF_jejudoldam', var(--font-ko);
-      font-size: 2.2rem;
-      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
-
-    .grade-description {
-      font-size: 1.05rem;
-      color: var(--color-text-light);
-      line-height: 1.5;
-      margin-bottom: 24px;
-      word-break: keep-all;
-    }
-
-    .result-image-area {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      max-width: 320px;
-      margin: 0 auto 24px;
-      background: white;
-      border-radius: var(--radius-md);
-      box-shadow: 0 10px 30px rgba(255,133,161,0.15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border: 1.5px solid rgba(255, 255, 255, 0.8);
-    }
-
-    .result-image-area img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-
-    .score-display-wrap {
-      background: #F8FAFC;
-      border-radius: 16px;
-      padding: 20px;
-      border: 2px dashed #E2E8F0;
-      margin-bottom: 10px;
-    }
-
-    .score-label {
-      font-size: 0.8rem;
-      color: #94A3B8;
-      font-weight: 700;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .score-text-big {
-      font-size: 3rem;
-      font-weight: 900;
-      font-family: var(--font-en);
-      color: var(--color-primary);
-      line-height: 1;
-    }
-
-    .score-text-total {
-      font-size: 1.1rem;
-      color: #CBD5E1;
-      margin-left: -5px;
-    }
-
-    /* 공유 섹션 */
-    .share-section {
-      width: 100%;
-      margin-top: 24px;
-    }
-
-    .share-label {
-      font-size: 0.75rem;
-      font-weight: 900;
-      letter-spacing: 1.5px;
-      color: #A0B0C0;
-      margin-bottom: 12px;
-      display: block;
-      text-align: center;
-    }
-
-    .share-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-    }
-
-    .s-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: var(--transition);
-      border: none;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .s-btn img {
-      width: 60%;
-      height: 60%;
-      object-fit: contain;
-    }
-    
-    .s-btn span {
-      font-size: 1.2rem;
-    }
-
-    .s-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.12); }
-
-    .s-btn.kakao     { background: #FEE500; }
-    .s-btn.instagram { background: #FFFFFF; border: 1px solid #E2E8F0; }
-    .s-btn.x         { background: #000000; }
-    .s-btn.url       { background: #F1F5F9; color: #64748B; }
-
-    /* 복사 완료 모달 */
-    .copy-modal {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 20px 30px;
-      border-radius: 16px;
-      z-index: 1000;
-      text-align: center;
-      display: none;
-      animation: fadeIn 0.3s ease;
-      word-break: keep-all;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* 다음 퀴즈 버튼 */
-    .loop-action {
-      margin-top: 30px;
-    }
-
-    .btn-loop {
-      background: linear-gradient(135deg, #FF6FA8, #FF85A1);
-      color: white;
-      padding: 16px;
-      width: 100%;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-    
-    .btn-loop small {
-      display: block;
-      font-size: 0.7rem;
-      opacity: 0.8;
-      margin-top: 2px;
-    }
-  </style>
+  <link rel="stylesheet" href="result.css">
 </head>
 <body>
+  <!-- 배경 애니메이션 컨테이너 -->
+  <div class="bg-visuals" id="bgVisuals">
+    <div class="bg-blob"></div>
+    <div class="bg-blob secondary"></div>
+    <div id="floatingItems"></div>
+  </div>
 
-  <!-- 복사 완료 모달 -->
-  <div id="copyModal" class="copy-modal">
-    복사가 완료되었습니다.<br>덕후 친구들에게 내 덕력을 자랑하세요! ✦
+  <!-- 이미지 저장용 오타쿠 등록증 (License Card) -->
+  <div id="export-area">
+    <div class="otaku-license" id="exportCard">
+      <div class="license-header">
+        <h1 id="expLicenseTitle">OTAKU LICENSE</h1>
+        <div class="logo-text">OZ-QUIZ.COM</div>
+      </div>
+      <div class="license-body">
+        <div class="license-photo">
+          <img id="expImg" src="" alt="Result">
+        </div>
+        <div class="license-info">
+          <div class="info-row">
+            <span class="info-label">IDENTIFICATION</span>
+            <span class="info-value" id="expCategoryName">덕후</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">USER RANK & TITLE</span>
+            <span class="info-value rank" id="expTitle">GRADE TITLE</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">LICENSE NO.</span>
+            <span class="info-value" id="expLicenseNo">OZ-2024-0000</span>
+          </div>
+        </div>
+      </div>
+      <div class="license-footer">
+        <div id="expDate">DATE: 2024.03.30</div>
+        <div>OZ TEAM CERTIFIED ✦</div>
+      </div>
+      <div class="certified-stamp">인증됨</div>
+      
+      </div>
+    </div>
   </div>
 
   <div class="container result-container">
     <div class="card result-card">
-      <div class="result-decoration" id="resDeco">✨</div>
       <div class="grade-badge-wrap">
-        <span class="gauge-grade-badge" id="categoryName">CATEGOTY</span>
+        <span class="gauge-grade-badge" id="gradeBadge">GRADE</span>
       </div>
       
       <div class="result-image-area" id="imgArea">
-        <span style="color: #CBD5E1; font-size: 0.7rem;">IMAGE AREA</span>
+        <img src="" id="resImg" alt="Result Image">
       </div>
 
-      <h2 class="grade-title" id="gradeTitle">덕후 등급</h2>
-      <p class="grade-description" id="gradeDesc">불러오는 중...</p>
+      <h2 class="grade-title" id="gradeTitle">불러오는 중...</h2>
+      <p class="grade-description" id="gradeDesc">데이터를 확인하고 있습니다.</p>
+      
+      <!-- 캐릭터 대사 영역 -->
+      <div class="grade-quote" id="gradeQuote">"..."</div>
 
       <div class="score-display-wrap">
-        <span class="score-label">FINAL SCORE</span>
+        <span class="score-label">Final Evaluation Score</span>
         <div class="score-main">
           <span class="score-text-big" id="finalScore">0</span>
-          <span class="score-text-total" id="maxScore">/ 20</span>
+          <span class="score-text-total" id="maxScore">/ 00</span>
         </div>
       </div>
-    </div>
 
-    <div class="share-section">
-      <span class="share-label">SHARE YOUR SCORE</span>
-      <div class="share-buttons">
-        <button class="s-btn kakao" onclick="handleShare('kakao')" title="카카오톡 공유">
-          <img src="assets/sns-ci/kakao.png" alt="K" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-          <span style="display:none">K</span>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="btnReplay">
+          <span>↻ 다시하기</span>
+          <small>Replay</small>
         </button>
-        <button class="s-btn instagram" onclick="handleShare('instagram')" title="인스타그램 공유">
-          <img src="assets/sns-ci/insta.png" alt="I" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-          <span style="display:none">I</span>
+        <button class="btn btn-secondary" id="btnExport">
+          <span>📜 증명서 발급받기</span>
+          <small>Issue Certificate</small>
         </button>
-        <button class="s-btn x" onclick="handleShare('x')" title="X 공유">
-          <img src="assets/sns-ci/x-twitter.png" alt="X" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-          <span style="display:none">X</span>
-        </button>
-        <button class="s-btn url" onclick="handleShare('url')" title="링크 복사">
-          <span>🔗</span>
-        </button>
+      </div>
+
+      <!-- 랭킹 게이지 섹션 추가 -->
+      <div class="ranking-section">
+        <div class="ranking-label">
+          당신은 이 부문 상위 <span id="percentileText">0</span>%입니다!
+        </div>
+        <div class="gauge-container">
+          <div id="rankingGauge" class="gauge-bar"></div>
+        </div>
+        <div class="gauge-hint">전체 응시자 데이터 기반 시뮬레이션 결과입니다.</div>
       </div>
     </div>
 
-    <div class="loop-action">
-      <button class="btn btn-loop" id="btnExplore" onclick="goRandomUnplayed()">
-        <span>🚀 내 덕력은 여기서 멈추지 않는다!</span>
-        <small>남은 퀴즈 랜덤 도전하기</small>
+    <!-- 증명서 확인용 모달 -->
+    <div id="certModal">
+      <div class="modal-content">
+        <img id="certImage" src="" alt="Certificate">
+      </div>
+      <div class="modal-hint">
+        <p class="primary">축하합니다! 증명서가 발급되었습니다.</p>
+        <p class="secondary">PC는 우클릭 저장, 모바일은 이미지를 꾹 눌러 저장하세요!</p>
+      </div>
+      <button class="btn-close-modal" id="btnCloseModal">닫기 (Close)</button>
+    </div>
+
+    <!-- 공유 섹션 -->
+    <div class="share-container mt-md">
+      <span class="share-label">Share with Friends</span>
+      <div class="share-buttons">
+        <button class="s-btn kakao" data-type="kakao" title="카카오톡">
+          <img src="assets/sns-ci/kakao.png" alt="K">
+        </button>
+        <button class="s-btn instagram" data-type="instagram" title="인스타그램 스토리">
+          <img src="assets/sns-ci/insta.png" alt="I">
+        </button>
+        <button class="s-btn x" data-type="x" title="X (Twitter)">
+          <img src="assets/sns-ci/x-twitter.png" alt="X">
+        </button>
+        <button class="s-btn url" data-type="url" title="링크 복사">
+          <span>🔗</span>
+        </button>
+    </div>
+
+    <!-- 랜덤 퀴즈 섹션 (복구) -->
+    <div class="random-section">
+      <button class="btn-random-big" id="btnRandom">
+        <span>🚀 다른 퀴즈 도전하기</span>
+        <small>Try Another Quiz!</small>
       </button>
     </div>
 
+
     <div class="mt-lg text-center">
-      <a href="index.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.85rem; font-weight: bold;">메인으로 돌아가기</a>
+      <a href="index.html" style="color: var(--color-text-light); text-decoration: none; font-size: 0.9rem; font-weight: 800;">👈 메인으로 돌아가기</a>
     </div>
   </div>
 
-  <script src="share-module.js"></script>
+  <!-- 모듈 로드 -->
+  <script src="modules/data-module.js"></script>
+  <script src="modules/storage-module.js"></script>
+  <script src="modules/ui-module.js"></script>
+  <script src="modules/share-module.js"></script>
+
   <script>
-    const CATEGORY_MAP = {
-      sanrio: { name: '산리오', emoji: '🎀', labels: ['입문자','라이트 팬','진성 팬','고인물','전설의 덕후'],
-        titles: ['쿠로미도 실망', '굿즈만 아는 사람', '산리오 팬', '헬로키티 친구', '산리오 퓨로랜드 관장'],
-        descs: [
-          '산리오의 세계는 아직 낯선가요? 오늘부터 최애 캐릭터를 정색하고 파보세요!',
-          '가끔 굿즈 샵에서 눈인사하는 정도군요. 더 깊은 덕질의 세계가 기다립니다.',
-          '산리오의 매력을 충분히 알고 계시네요! 시나모롤과 마이멜로디가 기뻐할 거예요.',
-          '이 정도면 산리오 전문가! 캐릭터들의 생일까지 꿰고 계신 건 아니겠죠?',
-          '당신이 바로 살아있는 산리오 백과사전! 퓨로랜드의 VIP로 모십니다.'
-        ]
-      },
-      pokemon: { name: '포켓몬', emoji: '⚡', labels: ['입문자','라이트 팬','진성 팬','고인물','전설의 덕후'],
-        titles: ['오박사도 너보단 낫다', '포켓몬 고만 함', '포켓몬 트레이너', '체육관 관장 급', '포켓몬 마스터'],
-        descs: [
-          '포켓몬스터보다는 포켓몬빵에 더 관심이 많으신 것 같네요!',
-          '이제 막 모험을 시작한 어린이 수준입니다. 더 많은 배틀이 필요해요.',
-          '당신은 믿음직한 포켓몬 트레이너! 파트너 포켓몬과 유대가 깊어 보입니다.',
-          '체육관 배지 8개를 모두 모은 실력자군요! 사천왕 도전도 머지 않았습니다.',
-          '우와! 전설의 포켓몬도 당신 앞에선 무릎을 꿇겠는데요? 완벽한 마스터입니다!'
-        ]
-      },
-      aot: { name: '진격의 거인', emoji: '⚔️', labels: ['입문자','라이트 팬','진성 팬','고인물','전설의 덕후'],
-        titles: ['거인한테 잡아먹힘', '벽 안에서 살아라', '훈련병단 수료', '조사병단 에이스', '자유의 날개'],
-        descs: [
-          '입체기동장치 근처에도 못 가보셨군요. 벽 밖은 위험합니다!',
-          '거인의 존재는 알지만 싸울 용기는 아직 부족해 보여요. 훈련이 더 필요합니다.',
-          '고된 훈련을 견뎌낸 훌륭한 병사입니다! 인류의 반격을 함께 준비하시죠.',
-          '리바이 병장님도 인정할 만한 실력! 당신의 칼날에 거인들이 벌벌 점이 있습니다.',
-          '진실을 깨닫고 자유를 향해 나아가는 자! 당신이 바로 인류의 희망입니다.'
-        ]
-      },
-      kimetsu: { name: '귀멸의 칼날', emoji: '🔥', labels: ['입문자','라이트 팬','진성 팬','고인물','전설의 덕후'],
-        titles: ['최종선발 탈락', '최종선발 통과', '갑대원 합격', '기둥 후보', '히노카미 신락'],
-        descs: [
-          '전 집중 호흡이 무엇인지부터 다시 배워야 할 것 같습니다.',
-          '간신히 최종선발을 살아남으셨군요. 이제부터 진짜 칼을 휘두를 때입니다.',
-          '귀살대의 늠름한 대원! 수많은 혈귀들을 베어 넘긴 공로가 큽니다.',
-          '당신은 차기 \'주(柱)\'로 거론될 정도의 실력자! 호흡이 매우 정교합니다.',
-          '해의 호흡을 계승한 전설적인 검사! 무잔도 당신을 피해 도망갈 지경입니다.'
-        ]
-      },
-      fma: { name: '강철의 연금술사', emoji: '⚗️', labels: ['입문자','라이트 팬','진성 팬','고인물','전설의 덕후'],
-        titles: ['등가교환도 모름', '등가교환 이해중', '연금술 수련생', '국가 연금술사', '현자의 돌 획득'],
-        descs: [
-          '연성진도 그릴 줄 모르시네요. 연금술은 과학입니다!',
-          '등가교환의 법칙을 이제 막 깨닫기 시작했군요. 진리의 문은 아직 멉니다.',
-          '상당 수준의 연금술을 구사하시는군요! 기계 갑옷 수리공과 친해지세요.',
-          '은시계를 차기에 충분한 실력자! 군의 일원으로 환영합니다.',
-          '진리를 목격하고 모든 법칙을 깨우친 연금술의 거장! 현자의 돌이 당신 손에!'
-        ]
-      }
-    };
+    /**
+     * result.html
+     * 퀴즈 결과 로직 및 데이터 바인딩 (모듈화 완료)
+     */
+    const { evaluateGrade, getCategoryTitle, CATEGORY_MAP, calculatePercentile, formatDate } = window.DataModule;
+    const { saveQuizResult } = window.StorageModule;
+    const { animateCount, showToast, initVisualEffects, createConfetti } = window.UIModule;
+    const ShareModule = window.ShareModule;
 
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category') || 'sanrio';
     const mode = params.get('mode') || 'normal';
     const score = parseInt(params.get('score')) || 0;
     const maxScore = mode === 'hard' ? 20 : 10;
-    const pct = (score / maxScore) * 100;
+    const scorePct = Math.round((score / maxScore) * 100);
 
-    // 데이터 저장
-    if (category && mode) {
-      localStorage.setItem(`dk_${category}_${mode}`, score);
-    }
+    const gradeInfo = evaluateGrade(category, scorePct);
+    saveQuizResult({ category, mode, score, maxScore, grade: gradeInfo.title });
 
-    // 등급 결정
-    const gradeIdx = pct >= 90 ? 4 : pct >= 70 ? 3 : pct >= 50 ? 2 : pct >= 30 ? 1 : 0;
-    const info = CATEGORY_MAP[category];
-    const finalGrade = info.titles[gradeIdx];
-    const gradeLabel = info.labels[gradeIdx];
-    const finalDesc = info.descs[gradeIdx];
+    document.addEventListener('DOMContentLoaded', () => {
+      const catTitle = getCategoryTitle(category);
+      const gradeClass = `grade-${gradeInfo.label}`;
+      
+      // UI 요소 매핑
+      const badge = document.getElementById('gradeBadge');
+      badge.textContent = `${gradeInfo.label} 등급`;
+      badge.style.background = gradeInfo.color || 'var(--color-primary)';
+      badge.classList.add(gradeClass);
+      
+      document.getElementById('gradeTitle').textContent = gradeInfo.title;
+      document.getElementById('gradeDesc').textContent = gradeInfo.desc;
+      document.getElementById('gradeQuote').textContent = gradeInfo.quote;
+      document.getElementById('maxScore').textContent = `/ ${maxScore}`;
 
-    // UI 업데이트
-    document.getElementById('categoryName').textContent = `${info.name} · ${gradeLabel}`;
-    document.getElementById('gradeTitle').textContent = finalGrade;
-    document.getElementById('gradeDesc').textContent = finalDesc;
-    document.getElementById('resDeco').textContent = info.emoji;
-    document.getElementById('maxScore').textContent = `/ ${maxScore}`;
-    
-    // 점수 카운팅
-    let count = 0;
-    const countTarget = score;
-    const timer = setInterval(() => {
-      if (count >= countTarget) {
-        clearInterval(timer);
-        document.getElementById('finalScore').textContent = countTarget;
-      } else {
-        count++;
-        document.getElementById('finalScore').textContent = count;
-      }
-    }, 50);
+      // 이미지 로드 (Fallback 지원)
+      const resImg = document.getElementById('resImg');
+      const expImg = document.getElementById('expImg');
+      const primaryPath = `assets/result/${category}/${gradeInfo.label.toLowerCase()}.png`;
+      const fallbackPath = `assets/main-cards/${category}.png`;
+      
+      let isFallbackUsed = false;
+      const updateImages = (src) => { resImg.src = src; expImg.src = src; };
 
-    // 공유 핸들러 (전역 함수)
-    window.handleShare = (platform) => {
-      if (typeof ShareModule === 'undefined') {
-        alert('공유 모듈을 불러오지 못했습니다.');
-        return;
-      }
-      if (platform === 'url') {
-        ShareModule.copyUrl().then(success => {
-          if (success) {
-            const modal = document.getElementById('copyModal');
-            modal.style.display = 'block';
-            setTimeout(() => {
-              modal.style.display = 'none';
-            }, 5000);
+      resImg.onerror = () => {
+        if (!isFallbackUsed) {
+          isFallbackUsed = true;
+          updateImages(fallbackPath);
+        }
+      };
+      updateImages(primaryPath);
+
+      // 점수 애니메이션
+      animateCount(document.getElementById('finalScore'), 0, score, 1000);
+
+      // --- 오타쿠 등록증 (License Card) 데이터 바인딩 ---
+      document.getElementById('expTitle').textContent = gradeInfo.title;
+      document.getElementById('expCategoryName').textContent = `${catTitle} 덕후`;
+      
+      const randNo = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('expLicenseNo').textContent = `OZ-2024-${randNo}`;
+      document.getElementById('expDate').textContent = `DATE: ${formatDate(new Date())}`;
+      document.getElementById('exportCard').classList.add(category);
+
+      // --- 시뮬레이션 랭킹 게이지 ---
+      const percentile = calculatePercentile(scorePct);
+      document.getElementById('percentileText').innerText = percentile.toFixed(1);
+      
+      const gauge = document.getElementById('rankingGauge');
+      if (gradeInfo.label === 'S') gauge.style.background = 'linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)';
+      else if (gradeInfo.label === 'A') gauge.style.background = 'linear-gradient(90deg, #8B5CF6 0%, #D8B4FE 100%)';
+      else if (gradeInfo.label === 'B') gauge.style.background = 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)';
+
+      setTimeout(() => { gauge.style.width = `${100 - percentile}%`; }, 500);
+
+      // --- 이벤트 핸들러 ---
+      document.getElementById('btnReplay').onclick = () => {
+        window.location.href = `quiz.html?category=${category}&mode=${mode}`;
+      };
+      
+      document.getElementById('btnExport').onclick = async () => {
+        showToast('증명서를 발급 중입니다. 잠시만 기다려주세요...');
+        const dataUrl = await ShareModule.exportToImage('export-area');
+        if (dataUrl) {
+          document.getElementById('certImage').src = dataUrl;
+          document.getElementById('certModal').style.display = 'flex';
+          document.body.style.overflow = 'hidden'; 
+        } else {
+          showToast('증명서 발급에 실패했습니다.');
+        }
+      };
+
+      document.getElementById('btnCloseModal').onclick = () => {
+        document.getElementById('certModal').style.display = 'none';
+        document.body.style.overflow = '';
+      };
+      
+      document.querySelectorAll('.s-btn').forEach(btn => {
+        btn.onclick = () => {
+          const type = btn.dataset.type;
+          if (type === 'url') {
+            ShareModule.copyUrl().then(success => { if(success) showToast('링크가 복사되었습니다!'); });
+          } else {
+            ShareModule.shareToSNS(type, { category: catTitle, grade: gradeInfo.title, score });
           }
-        });
-      } else {
-        ShareModule.shareToSNS(platform, { category: info.name, score, grade: finalGrade });
-      }
-    };
-
-    /**
-     * [리텐션 루프] 다음 퀴즈 랜덤 이동 기능
-     * 담당자님: 사용자가 아직 풀지 않은 퀴즈를 찾아 quiz.html로 보내주는 핵심 로직입니다.
-     */
-    window.goRandomUnplayed = () => {
-      const allTests = [];
-      Object.keys(CATEGORY_MAP).forEach(cat => {
-        ['normal', 'hard'].forEach(m => {
-          const isCurrent = (cat === category && m === mode);
-          // localStorage 키(dk_카테고리_모드)를 체크하여 이미 푼 퀴즈 제외
-          const isDone = localStorage.getItem(`dk_${cat}_${m}`) !== null;
-          if (!isCurrent && !isDone) allTests.push({ cat, m });
-        });
+        };
       });
 
-      // 미플레이 퀴즈가 없으면 종료, 있으면 랜덤하게 하나 골라 이동
-      if (allTests.length === 0) {
-        alert('모든 퀴즈를 완료했습니다! 당신은 진정한 덕후 대왕입니다! 👑');
-        window.location.href = 'index.html';
-      } else {
-        const random = allTests[Math.floor(Math.random() * allTests.length)];
-        // quiz.html 담당자님: 이 URL 파라미터를 읽어서 퀴즈가 시작되어야 합니다.
-        window.location.href = `quiz.html?category=${random.cat}&mode=${random.m}`;
+      document.getElementById('btnRandom').onclick = () => {
+        const available = Object.keys(CATEGORY_MAP).filter(c => c !== category);
+        const rand = available[Math.floor(Math.random() * available.length)];
+        window.location.href = `quiz.html?category=${rand}&mode=normal`;
+      };
+
+      // 배경 및 축하 효과
+      const emojiMap = {
+        'pokemon': ['⚽', '⚡', '🔥', '💧', '🍃'],
+        'sanrio': ['❤️', '🎀', '🎈', '🍭'],
+        'demon': ['🗡️', '🔥', '🌊', '🌸']
+      };
+      initVisualEffects('floatingItems', emojiMap[category] || ['✨', '🌟', '💫', '🔥', '⚡']);
+      
+      if (gradeInfo.label === 'S' || gradeInfo.label === 'A') {
+        createConfetti();
       }
-    };
+
+      // 보안 경고
+      if (window.location.protocol === 'file:') {
+        setTimeout(() => showToast('⚠️ 현재 로컬 파일로 실행 중입니다. 이미지 저장은 Live Server에서만 가능합니다.'), 2000);
+      }
+    });
   </script>
 </body>
 </html>
