@@ -75,18 +75,14 @@
    * @returns {object} { gradeInfo, scorePct, displayMax }
    */
   function evaluateQuizResult(category, mode, score) {
-    const EVAL_STANDARD = 20;
-    const displayMax = (mode === 'hard') ? 20 : 10;
+    // mode 제거: quiz_test2는 30문항 고정(정답 1점) 기준으로 평가
+    const EVAL_STANDARD = 30;
+    const displayMax = 30;
     const scorePct = Math.round((score / EVAL_STANDARD) * 100);
     
     // 원본 데이터 보호를 위해 클론(Clone)
     const rawGradeInfo = evaluateGrade(category, scorePct);
     const gradeInfo = { ...rawGradeInfo }; 
-
-    // 노말 모드 만점 시 특별 메시지 추가
-    if (mode === 'normal' && score >= 10) {
-      gradeInfo.desc = `올백! 대단한 실력이네요! ${gradeInfo.desc} <br><strong>더 높은 등급을 위해선 하드 모드에 도전하세요!</strong>`;
-    }
 
     return { gradeInfo, scorePct, displayMax };
   }

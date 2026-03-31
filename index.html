@@ -16,16 +16,10 @@
 ║      └── fma.png       ← 강철 카드 이미지    (담당: 팀원 C)  ║
 ║                                                              ║
 ║  ── 페이지 간 데이터 전달 ──                                 ║
-║  index → quiz   : quiz.html?category=pokemon&mode=hard       ║
-║  quiz  → result : result.html?category=pokemon&mode=hard     ║
-║                             &score=16                        ║
-║                                                              ║
-║  ── localStorage 키 규칙 ──                                  ║
-║  dk_{category}_{mode}  예) dk_pokemon_hard = 16              ║
+║  index → quiz_test2 : quiz_test2.html?category=pokemon       ║
 ║                                                              ║
 ║  ── 점수 체계 ──                                             ║
-║  노말 정답 1점 / 하드 정답 2점                               ║
-║  카테고리당 최대 30점 (노말10 + 하드20) / 전체 만점 150점    ║
+║  정답 1점 (총 30문항) / 카테고리당 최대 30점 / 전체 만점 150점║
 ╚══════════════════════════════════════════════════════════════╝
 -->
 <html lang="ko">
@@ -594,8 +588,6 @@
           <div class="card-body">
             <div class="card-name">산리오</div>
             <div class="card-modes">
-              <span class="mode-badge normal" id="badge2-sanrio-normal">노말</span>
-              <span class="mode-badge hard" id="badge2-sanrio-hard">하드</span>
             </div>
           </div>
         </div>
@@ -610,8 +602,6 @@
           <div class="card-body">
             <div class="card-name">포켓몬</div>
             <div class="card-modes">
-              <span class="mode-badge normal" id="badge2-pokemon-normal">노말</span>
-              <span class="mode-badge hard" id="badge2-pokemon-hard">하드</span>
             </div>
           </div>
         </div>
@@ -626,8 +616,6 @@
           <div class="card-body">
             <div class="card-name">진격의 거인</div>
             <div class="card-modes">
-              <span class="mode-badge normal" id="badge2-aot-normal">노말</span>
-              <span class="mode-badge hard" id="badge2-aot-hard">하드</span>
             </div>
           </div>
         </div>
@@ -643,8 +631,6 @@
           <div class="card-body">
             <div class="card-name">귀멸의 칼날</div>
             <div class="card-modes">
-              <span class="mode-badge normal" id="badge2-kimetsu-normal">노말</span>
-              <span class="mode-badge hard" id="badge2-kimetsu-hard">하드</span>
             </div>
           </div>
         </div>
@@ -660,8 +646,6 @@
           <div class="card-body">
             <div class="card-name">강철의 연금술사</div>
             <div class="card-modes">
-              <span class="mode-badge normal" id="badge2-fma-normal">노말</span>
-              <span class="mode-badge hard" id="badge2-fma-hard">하드</span>
             </div>
           </div>
         </div>
@@ -689,15 +673,10 @@
         <div class="modal-img-label" id="modalImgLabel"></div>
       </div>
 
-      <p class="modal-subtitle">난이도를 선택해주세요</p>
+      <p class="modal-subtitle">퀴즈를 시작해볼까요?</p>
       <div class="modal-buttons">
-        <button class="btn btn-normal" id="btnNormal" onclick="startQuiz('normal')">
-          <span>⭐ 노말</span>
-          <small>문제당 1점</small>
-        </button>
-        <button class="btn btn-hard" id="btnHard" onclick="startQuiz('hard')">
-          <span>💀 하드</span>
-          <small>문제당 2점</small>
+        <button class="btn btn-normal" id="btnStart" onclick="startQuiz()">
+          <span>시작하기</span>
         </button>
       </div>
     </div>
@@ -724,24 +703,8 @@
 
     /* ── 페이지 로드 ── */
     window.addEventListener('DOMContentLoaded', () => {
-      updateBadges();
       updateGauge();
     });
-
-    /* 완료 뱃지 업데이트 */
-    function updateBadges() {
-      if (!window.StorageModule) return;
-      const { isQuizDone } = window.StorageModule;
-
-      CATEGORIES.forEach(cat => {
-        ['normal', 'hard'].forEach(mode => {
-          if (isQuizDone(cat, mode)) {
-            const badge = document.getElementById(`badge2-${cat}-${mode}`);
-            if (badge) badge.classList.add('done');
-          }
-        });
-      });
-    }
 
     /* 게이지 업데이트 */
     function updateGauge() {
@@ -783,12 +746,6 @@
       wrapEl.className = 'modal-img-wrap';
       fallbackEl.style.background = '';
 
-      // 완료 버튼 비활성화
-      if (window.StorageModule) {
-        document.getElementById('btnNormal').disabled = window.StorageModule.isQuizDone(selectedCategory, 'normal');
-        document.getElementById('btnHard').disabled = window.StorageModule.isQuizDone(selectedCategory, 'hard');
-      }
-
       document.getElementById('modalOverlay').classList.add('active');
     }
 
@@ -798,9 +755,9 @@
     }
 
     /* 퀴즈 시작 */
-    function startQuiz(mode) {
+    function startQuiz() {
       if (!selectedCategory) return;
-      window.location.href = `quiz_test2.html?category=${selectedCategory}&mode=${mode}`;
+      window.location.href = `quiz_test2.html?category=${selectedCategory}`;
     }
 
     /* ESC */

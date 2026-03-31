@@ -331,10 +331,9 @@
     <!-- 헤더 -->
     <div class="quiz-header">
       <div>
-        <span class="mode-badge" id="modeBadge">노말</span>
         <span class="mode-badge" id="categoryBadge">카테고리</span>
       </div>
-      <div id="progressText">1 / 10</div>
+      <div id="progressText">1 / 30</div>
     </div>
 
     <!-- 진행 도트 -->
@@ -351,7 +350,7 @@
           </div>
         </div>
         <div class="polaroid-bottom">
-          <span class="polaroid-q-num" id="polaroidQNum">Q1 / 10</span>
+          <span class="polaroid-q-num" id="polaroidQNum">Q1 / 30</span>
         </div>
       </div>
     </div>
@@ -404,145 +403,9 @@
    */
   const params   = new URLSearchParams(window.location.search);
   const category = (params.get('category') || 'aot').toLowerCase();
-  const mode     = (params.get('mode') || 'hard').toLowerCase();
-  const isHard   = mode === 'hard';
-  const timerSec = isHard ? 10 : 20;
-  const totalQuestions = 10;
-  const maxScore = totalQuestions * (isHard ? 2 : 1);
-
-  // 카테고리별 이미지 경로
-  const CATEGORY_IMAGES = {
-    fma: {
-      normal: [
-        'assets/quiz/fma-img/fma-normal/ga-n-1.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-2.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-3.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-4.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-5.jpg',
-        'assets/quiz/fma-img/fma-normal/ga-n-6.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-7.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-8.jpeg',
-        'assets/quiz/fma-img/fma-normal/ga-n-9.jpg',
-        'assets/quiz/fma-img/fma-normal/ga-n-10.jpg',
-      ],
-      hard: [
-        'assets/quiz/fma-img/fma-hard/ga-h-1.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-2.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-3.jpg',
-        'assets/quiz/fma-img/fma-hard/ga-h-4.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-5.jpg',
-        'assets/quiz/fma-img/fma-hard/ga-h-6.png',
-        'assets/quiz/fma-img/fma-hard/ga-h-7.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-8.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-9.jpeg',
-        'assets/quiz/fma-img/fma-hard/ga-h-10.jpg',
-      ],
-    },
-    aot: {
-      normal: [
-        'assets/quiz/aot-img/aot-normal/ji-n-1.png',
-        'assets/quiz/aot-img/aot-normal/ji-n-2.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-3.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-4.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-5.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-6.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-7.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-8.jpeg',
-        'assets/quiz/aot-img/aot-normal/ji-n-9.png',
-        'assets/quiz/aot-img/aot-normal/ji-n-10.jpeg',
-      ],
-      hard: [
-        'assets/quiz/aot-img/aot-hard/ji-h-1.jpg',
-        'assets/quiz/aot-img/aot-hard/ji-h-2.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-3.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-4.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-5.jpg',
-        'assets/quiz/aot-img/aot-hard/ji-h-6.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-7.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-8.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-9.jpeg',
-        'assets/quiz/aot-img/aot-hard/ji-h-10.jpeg',
-      ],
-    },
-    kimetsu: {
-      normal: [
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-1.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-2.jpg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-3.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-4.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-5.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-6.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-7.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-8.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-9.jpg',
-        'assets/quiz/kimetsu-img/kimetsu-normal/ku-n-10.jpeg',
-      ],
-      hard: [
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-1.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-2.jpg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-3.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-4.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-5.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-6.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-7.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-8.jpeg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-9.jpg',
-        'assets/quiz/kimetsu-img/kimetsu-hard/ku-h-10.jpeg',
-      ],
-    },
-    pokemon: {
-      normal: [
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-1.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-2.jpg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-3.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-4.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-5.jpg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-6.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-7.jpg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-8.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-9.jpeg',
-        'assets/quiz/pokemon-img/pokemon-normal/po-n-10.jpg',
-      ],
-      hard: [
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-1.jpg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-2.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-3.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-4.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-5.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-6.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-7.jpg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-8.jpeg',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-9.png',
-        'assets/quiz/pokemon-img/pokemon-hard/po-h-10.jpeg',
-      ],
-    },
-    sanrio: {
-      normal: [
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-1.jpeg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-2.jpg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-3.jpg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-4.jpeg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-5.jpeg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-6.jpg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-7.jpg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-8.jpeg',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-9.png',
-        'assets/quiz/sanrio-img/sanrio-normal/sa-n-10.jpeg',
-      ],
-      hard: [
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-1.jpeg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-2.jpeg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-3.jpg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-4.jpg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-5.jpeg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-6.jpg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-7.png',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-8.jpeg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-9.jpeg',
-        'assets/quiz/sanrio-img/sanrio-hard/sa-h-10.jpeg',
-      ],
-    },
-  };
+  const timerSec = 20; // 모드 제거: 기본 타이머
+  const totalQuestions = 30;
+  const maxScore = totalQuestions; // 모드 제거: 정답 1점 고정
 
   // 카테고리별 플레이스홀더 메타
   const CATEGORY_META = {
@@ -582,10 +445,6 @@
   let timerId = null;
   let remainSec = 0;
   let answered = false;
-
-  // 배지 초기화
-  modeBadge.textContent = isHard ? '하드' : '노말';
-  modeBadge.classList.add(isHard ? 'hard' : 'normal');
   const CATEGORY_NAMES = {
     fma:     '강철의 연금술사',
     aot:     '진격의 거인',
@@ -650,7 +509,7 @@
    * [리텐션 루프] 결과 페이지 이동
    */
   function goToResult() {
-    const query = new URLSearchParams({ category, mode, score }).toString();
+    const query = new URLSearchParams({ category, score }).toString();
     window.location.href = `result.html?${query}`;
   }
 
@@ -712,9 +571,8 @@
     void polaroidCard.offsetWidth; // reflow
     polaroidCard.classList.add('pop');
 
-    // 이미지 처리: 카테고리 이미지 맵 → item.img → 플레이스홀더 순으로 fallback
-    const imgList = CATEGORY_IMAGES[category]?.[mode];
-    const imgSrc  = (imgList && imgList[currentIndex]) || item.img || null;
+    // 이미지 처리: currentIndex 기준으로 파일 경로 매핑
+    const imgSrc = CATEGORY_IMAGES_30[category]?.[currentIndex] || null;
     if (imgSrc) {
       polaroidImg.src = imgSrc;
       polaroidImg.style.display = 'block';
@@ -736,7 +594,7 @@
   }
 
   function nextQuestion(wasCorrect) {
-    if (wasCorrect) score += isHard ? 2 : 1;
+    if (wasCorrect) score += 1;
     updateScoreUI();
     stopTimer();
     currentIndex += 1;
@@ -787,18 +645,17 @@
       let quizData = window[quizDataVar] || globalThis[quizDataVar];
       if (!quizData) {
         try {
-          // const로 선언된 글로벌 변수에 접근하기 위해 eval 사용 (중요)
           quizData = eval(quizDataVar);
         } catch (e) {
           console.warn('quizData eval 실패', e);
         }
       }
-      if (!quizData || !quizData[mode]) {
+      if (!quizData || !Array.isArray(quizData)) {
         questionTitle.textContent = '데이터를 불러오는 데 실패했습니다.';
         return;
       }
-      const pool = quizData[mode];
-      quizQuestions = pool.slice(0, totalQuestions);
+      // 이미지 매핑(currentIndex)과 맞추기 위해 셔플 없이 앞에서부터 고정 선택
+      quizQuestions = quizData.slice(0, totalQuestions);
       buildDots();
       updateScoreUI();
       setQuestion();
