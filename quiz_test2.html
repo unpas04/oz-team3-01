@@ -572,7 +572,13 @@
     polaroidCard.classList.add('pop');
 
     // 이미지 처리: currentIndex 기준으로 파일 경로 매핑
-    const imgSrc = CATEGORY_IMAGES_30[category]?.[currentIndex] || null;
+    const imgSrc =
+      item.img ||
+      (typeof CATEGORY_IMAGES_30 !== 'undefined'
+        ? CATEGORY_IMAGES_30[category]?.[currentIndex]
+        : null) ||
+      null;
+
     if (imgSrc) {
       polaroidImg.src = imgSrc;
       polaroidImg.style.display = 'block';
