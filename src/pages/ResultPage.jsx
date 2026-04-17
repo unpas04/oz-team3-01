@@ -1,228 +1,217 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   evaluateQuizResult,
   getCategoryTitle,
-  formatDate,
   calculatePercentile,
-  CATEGORY_MAP,
 } from '../modules/data-module';
-import { saveQuizResult } from '../modules/storage-module';
-import "../styles/result.css"
+import "../styles/result.css";
 
-// sns 공유 버튼
-const SNS_LIST = [
-  { id: 'kakao', imgName: 'kakao.png' },
-  { id: 'instagram', imgName: 'insta.png' },
-  { id: 'x', imgName: 'x-twitter.png' },
-];
-
-/* ── 부유 이모지 ── */
+// 원본 에모지 설정 1:1 복제
 const EMOJI_MAP = {
-  pokemon: ['⚽','⚡','🔥','💧','🍃'],
-  sanrio:  ['❤️','🎀','🎈','🍭'],
-  kimetsu: ['🗡️','🔥','🌊','🌸'],
-  aot:     ['⚔️','🛡️','🐎','🔥'],
-  fma:     ['⚗️','⚙️','☀️','⭐'],
+  pokemon: ['⚽', '⚡', '🔥', '💧', '🍃'],
+  sanrio: ['❤️', '🎀', '🎈', '🍭'],
+  aot: ['⚔️', '🧱', '🐎', '💨'],
+  kimetsu: ['🗡️', '🔥', '🌊', '🌸'],
+  fma: ['⚗️', '📜', '🦾', '🪙'],
+  fate: ['📜', '🛡️', '🗡️', '👑', '✨']
 };
 
-/* ── 간단한 카운트업 애니메이션 훅 ── */
-function useCountUp(target, duration = 1000) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    let start = null;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const prog = Math.min((ts - start) / duration, 1);
-      setValue(Math.round(prog * target));
-      if (prog < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [target, duration]);
-  return value;
+function useCountUp(target) {
+    const [value, setValue] = useState(0);
+    useEffect(() => {
+        let start = null;
+        const duration = 1200;
+        const step = (ts) => {
+            if (!start) start = ts;
+            const prog = Math.min((ts - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - prog, 3);
+            setValue(Math.round(ease * target));
+            if (prog < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }, [target]);
+    return value;
 }
 
 export default function ResultPage() {
   const [searchParams] = useSearchParams();
-  const navigate        = useNavigate();
+  const navigate = useNavigate();
 
   const category = searchParams.get('category') || 'sanrio';
-  const score    = parseInt(searchParams.get('score'))  || 0;
-  const mode     = searchParams.get('mode') || 'normal';
+  const mode = searchParams.get('mode') || 'normal';
+  const score = parseInt(searchParams.get('score')) || 0;
+  const wrongStr = searchParams.get('wrong') || "";
+  const wrongIndices = wrongStr ? wrongStr.split(',').map(Number) : [];
 
-  const { gradeInfo, scorePct, displayMax } = evaluateQuizResult(category, mode, score);
-  const catTitle   = getCategoryTitle(category);
+  const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
   const percentile = calculatePercentile(scorePct);
-
-  useEffect(() => {
-    document.body.classList.add("result");
-    return () => {
-      document.body.classList.remove("result");
-    };
-  }, []);
-
-  // 저장
-  useEffect(() => {
-    saveQuizResult({ category, mode, score, maxScore: displayMax, grade: gradeInfo.title });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const animScore = useCountUp(score);
-  const [gaugeWidth, setGaugeWidth] = useState(0);
-  const [imgSrc, setImgSrc]         = useState(`assets/result/${category}/${gradeInfo.label.toLowerCase()}.png`);
+
+  const [imgSrc, setImgSrc] = useState("");
+  const [analysis, setAnalysis] = useState({ s: 0, c: 0, l: 0, m: 0 });
 
   useEffect(() => {
-    const t = setTimeout(() => setGaugeWidth(100 - percentile), 500);
-    return () => clearTimeout(t);
-  }, [percentile]);
+    const script = document.createElement('script');
+    script.src = `/data/${category}.js`;
+    script.onload = () => {
+      const varName = `QUIZ_DATA_${category.toUpperCase()}`;
+      const quizData = window[varName] || globalThis[varName];
+      if (!quizData) return;
 
-  function getGaugeStyle() {
-    const g = gradeInfo.label;
-    if (g === 'S') return 'linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)';
-    if (g === 'A') return 'linear-gradient(90deg, #8B5CF6 0%, #D8B4FE 100%)';
-    if (g === 'B') return 'linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)';
-    return 'linear-gradient(90deg, #6B7280 0%, #9CA3AF 100%)';
-  }
+      const firstImg = quizData.find(q => q.img && q.img !== "")?.img;
+      setImgSrc(firstImg || `/assets/main-cards/${category}.png`);
 
-  const emojis = EMOJI_MAP[category] ?? ['✨','🌟','💫','🔥','⚡'];
+      // 성향 분석 로직
+      const tagScores = { "스토리": 0, "캐릭터": 0, "설정": 0, "매니아": 0 };
+      const tagTotals = { "스토리": 0, "캐릭터": 0, "설정": 0, "매니아": 0 };
+
+      quizData.forEach((item, idx) => {
+        const rawTag = (item.tags && item.tags.length > 0) ? item.tags[0] : "설정";
+        const tag = rawTag.trim();
+        if (tagTotals[tag] !== undefined) {
+          tagTotals[tag]++;
+          if (!wrongIndices.includes(idx)) tagScores[tag]++;
+        } else {
+          tagTotals["설정"]++;
+          if (!wrongIndices.includes(idx)) tagScores["설정"]++;
+        }
+      });
+
+      setAnalysis({
+        s: tagScores["스토리"] / (tagTotals["스토리"] || 1),
+        c: tagScores["캐릭터"] / (tagTotals["캐릭터"] || 1),
+        l: tagScores["설정"] / (tagTotals["설정"] || 1),
+        m: tagScores["매니아"] / (tagTotals["매니아"] || 1)
+      });
+    };
+    document.body.appendChild(script);
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, [category, wrongIndices]);
+
+  const radarPts = [
+    `50,${50-analysis.s*40}`, `50,${50+analysis.l*40}`,
+    `${50+analysis.c*40},50`, `${50-analysis.m*40},50`
+  ].join(' ');
+
+  const emojis = EMOJI_MAP[category] || ['✨', '⭐'];
 
   return (
-    <div className="container result-container">
-
-      {/* 배경 부유 이모지 (간단 버전) */}
-      <div className="bg-visuals" aria-hidden="true">
-        <div className="bg-blob" />
-        <div className="bg-blob secondary" />
-        <div className="floating-items">
-          {emojis.map((em, i) => (
-            <span key={i} style={{
-              position: 'fixed',
-              left: `${10 + i * 18}%`,
-              bottom: '-40px',
-              fontSize: '1.5rem',
-              opacity: 0,
-              animation: `pixelFloat ${10 + i * 2}s linear ${i * 1.5}s infinite`,
-              pointerEvents: 'none',
-              zIndex: 0,
-            }}>{em}</span>
-          ))}
-        </div>
+    <div className="premium-body result">
+      {/* 원본 배경 비주얼 1:1 복제 */}
+      <div className="bg-visuals">
+        <div className="bg-blob"></div>
+        <div className="bg-blob secondary"></div>
+        {emojis.map((em, i) => (
+          <div key={i} className="floating-item" style={{ 
+            left: `${10 + i * 20}%`, 
+            animationDuration: `${5 + i}s`, 
+            animationName: 'pixelFloat'
+          }}>{em}</div>
+        ))}
       </div>
 
-      <div className="card result-card">
-        {/* 등급 뱃지 */}
-        <div className="grade-badge-wrap">
-          <span
-            className={`gauge-grade-badge grade-${gradeInfo.label}`}
-            style={{ background: gradeInfo.color }}
-          >
-            {gradeInfo.label} 등급
-          </span>
-        </div>
-
-        {/* 결과 이미지 */}
-        <div className="result-image-area">
-          <img
-            src={imgSrc}
-            alt="Result"
-            onError={() => setImgSrc(`assets/main-cards/${category}.png`)}
-          />
-        </div>
-
-        <h2 className="grade-title">{gradeInfo.title}</h2>
-        <p className="grade-description" dangerouslySetInnerHTML={{ __html: gradeInfo.desc }} />
-        <div className="grade-quote">{gradeInfo.quote}</div>
-
-        {/* 점수 */}
-        <div className="score-display-wrap">
-          <span className="score-label">Final Evaluation Score</span>
-          <div className="score-main">
-            <span className="score-text-big">{animScore}</span>
-            <span className="score-text-total">/ {displayMax}</span>
+      <div className="container result-container">
+        <div className="card result-card">
+          <div className="grade-badge-wrap">
+            <span className={`gauge-grade-badge grade-${gradeInfo.label}`}>
+              {gradeInfo.label} 등급
+            </span>
           </div>
-        </div>
 
-        {/* 버튼 */}
-        <div className="btn-row">
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate(`/quiz?category=${category}&mode=${mode}`)}
-          >
-            <span>↻ 다시하기</span>
-            <small>Replay</small>
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => navigate(`/share?category=${category}&mode=${mode}&score=${score}&grade=${gradeInfo.title}`)}
-          >
-            <span>📜 증명서 발급받기</span>
-            <small>Issue Certificate</small>
-          </button>
-        </div>
-
-        {/* 랭킹 게이지 */}
-        <div className="ranking-section">
-          <div className="ranking-label">
-            당신은 이 부문 상위 <span>{percentile.toFixed(1)}</span>%입니다!
+          <div className="result-image-area">
+            <img src={imgSrc} alt="Result" onError={(e) => { e.target.src=`/assets/main-cards/${category}.png`; }} />
           </div>
-          <div className="gauge-container">
-            <div
-              className="gauge-bar"
-              style={{
-                width: `${gaugeWidth}%`,
-                background: getGaugeStyle(),
-                height: '100%',
-                borderRadius: 'inherit',
-                transition: 'width 1s ease',
-              }}
-            />
-          </div>
-          <div className="gauge-hint">전체 응시자 데이터 기반 시뮬레이션 결과입니다.</div>
-        </div>
-      </div>
 
-      {/* 공유 */}
-      <div className="share-container mt-md">
-        <span className="share-label">Share with Friends</span>
-        <div className="share-buttons">
-          {SNS_LIST.map((sns) => (
-            <button key={sns.id} className='s-btn'>
-              <img src={`/assets/sns-ci/${sns.imgName}`} alt={sns.id} />
+          <h2 className="grade-title">{gradeInfo.title}</h2>
+          <p className="grade-description">{gradeInfo.desc}</p>
+
+          <div className="grade-quote">"{gradeInfo.quote}"</div>
+
+          <div className="score-display-wrap">
+            <span className="score-label">Final Evaluation Score</span>
+            <div className="score-main">
+              <span className="score-text-big">{animScore}</span>
+              <span className="score-text-total"> / 30</span>
+            </div>
+          </div>
+
+          <div className="ranking-section">
+            <div className="ranking-label">
+              당신은 이 부문 상위 <span>{percentile.toFixed(1)}</span>%입니다!
+            </div>
+            <div className="gauge-container">
+              <div className="gauge-bar" style={{ width: `${100 - percentile}%` }}></div>
+            </div>
+          </div>
+
+          {/* 신규 기능: 성향 분석 (원본 감도 유지하여 삽입) */}
+          <div className="analysis-box">
+            <div style={{fontSize:'0.75rem', fontWeight:900, marginBottom:'10px', color:'#94A3B8'}}>ATTRIBUTE ANALYSIS</div>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'20px'}}>
+              <svg width="80" height="80" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" strokeWidth="0.5"/>
+                <polygon points={radarPts} fill="rgba(99, 102, 241, 0.4)" stroke="#6366F1" strokeWidth="1.5"/>
+              </svg>
+              <div style={{fontSize:'0.7rem', textAlign:'left', color:'#475569'}}>
+                <div>스토리 <strong>{Math.round(analysis.s*100)}%</strong></div>
+                <div>캐릭터 <strong>{Math.round(analysis.c*100)}%</strong></div>
+                <div>설명수치 <strong>{Math.round(analysis.l*100)}%</strong></div>
+                <div>매니아 <strong>{Math.round(analysis.m*100)}%</strong></div>
+              </div>
+            </div>
+          </div>
+
+          {/* 원본 버튼 인터랙션 1:1 복제 */}
+          <div className="btn-row">
+            <button className="btn btn-secondary" onClick={() => navigate(`/quiz?category=${category}&mode=${mode}`)}>
+              <span>↻ 다시하기</span>
+              <small>Replay</small>
             </button>
-          ))}
-          <button className="s-btn url" onClick={() => {
-            navigator.clipboard.writeText(window.location.href)
-              .then(() => alert('링크가 복사됐어요!'));
-          }} title="링크 복사">
-            <span>🔗</span>
+            <button className="btn" style={{background:'#1e293b', color:'#fff'}} onClick={() => navigate(`/share?category=${category}&mode=${mode}&score=${score}&grade=${gradeInfo.title}`)}>
+              <span>📜 증명서 발급받기</span>
+              <small>Issue Certificate</small>
+            </button>
+            
+            {/* 부활전 버튼 (수술적 추가) */}
+            {wrongIndices.length > 0 && (
+              <button className="btn btn-revival" onClick={() => navigate(`/quiz?category=${category}&mode=revival&wrong=${wrongStr}&score=${score}`)}>
+                <span>🔥 오답 부활전 도전하기</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 원본 공유 컨테이너 1:1 복제 */}
+        <div className="share-container">
+          <span className="share-label">Share with Friends</span>
+          <div className="share-buttons">
+            <button className="s-btn kakao">
+              <img src="/assets/sns-ci/kakao.png" alt="K" />
+            </button>
+            <button className="s-btn instagram">
+              <img src="/assets/sns-ci/insta.png" alt="I" />
+            </button>
+            <button className="s-btn x">
+              <img src="/assets/sns-ci/x-twitter.png" alt="X" />
+            </button>
+            <button className="s-btn url" onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("링크가 복사되었습니다!");
+            }}>
+              <span>🔗</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 원본 추천 섹션 1:1 복제 */}
+        <div className="random-section">
+          <button className="btn-random-big" onClick={() => navigate('/')}>
+            <span>🚀 다른 퀴즈 도전하기</span>
+            <small>Try Another Quiz!</small>
           </button>
         </div>
-      
-
-      {/* 다른 퀴즈 도전 */}
-      <div className="random-section">
-        <button
-          className="btn-random-big"
-          onClick={() => {
-            const keys = Object.keys(CATEGORY_MAP).filter(c => c !== category);
-            const rand = keys[Math.floor(Math.random() * keys.length)];
-            navigate(`/quiz?category=${rand}&mode=normal`);
-          }}
-        >
-          <span>🚀 다른 퀴즈 도전하기</span>
-          <small>Try Another Quiz!</small>
-        </button>
       </div>
-
-      <div className="mt-lg text-center">
-        <a
-          href="/"
-          style={{ color: 'var(--color-text-light)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 800 }}
-        >
-          👈 메인으로 돌아가기
-        </a>
-      </div>
-    </div>
     </div>
   );
 }

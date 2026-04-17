@@ -1,173 +1,124 @@
-import { useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-
-/**
- * share.html → SharePage.jsx
- * URL 파라미터: ?category=pokemon&mode=hard&score=16&grade=고인물
- * html2canvas CDN은 public/index.html에 <script> 태그로 추가하거나
- * npm install html2canvas 후 import 해서 사용
- */
+import { getCategoryTitle, evaluateQuizResult } from '../modules/data-module';
+import "../styles/result.css";
 
 const SCORE_MAX = 30;
 
-function getStars(score, max = SCORE_MAX) {
-  const pct = score / max;
-  const filled = Math.round(pct * 5);
-  return '★'.repeat(filled) + '☆'.repeat(5 - filled);
-}
-
-function getOneLiner(grade) {
-  const map = {
-    '전설의 덕후': '완벽한 덕력을 인증받았습니다! 🏆',
-    '고인물':       '당신은 이미 고인물입니다. 🌊',
-    '진성 팬':       '진심을 담아 좋아하는 당신! 💖',
-    '라이트 팬':     '조금 더 파봐요, 빠져들 거예요! 🌀',
-    '입문자':         '새로운 세계에 온 걸 환영해요! 🎉',
-  };
-  return map[grade] ?? '나의 덕력을 확인해봤어요!';
-}
-
-const CATEGORY_KO = {
-  sanrio:  '산리오',
-  pokemon: '포켓몬',
-  aot:     '진격의 거인',
-  kimetsu: '귀멸의 칼날',
-  fma:     '강철의 연금술사',
-};
-
 export default function SharePage() {
   const [searchParams] = useSearchParams();
-  const navigate        = useNavigate();
-  const cardRef         = useRef(null);
+  const navigate = useNavigate();
+  const cardRef = useRef(null);
+  const [modeTab, setModeTab] = useState('landscape'); // 'landscape' or 'insta'
 
   const category = searchParams.get('category') ?? 'sanrio';
-  const mode     = searchParams.get('mode')     ?? 'normal';
-  const score    = Number(searchParams.get('score')  ?? 0);
-  const grade    = searchParams.get('grade')    ?? '입문자';
+  const score = Number(searchParams.get('score') ?? 0);
+  const quizMode = searchParams.get('mode') ?? 'normal';
 
-  const catKo   = CATEGORY_KO[category] ?? category;
-  const stars   = getStars(score);
-  const oneLiner = getOneLiner(grade);
+  const { gradeInfo, scorePct } = evaluateQuizResult(category, quizMode, score, []);
+  const catKo = getCategoryTitle(category);
 
-  /* ── 이미지 저장 (html2canvas) ── */
+  // 등급에 따른 도장 문구 결정
+  const stampText = gradeInfo.label === 'S' ? 'LEGEND' : gradeInfo.label === 'A' ? 'MASTER' : 'OFFICIAL';
+
   async function saveImage() {
-    if (!window.html2canvas) {
-      alert('html2canvas 라이브러리가 필요합니다.\nnpm install html2canvas 후 import 해주세요.');
-      return;
+    if (typeof html2canvas === 'undefined') {
+        alert('이미지 생성 엔진을 불러오는 중입니다...');
+        return;
     }
-    const canvas = await window.html2canvas(cardRef.current, { useCORS: true });
+    const canvas = await html2canvas(cardRef.current, { 
+        useCORS: true,
+        scale: 2, 
+        backgroundColor: null
+    });
     const link = document.createElement('a');
-    link.download = '덕력감별소_결과.png';
-    link.href = canvas.toDataURL();
+    link.download = `OZ_Master_${category}_${gradeInfo.label}.png`;
+    link.href = canvas.toDataURL("image/png");
     link.click();
   }
 
-  /* ── 링크 복사 ── */
-  function copyLink() {
-    navigator.clipboard.writeText(window.location.href)
-      .then(() => alert('링크가 복사됐어요!'));
-  }
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 16px 48px' }}>
+    <div className="certificate-wrapper">
+      <h2 style={{ marginBottom: '20px', fontWeight: 900, color: '#1e293b', letterSpacing: '-1px' }}>
+        마스터 클래스 인증서 발급
+      </h2>
 
-      {/* 공유 카드 */}
-      <div
-        ref={cardRef}
-        className="share-card"
-        style={{
-          width: '360px',
-          aspectRatio: '9 / 16',
-          background: 'linear-gradient(160deg, #FFE0EC 0%, #F0D9FF 100%)',
-          borderRadius: '24px',
-          boxShadow: '0 8px 40px rgba(180,120,200,0.25)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '36px 28px',
-          boxSizing: 'border-box',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* 배경 장식 원 */}
-        <div style={{
-          position: 'absolute', top: '-60px', right: '-60px',
-          width: '240px', height: '240px',
-          background: 'rgba(255,255,255,0.25)',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-80px', left: '-80px',
-          width: '300px', height: '300px',
-          background: 'rgba(255,255,255,0.15)',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-        }} />
-
-        {/* 로고 */}
-        <div style={{ textAlign: 'center', zIndex: 1 }}>
-          <div style={{ fontSize: '0.72rem', letterSpacing: '3px', color: '#C060A0', fontWeight: 900, marginBottom: '4px' }}>
-            CHARACTER QUIZ
-          </div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 900, background: 'linear-gradient(135deg,#FF6FA8,#BF6FFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            덕력 감별소
-          </div>
-        </div>
-
-        {/* 카드 이미지 */}
-        <div style={{
-          width: '180px', height: '180px',
-          borderRadius: '16px',
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-          zIndex: 1,
-        }}>
-          <img
-            src={`assets/main-cards/${category}.png`}
-            alt={catKo}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
-        </div>
-
-        {/* 결과 정보 */}
-        <div style={{ textAlign: 'center', zIndex: 1 }}>
-          <div style={{ fontSize: '0.82rem', color: '#C060A0', fontWeight: 700, marginBottom: '6px', letterSpacing: '1px' }}>
-            {catKo} {mode === 'hard' ? '· HARD' : ''}
-          </div>
-          <div style={{ fontSize: '2rem', fontWeight: 900, color: '#3A1040', marginBottom: '4px' }}>
-            {score} <span style={{ fontSize: '1.1rem', color: '#9070A0' }}>/ {SCORE_MAX}</span>
-          </div>
-          <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#7030B0', marginBottom: '8px' }}>
-            {grade}
-          </div>
-          <div style={{ fontSize: '1.4rem', color: '#FF85A1', letterSpacing: '2px', marginBottom: '8px' }}>
-            {stars}
-          </div>
-          <div style={{ fontSize: '0.88rem', color: '#8060A0', fontStyle: 'italic' }}>
-            {oneLiner}
-          </div>
-        </div>
-
-        {/* 하단 URL */}
-        <div style={{ fontSize: '0.72rem', color: '#C0A0C0', zIndex: 1 }}>
-          oz-quiz.com
-        </div>
+      <div className="mode-tabs">
+        <button className={`tab ${modeTab === 'landscape' ? 'active' : ''}`} onClick={() => setModeTab('landscape')}>
+          📜 오피셜 라이선스
+        </button>
+        <button className={`tab ${modeTab === 'insta' ? 'active' : ''}`} onClick={() => setModeTab('insta')}>
+          📸 인스타 마스터 (4:5)
+        </button>
       </div>
 
-      {/* 버튼 */}
-      <div style={{ marginTop: '28px', display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <button className="btn btn-normal" onClick={saveImage}>
-          <span>이미지로 저장</span>
+      <div 
+        ref={cardRef} 
+        style={{ padding: '30px', background: 'transparent' }}
+        className={gradeInfo.label === 'S' ? 'grade-S-container' : ''}
+      >
+        {modeTab === 'landscape' ? (
+          /* 🏆 공식 가로형 라이선스 🏆 */
+          <div className={`otaku-license theme-${category} grade-${gradeInfo.label}`}>
+            <div className="license-header">
+              {category === 'pokemon' && <div className="pokedex-lens"></div>}
+              <h1 style={{ letterSpacing: '2px' }}>OTAKU LICENSE</h1>
+              <span style={{ fontSize: '0.65rem', opacity: 0.6, fontWeight: 900 }}>SN: OZ-{category.toUpperCase()}-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
+            </div>
+            <div className="license-body">
+              <div className="license-photo">
+                <img src={`/assets/main-cards/${category}.png`} alt="P" onError={(e) => { e.target.src = '/assets/main-cards/pokemon.png'; }} />
+              </div>
+              {category === 'sanrio' && (
+                <div className="diary-spine">
+                  {[...Array(8)].map((_, i) => <div key={i} className="spine-hole" />)}
+                </div>
+              )}
+              <div className="license-info">
+                <div className="info-row"><span className="info-label">IDENTIFIED CATEGORY</span><span className="info-value">{catKo} 부문</span></div>
+                <div className="info-row"><span className="info-label">VERIFIED RANK</span><span className="info-value rank">{gradeInfo.title}</span></div>
+                <div className="info-row"><span className="info-label">MASTERY SCORE</span><span className="info-value">{score} / {SCORE_MAX} ({scorePct}%)</span></div>
+              </div>
+            </div>
+            <div className="certified-stamp">{stampText}</div>
+            <div className="license-footer">
+              <span style={{ letterSpacing: '1px' }}>OZ MASTER CERTIFICATION CENTER</span>
+              <span>ISSUED: {new Date().toLocaleDateString()}</span>
+            </div>
+          </div>
+        ) : (
+          /* 📸 인스타그램 프리미엄 마스터 카드 📸 */
+          <div className={`insta-master-card theme-${category} grade-${gradeInfo.label}`}>
+            <div className="insta-header">{catKo} Master</div>
+            <div className="insta-photo">
+              <img src={`/assets/main-cards/${category}.png`} alt="P" onError={(e) => { e.target.src = '/assets/main-cards/pokemon.png'; }} />
+            </div>
+            <div className="insta-info">
+              <div className="insta-grade">{gradeInfo.title}</div>
+              <div className="insta-score">Mastery Level: {scorePct}%</div>
+              <p style={{ marginTop: '15px', fontSize: '0.8rem', fontStyle: 'italic', opacity: 0.5, fontWeight: 700 }}>
+                This user is officially recognized as a master of {catKo}.
+              </p>
+            </div>
+            <div className="insta-stamp">{stampText}</div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginTop: '50px', display: 'flex', gap: '20px' }}>
+        <button 
+          className="btn" 
+          style={{ background: '#1e293b', color: '#fff', padding: '20px 50px', borderRadius: '16px', fontWeight: 950, boxShadow: '0 15px 35px rgba(0,0,0,0.2)' }} 
+          onClick={saveImage}
+        >
+          📷 마스터 인증서 저장
         </button>
-        <button className="btn btn-normal" onClick={copyLink}>
-          <span>🔗 링크 복사</span>
-        </button>
-        <button className="btn btn-secondary" onClick={() => navigate('/')}>
-          <span>👈 메인으로</span>
+        <button 
+          className="btn" 
+          style={{ background: '#fff', border: '1px solid #e2e8f0', padding: '20px 50px', borderRadius: '16px', fontWeight: 700 }} 
+          onClick={() => navigate(-1)}
+        >
+          돌아가기
         </button>
       </div>
     </div>
