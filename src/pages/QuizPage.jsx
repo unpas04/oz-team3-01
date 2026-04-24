@@ -30,6 +30,9 @@ export default function QuizPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const category = (searchParams.get('category') || 'aot').toLowerCase();
+  const mode     = searchParams.get('mode') || 'normal';
+  const wrongInput = sessionStorage.getItem('oz_wrong_indices') || "";
+  const initialScore = parseInt(searchParams.get('score')) || 0;
   const meta = CATEGORY_META[category] || { emoji: '✨', label: 'QUIZ', cls: 'placeholder-default' };
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export default function QuizPage() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [wrongAnswers, setWrongAnswers] = useState([]); // 오답 인덱스 추적
   const [answered, setAnswered] = useState(false);
   const [feedback, setFeedback] = useState({ text: '', type: '' });
   const [remainSec, setRemainSec] = useState(TIMER_SEC);
@@ -67,8 +71,15 @@ export default function QuizPage() {
         console.error('데이터 로드 실패');
         return;
       }
-      // 원본처럼 셔플 없이 앞에서부터 30개 고정
-      setQuestions(data.slice(0, TOTAL_QUESTIONS));
+      // 원본 인덱스 부여 및 부활 모드 처리
+      const dataWithIndex = data.map((item, idx) => ({ ...item, _originalIdx: idx }));
+      
+      if (mode === 'revival' && wrongInput) {
+        const targetIndices = wrongInput.split(',').map(Number);
+        setQuestions(dataWithIndex.filter((_, idx) => targetIndices.includes(idx)));
+      } else {
+        setQuestions(dataWithIndex.slice(0, TOTAL_QUESTIONS));
+      }
     };
     script.onerror = () => console.error('퀴즈 데이터를 불러올 수 없습니다.');
     document.body.appendChild(script);
@@ -106,6 +117,11 @@ export default function QuizPage() {
         setExplainText(questions[currentIndex]?.explanation || '시간 초과입니다. 해설을 확인한 뒤 다음 문제를 눌러주세요.');
         setShowExplain(true);
         setBtnDisabled(true);
+
+        // 시간 초과 시 오답 기록
+        const currentItem = questions[currentIndex];
+        const oid = (currentItem && currentItem._originalIdx !== undefined) ? currentItem._originalIdx : currentIndex;
+        setWrongAnswers(prev => [...prev, oid]);
       }
     }, 1000);
   }, [currentIndex, questions, stopTimer]);
@@ -142,6 +158,10 @@ export default function QuizPage() {
       setFeedback({ text: '정답입니다! ✨', type: 'correct' });
       setTimeout(() => goNext(true), 800);
     } else {
+      const currentItem = questions[currentIndex];
+      const oid = (currentItem && currentItem._originalIdx !== undefined) ? currentItem._originalIdx : currentIndex;
+      setWrongAnswers(prev => [...prev, oid]);
+
       setFeedback({ text: '오답입니다! 💦', type: 'wrong' });
       setExplainText(questions[currentIndex]?.explanation || '오답입니다. 해설을 확인하고, 다음 문제 버튼을 눌러주세요.');
       setShowExplain(true);
@@ -153,9 +173,18 @@ export default function QuizPage() {
     
     const next = currentIndex + 1;
     if (next >= questions.length || next >= TOTAL_QUESTIONS) {
-      // 리액트에서는 상태 업데이트가 비동기이므로 최신 점수를 직접 계산해서 전달
-      const finalScore = wasCorrect ? score + 1 : score;
-      navigate(`/result?category=${category}&score=${finalScore}`);
+      // 리액트에서는 상태 업데이트가 비동기이므로 최신 데이터 직접 계산
+      const finalScore = mode === 'revival' ? (initialScore + (wasCorrect ? score + 1 : score)) : (wasCorrect ? score + 1 : score);
+      const finalWrong = wasCorrect ? wrongAnswers : [...wrongAnswers]; // 이미 handleAnswer에서 추가됨
+      
+      sessionStorage.setItem('oz_wrong_indices', finalWrong.join(','));
+      const query = new URLSearchParams({
+        category,
+        score: finalScore,
+        mode
+      }).toString();
+      
+      navigate(`/result?${query}`);
       return;
     }
     setCurrentIndex(next);
