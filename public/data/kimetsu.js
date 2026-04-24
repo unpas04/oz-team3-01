@@ -1,43 +1,35 @@
 /**
  * kimetsu.js — 귀멸의 칼날 퀴즈 데이터
- * 담당: 팀원 C
- *
- * 작성 규칙:
- * - normal, hard 각각 정확히 20문제 작성
- * - q: YES/NO로 답할 수 있는 문장
- * - a: true, img: "assets/quiz/kimetsu-img/kimetsu-" = YES(정답), false, img: "assets/quiz/kimetsu-img/kimetsu-" = NO(정답)
- * - hard는 normal보다 훨씬 어렵게 (호흡 기술명, 세부 설정 등)
  */
-
 window.QUIZ_DATA_KIMETSU = [
-  { q: "탄지로의 여동생 이름은 네즈코다.",     a: true,  img: "assets/quiz/kimetsu-img/kimetsu-image1.png", explanation: "탄지로의 여동생은 네즈코입니다." },
-  { q: "젠이츠가 사용하는 호흡은 물의 호흡이다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image2.png", explanation: "젠이츠는 번개 호흡을 사용합니다." },
-  { q: "네즈코는 오빠를 지키기 위해 대나무를 입에 물고 있다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image3.png", explanation: "네즈코는 이빨이 드러나는 것을 막기 위해 대나무를 물고 다닙니다." },
-  { q: "젠이츠는 겁이 많지만 잠들면 강력해진다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image4.png", explanation: "젠이츠는 공포증이 있지만, 최면상태에서 엄청난 힘을 발휘합니다." },
-  { q: "이노스케는 항상 멧돼지 탈을 쓰고 다닌다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image5.png", explanation: "이노스케는 멧돼지 가면을 착용한 채 행동합니다." },
-  { q: "귀살대 중 가장 높은 계급을 '주(柱)'라고 부른다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image6.png", explanation: "귀살대 최고 계급은 주(柱)입니다." },
-  { q: "기유는 물의 호흡을 사용하는 수주(水柱)이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image7.png", explanation: "기유는 물의 호흡을 사용하는 수주입니다." },
-  { q: "혈귀(도깨비)들의 수장은 키부츠지 무잔이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image8.png", explanation: "무잔은 혈귀들의 우두머리입니다." },
-  { q: "탄지로는 처음에 불의 호흡만 배웠다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image9.png", explanation: "탄지로는 처음에 물의 호흡을 배웠습니다." },
-  { q: "렌고쿠 쿄쥬로는 무한열차 편의 핵심 인물이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image10.png", explanation: "무한열차 편에서는 렌고쿠가 핵심 주인공입니다." },
-  { q: "히노카미 카구라는 불꽃의 호흡에서 파생됐다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image11.png", explanation: "히노카미 신락은 태양 호흡에서 파생된 기술입니다." },
-  { q: "탄지로의 귀걸이는 화투 문양을 닮았다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image12.png", explanation: "귀걸이는 화투 문양을 닮은 디자인입니다." },
-  { q: "상현의 3 혈귀의 이름은 아카자이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image13.png", explanation: "아카자는 상현(上弦)의 3번 혈귀입니다." },
-  { q: "충주 코쵸우 시노부는 혈귀의 목을 베지 못한다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image14.png", explanation: "시노부는 체술로 처치하지만 혈귀 목을 베진 못합니다." },
-  { q: "네즈코가 혈귀가 된 후 처음으로 햇빛을 극복한 장소는 대장장이 마을이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image15.png", explanation: "대장장이 마을에서 네즈코가 햇빛을 견뎌냈습니다." },
-  { q: "귀살대 당주 가문의 성씨는 우부야시키이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image16.png", explanation: "우부야시키 가문이 귀살대 당주입니다." },
-  { q: "이노스케가 사용하는 호흡은 '짐승의 호흡'이다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image17.png", explanation: "이노스케는 짐승의 호흡을 사용합니다." },
-  { q: "무잔은 푸른 피안화를 찾기 위해 수백 년을 보냈다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image18.png", explanation: "무잔은 불사의 꽃을 찾으려고 오랜 세월을 썼습니다." },
-  { q: "탄지로의 아버지는 반점을 가진 적이 없다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image19.png", explanation: "탄지로 아버지는 눈에 점무늬가 있습니다." },
-  { q: "풍주 사네미의 몸에는 수많은 흉터가 있다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image20.png", explanation: "사네미는 여러 전투 흉터를 지녔습니다." },
-  { q: "탄지로는 후각이 매우 뛰어나다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image21.png", explanation: "탄지로는 냄새로 상황과 상대의 의도를 파악할 정도로 뛰어난 후각을 가집니다." },
-  { q: "네즈코는 작품 내내 한 번도 인간을 먹지 않는다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image22.png", explanation: "네즈코는 인간을 해치지 않도록 스스로 억제하며 피를 마시는 방식으로 버팁니다." },
-  { q: "귀살대는 도깨비를 쓰러뜨리기 위해 '니치린 도'를 사용한다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image23.png", explanation: "귀살대의 검은 태양빛을 흡수한 니치린 도로 도깨비의 목을 벱니다." },
-  { q: "귀살대는 정부의 공식 조직으로 공개적으로 활동한다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image24.png", explanation: "귀살대는 비공식 조직에 가까워 일반 대중에게 널리 알려져 있지 않습니다." },
-  { q: "탄지로의 검은 시간이 지나면 색이 변한다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image25.png", explanation: "니치린 도는 사용자에 따라 처음부터 특정 색으로 변하며, 시간이 지나며 바뀐다는 설정은 아닙니다." },
-  { q: "젠이츠는 번개의 호흡 전개(형)를 단 하나만 완전히 익혔다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image26.png", explanation: "젠이츠는 '일의 형'을 극한까지 단련해 전투에 활용합니다." },
-  { q: "이노스케는 두 개의 칼을 사용한다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image27.png", explanation: "이노스케는 양손에 톱니처럼 갈아낸 두 자루의 검을 들고 싸웁니다." },
-  { q: "무잔은 도깨비가 약해지는 햇빛을 극복하고 싶어 한다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image28.png", explanation: "무잔은 햇빛의 약점을 없애기 위해 푸른 피안화를 집착적으로 찾습니다." },
-  { q: "주(柱)들은 모두 같은 호흡을 사용한다.", a: false, img: "assets/quiz/kimetsu-img/kimetsu-image29.png", explanation: "주들은 각자 다른 호흡(물/불꽃/바람/벌레/바위 등)을 사용합니다." },
-  { q: "네즈코는 잠을 자며 체력을 회복하는 경향이 있다.", a: true, img: "assets/quiz/kimetsu-img/kimetsu-image30.png", explanation: "네즈코는 인간을 먹는 대신 잠을 통해 에너지를 보충하는 묘사가 나옵니다." }
+  { q: "카마도 탄지로의 호흡은 원래 물의 호흡이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "우로코다키 밑에서 물의 호흡을 먼저 배웠습니다.", tags: ["스토리"] },
+  { q: "네즈코는 오니가 된 후에도 인간을 먹지 않는다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "의지력으로 인간 보호 본능을 유지합니다.", tags: ["캐릭터"] },
+  { q: "귀살대의 당주인 '어르신'의 이름은 우부야시키 카가야이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "귀살대를 비호하는 우부야시키 가문의 수장입니다.", tags: ["캐릭터"] },
+  { q: "젠이츠는 의식을 잃었을 때 진정한 실력을 발휘한다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "잠든 상태에서 번개의 호흡을 구사합니다.", tags: ["캐릭터"] },
+  { q: "이노스케는 항상 멧돼지 가면을 쓰고 다닌다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "산에서 짐승들에 의해 길러진 배경이 있습니다.", tags: ["캐릭터"] },
+  { q: "오니의 시초인 절대 지배자는 키부츠지 무잔이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "모든 오니의 근원이자 공포의 대상입니다.", tags: ["스토리"] },
+  { q: "귀살 대원들이 사용하는 칼의 명칭은 '일륜도'이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "태양 에너지를 머금은 특수강으로 제작됩니다.", tags: ["설정"] },
+  { q: "아가츠마 젠이츠는 번개의 호흡 6가지 형을 모두 자유자재로 쓴다.", a: false, img: "/assets/quiz/kimetsu-img/", explanation: "젠이츠는 벽력일섬(제1형) 단 하나만을 연마했습니다.", tags: ["매니아"] },
+  { q: "토미오카 기유는 수주(水柱)로서 기유가 최초로 지주가 되었다.", a: false, img: "/assets/quiz/kimetsu-img/", explanation: "기유 이전에도 수많은 수주들이 존재했습니다.", tags: ["캐릭터"] },
+  { q: "탄지로가 귀살대에 들어간 이유는 네즈코를 치료하기 위해서이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "네즈코를 다시 인간으로 돌리는 것이 탄지로의 목표입니다.", tags: ["스토리"] },
+  { q: "코초 시노부는 목을 벨 힘이 부족해 독을 사용한다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "등꽃 독을 개발하여 오니를 처단하는 충주(蟲柱)입니다.", tags: ["캐릭터"] },
+  { q: "일륜도의 색깔은 주인의 적성에 따라 다르게 나타난다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "호흡의 계통에 따라 색상이 결정됩니다.", tags: ["설정"] },
+  { q: "십이귀월 중 상현의 오니는 총 6명이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "상현 1부터 6까지 강력한 적들이 존재합니다.", tags: ["설정"] },
+  { q: "렌고쿠 쿄쥬로는 무한열차에서 승객들을 모두 지켜냈다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "자신을 희생하여 단 한 명의 사망자도 내지 않았습니다.", tags: ["스토리"] },
+  { q: "탄지로가 물의 호흡 외에 사용하는 비밀 호흡은 '히노카미 신락'이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "해의 호흡과 연관된 탄지로 가문의 전승입니다.", tags: ["설정"] },
+  { q: "히메지마 교메이는 귀살대 지주 중 최강으로 꼽히는 암주(岩柱)이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "맹인이지만 압도적인 신체 능력을 보유했습니다.", tags: ["캐릭터"] },
+  { q: "시나즈가와 사네미는 거친 성격의 풍주(風柱)로 흉터가 많다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "오니를 극도로 증오하는 지주입니다.", tags: ["캐릭터"] },
+  { q: "칸로지 미츠리는 연주(戀柱)이며 벚꽃떡을 많이 먹어 머리색이 변했다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "독특한 체질과 취미를 가진 지주입니다.", tags: ["캐릭터"] },
+  { q: "무잔은 햇빛 아래 서는 법을 찾기 위해 푸른 피안화를 찾는다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "태양을 극복하는 것이 무잔의 평생 숙원입니다.", tags: ["스토리"] },
+  { q: "귀살대에 들어가기 위한 최종 선발은 등꽃이 핀 산에서 열린다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "오니들이 싫어하는 등꽃이 장벽 역할을 합니다.", tags: ["설정"] },
+  { q: "츠유리 카나오는 어릴 적 트라우마로 동전을 던져 결정을 대신했다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "자신의 의지로 결정하지 못하던 습관이 있었습니다.", tags: ["캐릭터"] },
+  { q: "이구로 오바나이는 사주(蛇柱)이며 입 주변을 항상 가린다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "가슴 아픈 과거의 상처를 가리고 있습니다.", tags: ["캐릭터"] },
+  { q: "토키토 무이치로는 천재적인 실력의 최연소 지주(하주)이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "두 달 만에 지주가 된 안개의 호흡 사용자입니다.", tags: ["매니아"] },
+  { q: "오니는 햇빛과 일륜도에 의한 참수 외엔 죽지 않는다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "강력한 재생 능력 때문에 특정 공격만 수용됩니다.", tags: ["설정"] },
+  { q: "탄지로의 귀걸이 문양은 태양을 상징한다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "해의 호흡의 계승자임을 알려주는 징표입니다.", tags: ["매니아"] },
+  { q: "하현의 오니들은 무잔에 의해 숙청당한 적이 있다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "약하다는 이유로 한 명(엔무)만 빼고 처단당했습니다.", tags: ["매니아"] },
+  { q: "우로코다키 스승님은 평소 빨간 텐구 가면을 쓰고 다닌다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "부드러운 얼굴을 가리기 위해 쓰고 다닌다는 설정이 있습니다.", tags: ["매니아"] },
+  { q: "네즈코가 폭주할 때 사용하는 특수 혈귀술은 '폭혈'이다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "피를 폭발시켜 오니에게 타격을 줍니다.", tags: ["캐릭터"] },
+  { q: "이노스케는 자신의 칼날을 돌로 쳐서 톱니처럼 만든다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "매끈한 칼날을 싫어하여 스스로 망치는 기행을 보입니다.", tags: ["캐릭터"] },
+  { q: "귀살대 대원들의 까마귀들은 말뿐만 아니라 인공지능 같은 사고도 한다.", a: true, img: "/assets/quiz/kimetsu-img/", explanation: "상당한 지능을 가진 보조 수단입니다.", tags: ["설정"] }
 ];

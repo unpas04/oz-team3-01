@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getTotalScore } from '../modules/storage-module';
 import "../styles/home.css"
 
@@ -13,6 +14,7 @@ const CATEGORIES = [
   { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
   { id: "deathnote", name: "데스노트", emoji: "📓" },
   { id: "slamdunk", name: "슬램덩크", emoji: "🏀" },
+  { id: "fate", name: "페이트 시리즈", emoji: "📜" },
 ];
 
 const GRADES = [
@@ -23,12 +25,13 @@ const GRADES = [
   { min: 0, label: "입문자" },
 ];
 
-const MAX_SCORE = 150;
+const MAX_SCORE = 180;
 
 function App() {
   const [totalScore, setTotalScore] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.body.classList.add("home");
@@ -58,7 +61,7 @@ function App() {
 
   const startQuiz = () => {
     if (selectedCategory) {
-      window.location.href = `quiz?category=${selectedCategory.id}`;
+      navigate(`/quiz?category=${selectedCategory.id}`);
     }
   };
 
