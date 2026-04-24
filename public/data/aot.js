@@ -1,35 +1,41 @@
 /**
  * aot.js — 진격의 거인 퀴즈 데이터
+ * 담당: 팀원 B
+ *
+ * 작성 규칙:
+ * - q: YES/NO로 답할 수 있는 문장
+ * - a: true, img: "assets/quiz/aot-img/aot-" = YES(정답), false, img: "assets/quiz/aot-img/aot-" = NO(정답)
  */
+
 window.QUIZ_DATA_AOT = [
-  { q: "에렌 예거는 초대형 거인으로 변신할 수 있다.", a: false, img: "/assets/quiz/aot-img/", explanation: "베르톨트/아르민의 영역인 초대형 거인으로의 변신은 에렌의 능력이 아닙니다.", tags: ["캐릭터"] },
-  { q: "조사병단의 단장은 리바이 아커만이다.", a: false, img: "/assets/quiz/aot-img/", explanation: "리바이는 병사장이며, 정식 단장은 엘빈(13대) 등이 맡았습니다.", tags: ["캐릭터"] },
-  { q: "미카사는 에렌이 준 목도리를 소중히 여긴다.", a: true, img: "/assets/quiz/aot-img/", explanation: "붉은 목도리는 그들의 인연의 상징입니다.", tags: ["캐릭터"] },
-  { q: "입체기동장치는 고압 가스를 동력으로 사용한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "가스의 분사력으로 와이어를 감아 이동합니다.", tags: ["설정"] },
-  { q: "벽 안의 세계는 3개의 벽으로 구분되어 있다.", a: true, img: "/assets/quiz/aot-img/", explanation: "마리아, 로제, 시나 3중 벽 구조입니다.", tags: ["설정"] },
-  { q: "아르민 알레르토는 초대형 거인의 힘을 계승한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "작계 중 베르톨트를 먹고 힘을 얻었습니다.", tags: ["스토리"] },
-  { q: "한지 조에는 거인 실험과 연구에 집착한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "거인 전문가로서 강한 호기심을 지닌 리더입니다.", tags: ["캐릭터"] },
-  { q: "아커만 일족은 거인화 없이도 초인적인 실력을 발휘한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "각성된 신체 능력을 통해 인류 최고의 전투력을 보유합니다.", tags: ["캐릭터"] },
-  { q: "사샤 브라우스는 음식, 특히 고기와 감자를 좋아한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "먹보라는 이미지와 함께 강한 생존 본능을 보여줍니다.", tags: ["캐릭터"] },
-  { q: "여성형 거인의 정체는 애니 레온하트이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "헌병단 소속이었던 애니가 여성형 거인이었습니다.", tags: ["스토리"] },
-  { q: "짐승 거인의 소유자는 지크 예거이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "에렌의 이복형 지크가 짐승 거인을 조종합니다.", tags: ["스토리"] },
-  { q: "거인의 결정적인 약점은 목 뒷덜미이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "뒷덜미를 베어내는 것이 확실한 살해법입니다.", tags: ["설정"] },
-  { q: "에러의 아버지는 벽 외부에서 온 인물이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "그리샤는 마레 제국에서 온 의사였습니다.", tags: ["스토리"] },
-  { q: "조사병단의 엠블럼은 '자유의 날개'라 불린다.", a: true, img: "/assets/quiz/aot-img/", explanation: "겹쳐진 두 날개 형상입니다.", tags: ["설정"] },
-  { q: "벽 내부 경비를 주로 맡는 병단은 주둔병단이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "벽의 수호와 시민 보호를 담당합니다.", tags: ["설정"] },
-  { q: "에렌 예거는 '진격의 거인'을 계승했다.", a: true, img: "/assets/quiz/aot-img/", explanation: "자유를 추구하며 앞으로 나아가는 거인의 힘입니다.", tags: ["캐릭터"] },
-  { q: "유미르의 백성만이 거인으로 변할 수 있다.", a: true, img: "/assets/quiz/aot-img/", explanation: "특정 혈통만이 투입이나 접촉을 통해 거인트가 됩니다.", tags: ["설정"] },
-  { q: "리바이는 결벽증이 매우 심하다.", a: true, img: "/assets/quiz/aot-img/", explanation: "청결을 병적으로 중요시하는 모습이 묘사됩니다.", tags: ["캐릭터"] },
-  { q: "장 키르슈타인은 초기엔 조사병단을 비웃었다.", a: true, img: "/assets/quiz/aot-img/", explanation: "자살 행위라고 생각했으나 동료의 죽음 이후 가치관이 바뀝니다.", tags: ["캐릭터"] },
-  { q: "좌표의 힘을 쓰려면 왕가의 피를 가진 자와 접촉해야 한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "왕가 혈통과의 접촉이 시조의 힘 발동 조건입니다.", tags: ["설정"] },
-  { q: "에렌은 인류 멸명을 막기 위해 '땅고르기'를 진행한다.", a: false, img: "/assets/quiz/aot-img/", explanation: "인류 전체가 아닌 에렌이 생각하는 소중한 이들을 지키기 위해 세계를 무너뜨린 행위입니다.", tags: ["스토리"] },
-  { q: "라이너 브라운은 갑옷 거인의 소유자이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "초기에 성벽을 파괴한 주역 중 하나입니다.", tags: ["스토리"] },
-  { q: "베르톨트는 초대형 거인의 힘을 가졌던 마레의 전사이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "초기의 비극을 시작한 초대형 거인이었습니다.", tags: ["스토리"] },
-  { q: "엘빈 단장은 지하실의 정체를 직접 확인했다.", a: false, img: "/assets/quiz/aot-img/", explanation: "목표를 눈앞에 두고 특공 작전 중 전사했습니다.", tags: ["매니아"] },
-  { q: "턱 거인의 힘을 가졌던 유미르(104기)는 마레로 돌아가 최후를 맞았다.", a: true, img: "/assets/quiz/aot-img/", explanation: "스스로 돌아가 라이너들을 도왔습니다.", tags: ["매니아"] },
-  { q: "히스토리아 레이스는 벽 안의 진짜 왕녀이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "레이스 가문의 정당한 후계자 중 한 명입니다.", tags: ["스토리"] },
-  { q: "코니 스프링거는 거인이 된 부모님 때문에 고뇌한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "어머니가 마을에 남아있는 것을 발견한 에피소드가 유명합니다.", tags: ["캐릭터"] },
-  { q: "에렌 크루거의 암호명은 '부엉이'이다.", a: true, img: "/assets/quiz/aot-img/", explanation: "마레 잠입 스파이 시절 쓰던 암호입니다.", tags: ["매니아"] },
-  { q: "거인의 시체는 금방 열과 함께 증발한다.", a: true, img: "/assets/quiz/aot-img/", explanation: "오직 뼈의 형태만 잠시 남았다 사라집니다.", tags: ["설정"] },
-  { q: "리바이와 미카사는 친남매이다.", a: false, img: "/assets/quiz/aot-img/", explanation: "같은 아커만 일족이지만 남매 사이는 아닙니다.", tags: ["매니아"] }
+  { q: "에렌 예거의 고향은 '시간시나 구'이다.", a: true, img: "assets/quiz/aot-img/aot-1.jpeg", explanation: "월 마리아 남쪽 끝에 위치한 시간시나 구가 에렌의 고향이 맞습니다." },
+  { q: "거인의 유일한 약점은 심장이다.", a: false, img: "assets/quiz/aot-img/aot-2.jpeg", explanation: "거인은 심장이 아니라 목 뒤의 '뒷덜미'를 베어야만 죽습니다." },
+  { q: "리바이 병장은 결벽증이 있어 청소에 집착한다.", a: true, img: "assets/quiz/aot-img/aot-3.jpeg", explanation: "리바이는 전투 중에도 피가 튀는 것을 싫어하며 청결에 매우 민감합니다." },
+  { q: "미카사가 항상 두르고 있는 머플러는 아르민이 준 것이다.", a: false, img: "assets/quiz/aot-img/aot-4.jpeg", explanation: "붉은 머플러는 어린 시절 에렌이 미카사에게 직접 둘러준 소중한 선물입니다." },
+  { q: "사샤 브라우스는 훈련병 시절 교관 앞에서 '찐 감자'를 먹었다.", a: true, img: "assets/quiz/aot-img/aot-5.jpeg", explanation: "이 사건으로 인해 사샤는 '감자녀'라는 별명을 얻게 되었습니다." },
+  { q: "초대형 거인의 정체는 베르톨트 후버이다.", a: true, img: "assets/quiz/aot-img/aot-6.jpeg", explanation: "베르톨트는 라이너와 함께 벽을 파괴한 초대형 거인의 계승자였습니다." },
+  { q: "조사병단의 문장은 '자유의 날개'라고 불린다.", a: true, img: "assets/quiz/aot-img/aot-7.jpeg", explanation: "겹쳐진 두 개의 날개는 벽 밖의 자유를 갈망하는 조사병단의 의지를 상징합니다." },
+  { q: "가장 안쪽 벽(왕이 사는 곳)의 이름은 '월 로제'이다.", a: false, img: "assets/quiz/aot-img/aot-8.jpeg", explanation: "가장 안쪽 벽은 '월 시나'이며, 월 로제는 중간에 위치한 벽입니다." },
+  { q: "애니 레온하트는 '여성형 거인'의 계승자이다.", a: true, img: "assets/quiz/aot-img/aot-9.jpeg", explanation: "애니는 뛰어난 격투술을 바탕으로 여성형 거인의 힘을 사용했습니다." },
+  { q: "아르민은 나중에 베르톨트의 힘을 이어받아 '초대형 거인'이 된다.", a: true, img: "assets/quiz/aot-img/aot-10.jpeg", explanation: "월 마리아 탈환 작전 이후 아르민이 베르톨트를 먹고 힘을 계승합니다." },
+  { q: "거인의 힘을 계승한 사람은 계승 시점부터 13년밖에 살지 못한다.", a: true, img: "assets/quiz/aot-img/aot-11.jpeg", explanation: "이를 '유미르의 저주'라고 하며, 모든 거인 계승자에게 적용되는 규칙입니다." },
+  { q: "엘빈 스미스는 조사병단의 13대 단장이었다.", a: true, img: "assets/quiz/aot-img/aot-12.jpeg", explanation: "엘빈은 인류의 승리를 위해 자신의 심장까지 바친 위대한 13대 단장입니다." },
+  { q: "짐승 거인의 소유자인 지크 예거는 에렌과 친형제(이복형제) 사이다.", a: true, img: "assets/quiz/aot-img/aot-13.jpeg", explanation: "지크와 에렌은 아버지가 그리샤 예거로 같은 형제 관계가 맞습니다." },
+  { q: "갑옷 거인의 정체는 마르코 보트이다.", a: false, img: "assets/quiz/aot-img/aot-14.jpeg", explanation: "갑옷 거인의 정체는 라이너 브라운입니다." },
+  { q: "한지 조에는 거인 연구를 끔찍이 싫어해서 거인을 보자마자 죽인다.", a: false, img: "assets/quiz/aot-img/aot-15.jpeg", explanation: "한지는 거인에게 이름을 붙여줄 정도로 거인 연구에 광적인 열정을 가졌습니다." },
+  { q: "에렌의 아버지가 지하실에 숨겨둔 비밀은 '바깥세상에 인류가 살아있다'는 증거였다.", a: true, img: "assets/quiz/aot-img/aot-16.jpeg", explanation: "지하실의 사진과 책을 통해 벽 안 인류가 유일한 생존자가 아님이 밝혀집니다." },
+  { q: "9거인 중 하나인 '전퇴의 거인'은 타이버 가문이 관리해왔다.", a: true, img: "assets/quiz/aot-img/aot-17.jpeg", explanation: "타이버 가문은 오랜 시간 전퇴의 거인을 계승하며 실권을 쥐고 있었습니다." },
+  { q: "에렌이 가진 거인의 이름 중 하나는 '진격의 거인'이다.", a: true, img: "assets/quiz/aot-img/aot-18.jpeg", explanation: "언제 어느 시대든 자유를 위해 나아가는 '진격의 거인'의 힘을 가졌습니다." },
+  { q: "거인은 밤이 되면 활동이 급격히 둔해지거나 멈춘다.", a: true, img: "assets/quiz/aot-img/aot-19.jpeg", explanation: "거인은 태양 광선을 주요 에너지원으로 삼기 때문에 밤에는 활동이 제한됩니다." },
+  { q: "입체기동장치는 가스 힘이 없어도 무한정 사용할 수 있다.", a: false, img: "assets/quiz/aot-img/aot-20.jpeg", explanation: "가스통과 교체용 칼날은 입체기동장치 사용 시 반드시 필요한 소모품입니다." },
+  { q: "미카사 아커만은 거인의 힘에 대항할 수 있는 '아커만 일족'의 후예다.", a: true, img: "assets/quiz/aot-img/aot-image21.png", explanation: "아커만 일족은 인간 상태에서도 거인의 힘 일부를 끌어내어 사용하는 강력한 혈통입니다." },
+  { q: "조사병단의 경례 구호는 '심장을 바쳐라!'이다.", a: true, img: "assets/quiz/aot-img/aot-image22.png", explanation: "오른쪽 주먹을 왼쪽 가슴 심장 위에 올리는 경례 방식과 함께 사용됩니다." },
+  { q: "벽 내부 종교인 '월교'는 벽 안에 거인이 들어있다는 사실을 몰랐다.", a: false, img: "assets/quiz/aot-img/aot-image23.png", explanation: "월교의 핵심 인물들은 벽이 거인으로 이루어져 있다는 진실을 이미 알고 있었습니다." },
+  { q: "거인이 인간을 잡아먹는 이유는 배가 고파서 영양분을 섭취하기 위함이다.", a: false, img: "assets/quiz/aot-img/aot-image24.png", explanation: "거인은 소화 기관이 없으며, 인간을 먹는 행위는 계승자를 찾아 인간으로 돌아가려는 본능입니다." },
+  { q: "초대형 거인은 다른 거인들보다 훨씬 크지만 이동 속도는 매우 느리다.", a: true, img: "assets/quiz/aot-img/aot-image25.png", explanation: "거대한 크기 때문에 파괴력은 압도적이지만, 동작과 이동 속도는 매우 둔합니다." },
+  { q: "턱 거인은 크기가 작지만 날카로운 이빨과 손톱, 빠른 속도가 특징이다.", a: true, img: "assets/quiz/aot-img/aot-image26.png", explanation: "강력한 턱 힘으로 경질화된 물체도 부술 수 있는 기동형 거인입니다." },
+  { q: "에렌과 친구들이 마침내 벽 밖 세상 끝에서 마주한 것은 '강'이었다.", a: false, img: "assets/quiz/aot-img/aot-image27.png", explanation: "모든 거인을 소탕한 후 그들이 도달한 곳은 끝없이 넓은 '바다'였습니다." },
+  { q: "시조의 거인의 힘을 완전히 발휘하려면 왕가의 피가 필요하다.", a: true, img: "assets/quiz/aot-img/aot-image28.png", explanation: "왕가의 혈통이 아니면 시조의 거인이 가진 '좌표'의 힘을 온전히 쓸 수 없습니다." },
+  { q: "리바이 반의 정예 멤버들은 여성형 거인과의 전투에서 전원 생존했다.", a: false, img: "assets/quiz/aot-img/aot-image29.png", explanation: "안타깝게도 리바이를 제외한 구 리바이 반 멤버 전원이 여성형 거인에게 전사했습니다." },
+  { q: "진격의 거인 애니메이션의 원작 작가는 이사야마 하지메이다.", a: true, img: "assets/quiz/aot-img/aot-image30.png", explanation: "이사야마 하지메 작가의 치밀한 복선과 스토리텔링이 돋보이는 작품입니다." }
 ];
