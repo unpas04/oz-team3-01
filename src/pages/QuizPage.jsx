@@ -31,7 +31,7 @@ export default function QuizPage() {
   const navigate = useNavigate();
   const category = (searchParams.get('category') || 'aot').toLowerCase();
   const mode     = searchParams.get('mode') || 'normal';
-  const wrongInput = searchParams.get('wrong') || "";
+  const wrongInput = sessionStorage.getItem('oz_wrong_indices') || "";
   const initialScore = parseInt(searchParams.get('score')) || 0;
   const meta = CATEGORY_META[category] || { emoji: '✨', label: 'QUIZ', cls: 'placeholder-default' };
 
@@ -177,10 +177,10 @@ export default function QuizPage() {
       const finalScore = mode === 'revival' ? (initialScore + (wasCorrect ? score + 1 : score)) : (wasCorrect ? score + 1 : score);
       const finalWrong = wasCorrect ? wrongAnswers : [...wrongAnswers]; // 이미 handleAnswer에서 추가됨
       
+      sessionStorage.setItem('oz_wrong_indices', finalWrong.join(','));
       const query = new URLSearchParams({
         category,
         score: finalScore,
-        wrong: finalWrong.join(','),
         mode
       }).toString();
       

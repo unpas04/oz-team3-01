@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   evaluateQuizResult,
   getCategoryTitle,
   calculatePercentile,
 } from '../modules/data-module';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import "../styles/result.css";
 
 // 원본 에모지 설정 1:1 복제
@@ -41,7 +42,8 @@ export default function ResultPage() {
   const category = searchParams.get('category') || 'sanrio';
   const mode = searchParams.get('mode') || 'normal';
   const score = parseInt(searchParams.get('score')) || 0;
-  const wrongStr = searchParams.get('wrong') || "";
+  // Task 9: Reading wrong targets securely from SessionStorage
+  const wrongStr = sessionStorage.getItem('oz_wrong_indices') || "";
   const wrongIndices = wrongStr ? wrongStr.split(',').map(Number) : [];
 
   const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
@@ -50,14 +52,19 @@ export default function ResultPage() {
 
   const [imgSrc, setImgSrc] = useState("");
   const [analysis, setAnalysis] = useState({ s: 0, c: 0, l: 0, m: 0 });
+  const [isError, setIsError] = useState(false); // Task 10: 에러 상태
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = `/data/${category}.js`;
+    script.onerror = () => setIsError(true); // 에러 핸들링
     script.onload = () => {
       const varName = `QUIZ_DATA_${category.toUpperCase()}`;
       const quizData = window[varName] || globalThis[varName];
-      if (!quizData) return;
+      if (!quizData) {
+          setIsError(true);
+          return;
+      }
 
       const firstImg = quizData.find(q => q.img && q.img !== "")?.img;
       setImgSrc(firstImg || `/assets/main-cards/${category}.png`);
@@ -89,26 +96,83 @@ export default function ResultPage() {
     return () => { if (document.body.contains(script)) document.body.removeChild(script); };
   }, [category, wrongIndices]);
 
-  const radarPts = [
-    `50,${50-analysis.s*40}`, `50,${50+analysis.l*40}`,
-    `${50+analysis.c*40},50`, `${50-analysis.m*40},50`
-  ].join(' ');
+  const radarData = [
+    { subject: '스토리', A: analysis.s * 100, fullMark: 100 },
+    { subject: '캐릭터', A: analysis.c * 100, fullMark: 100 },
+    { subject: '설명', A: analysis.l * 100, fullMark: 100 },
+    { subject: '매니아', A: analysis.m * 100, fullMark: 100 },
+  ];
 
   const emojis = EMOJI_MAP[category] || ['✨', '⭐'];
 
+  // Task 7: Canvas Emoji Particle System
+  const canvasRef = useRef(null);
+  useEffect(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width = window.innerWidth;
+      const h = canvas.height = window.innerHeight;
+      
+      const particles = emojis.map((em) => ({
+          x: Math.random() * w,
+          y: Math.random() * h + h,
+          emoji: em,
+          speed: 1 + Math.random() * 2
+      }));
+
+      let animId;
+      const render = () => {
+          ctx.clearRect(0, 0, w, h);
+          ctx.font = "24px sans-serif";
+          particles.forEach(p => {
+              p.y -= p.speed;
+              if (p.y < -50) { p.y = h + 50; p.x = Math.random() * w; }
+              ctx.fillText(p.emoji, p.x, p.y);
+          });
+          animId = requestAnimationFrame(render);
+      };
+      render();
+      return () => cancelAnimationFrame(animId);
+  }, [emojis]);
+
+  // Task 10: Error Boundary Fallback UI
+  if (isError) {
+      return (
+          <div className="premium-body result" style={{ justifyContent: 'center' }}>
+              <div className="result-card" style={{ textAlign: 'center', padding: '50px 20px' }}>
+                  <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>🔌</h1>
+                  <h2 style={{ color: '#1e293b', marginBottom: '15px' }}>통신 방해가 발생했습니다</h2>
+                  <p style={{ color: '#64748b', marginBottom: '30px' }}>카테고리 정보를 불러오지 못했습니다. 다시 시도해주세요.</p>
+                  <button className="btn" style={{ background: '#6366F1', color: '#fff', width: '100%' }} onClick={() => navigate('/')}>홈으로 돌아가기</button>
+              </div>
+          </div>
+      );
+  }
+
+  // Task 8: Web Share API
+  const handleNativeShare = async () => {
+      const shareData = {
+          title: `OZ Master - ${getCategoryTitle(category)}`,
+          text: `나는 ${getCategoryTitle(category)} ${gradeInfo.title} 등급! (상위 ${percentile.toFixed(1)}%)`,
+          url: window.location.href
+      };
+      if (navigator.share && navigator.canShare(shareData)) {
+          try { await navigator.share(shareData); } 
+          catch (e) { console.log('Share canceled'); }
+      } else {
+          navigator.clipboard.writeText(window.location.href);
+          alert("네이티브 공유를 지원하지 않는 브라우저입니다. 링크가 복사되었습니다!");
+      }
+  };
+
   return (
     <div className="premium-body result">
-      {/* 원본 배경 비주얼 1:1 복제 */}
+      {/* 원본 배경 비주얼 + 캔버스 (Task 7) */}
       <div className="bg-visuals">
+        <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 1 }} />
         <div className="bg-blob"></div>
         <div className="bg-blob secondary"></div>
-        {emojis.map((em, i) => (
-          <div key={i} className="floating-item" style={{ 
-            left: `${10 + i * 20}%`, 
-            animationDuration: `${5 + i}s`, 
-            animationName: 'pixelFloat'
-          }}>{em}</div>
-        ))}
       </div>
 
       <div className="container result-container">
@@ -149,10 +213,15 @@ export default function ResultPage() {
           <div className="analysis-box">
             <div style={{fontSize:'0.75rem', fontWeight:900, marginBottom:'10px', color:'#94A3B8'}}>ATTRIBUTE ANALYSIS</div>
             <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:'20px'}}>
-              <svg width="80" height="80" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#E2E8F0" strokeWidth="0.5"/>
-                <polygon points={radarPts} fill="rgba(99, 102, 241, 0.4)" stroke="#6366F1" strokeWidth="1.5"/>
-              </svg>
+              <div style={{ width: '120px', height: '120px', marginLeft: '-20px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                    <PolarGrid stroke="#E2E8F0" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <Radar name="성향" dataKey="A" stroke="#6366F1" fill="rgba(99, 102, 241, 0.4)" fillOpacity={0.6} />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </div>
               <div style={{fontSize:'0.7rem', textAlign:'left', color:'#475569'}}>
                 <div>스토리 <strong>{Math.round(analysis.s*100)}%</strong></div>
                 <div>캐릭터 <strong>{Math.round(analysis.c*100)}%</strong></div>
@@ -175,7 +244,7 @@ export default function ResultPage() {
             
             {/* 부활전 버튼 (수술적 추가) */}
             {wrongIndices.length > 0 && (
-              <button className="btn btn-revival" onClick={() => navigate(`/quiz?category=${category}&mode=revival&wrong=${wrongStr}&score=${score}`)}>
+              <button className="btn btn-revival" onClick={() => navigate(`/quiz?category=${category}&mode=revival&score=${score}`)}>
                 <span>🔥 오답 부활전 도전하기</span>
               </button>
             )}
@@ -186,20 +255,17 @@ export default function ResultPage() {
         <div className="share-container">
           <span className="share-label">Share with Friends</span>
           <div className="share-buttons">
-            <button className="s-btn kakao">
+            <button className="s-btn kakao" aria-label="카카오톡으로 공유하기">
               <img src="/assets/sns-ci/kakao.png" alt="K" />
             </button>
-            <button className="s-btn instagram">
+            <button className="s-btn instagram" aria-label="인스타그램으로 공유하기">
               <img src="/assets/sns-ci/insta.png" alt="I" />
             </button>
-            <button className="s-btn x">
+            <button className="s-btn x" aria-label="X(트위터)로 공유하기">
               <img src="/assets/sns-ci/x-twitter.png" alt="X" />
             </button>
-            <button className="s-btn url" onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              alert("링크가 복사되었습니다!");
-            }}>
-              <span>🔗</span>
+            <button className="s-btn url" aria-label="링크 복사 및 네이티브 공유" onClick={handleNativeShare}>
+              <span aria-hidden="true">🔗</span>
             </button>
           </div>
         </div>
