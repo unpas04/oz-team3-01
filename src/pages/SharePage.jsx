@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getCategoryTitle, evaluateQuizResult } from '../modules/data-module';
 import CertificateCard from '../components/CertificateCard';
@@ -15,9 +15,49 @@ export default function SharePage() {
   const category = searchParams.get('category') ?? 'sanrio';
   const score = Number(searchParams.get('score') ?? 0);
   const quizMode = searchParams.get('mode') ?? 'normal';
+  
+  const wrongStr = sessionStorage.getItem('oz_wrong_indices') || "";
+  const wrongIndices = wrongStr ? wrongStr.split(',').map(Number) : [];
 
-  const { gradeInfo, scorePct } = evaluateQuizResult(category, quizMode, score, []);
+  const { gradeInfo, scorePct } = evaluateQuizResult(category, quizMode, score, wrongIndices);
   const catKo = getCategoryTitle(category);
+
+  const [analysis, setAnalysis] = useState({ s: 0, c: 0, l: 0, m: 0 });
+
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `/data/${category}.js`;
+    script.onload = () => {
+      const varName = `QUIZ_DATA_${category.toUpperCase()}`;
+      const quizData = window[varName] || globalThis[varName];
+      if (!quizData) return;
+
+      const tagScores = { "스토리": 0, "캐릭터": 0, "설정": 0, "매니아": 0 };
+      const tagTotals = { "스토리": 0, "캐릭터": 0, "설정": 0, "매니아": 0 };
+
+      quizData.forEach((item, idx) => {
+        const rawTag = (item.tags && item.tags.length > 0) ? item.tags[0] : "설정";
+        const tag = rawTag.trim();
+        if (tagTotals[tag] !== undefined) {
+          tagTotals[tag]++;
+          if (!wrongIndices.includes(idx)) tagScores[tag]++;
+        } else {
+          tagTotals["설정"]++;
+          if (!wrongIndices.includes(idx)) tagScores["설정"]++;
+        }
+      });
+
+      setAnalysis({
+        s: tagScores["스토리"] / (tagTotals["스토리"] || 1),
+        c: tagScores["캐릭터"] / (tagTotals["캐릭터"] || 1),
+        l: tagScores["설정"] / (tagTotals["설정"] || 1),
+        m: tagScores["매니아"] / (tagTotals["매니아"] || 1)
+      });
+    };
+    document.body.appendChild(script);
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, [category, wrongIndices]);
 
   async function saveImage() {
     if (typeof html2canvas === 'undefined') {
@@ -66,6 +106,7 @@ export default function SharePage() {
           scoreMax={SCORE_MAX} 
           scorePct={scorePct} 
           catKo={catKo} 
+          analysis={analysis}
         />
       </div>
 

@@ -12,7 +12,7 @@ export const CATEGORY_MAP = {
       { min: 70, label: 'A', title: '시나모롤의 단짝', desc: '캐릭터들의 생일과 취향까지 아는 찐팬!', quote: '저기... 나랑 친구가 되어줄래? (시나모롤)', color: 'linear-gradient(135deg, #A18CD1, #FBC2EB)' },
       { min: 50, label: 'B', title: '멜로디 가드너', desc: '대중적인 캐릭터는 마스터하셨네요.', quote: '언제나 긍정적으로 생각하면 즐거운 일이 생길 거야! (마이멜로디)', color: 'linear-gradient(135deg, #84FAB0, #8FD3F4)' },
       { min: 30, label: 'C', title: '쿠로미 군단 후보', desc: '귀여운 디자인은 알지만 스토리는 부족해요.', quote: '흥, 내 일기장에 써놓을 거야! (쿠로미)', color: 'linear-gradient(135deg, #F6D365, #FDA085)' },
-      { min: 0, label: 'D', title: '지나가던 행인', desc: '산리오 월드에 더 자주 놀러오세요!', quote: '누구... 세요? 전 푸딩 먹느라 바빠요. (폼폼푸린)', color: 'linear-gradient(135deg, #E0C3FC, #8EC5FC)' }
+      { min: 0, label: 'D', title: '지나가던 행인', desc: '산리오 월드에 더 자주 놀러오세요!', quote: '누구... 세요? 전 푸딩 먹느라 바빠요. (폼폼푸린)', color: 'linear-gradient(135deg, #CFD9DF, #E2E2E2)' }
     ]
   },
   pokemon: {
