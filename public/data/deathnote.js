@@ -17,7 +17,7 @@ window.QUIZ_DATA_DEATHNOTE = [
   { q: "데스노트는 한 번에 한 권만 인간계에 존재할 수 있다.", a: false, img: "/assets/quiz/deathnote-img/image copy 15.png", explanation: "작중 여러 권의 데스노트가 동시에 인간계에 나타납니다.", tags: ["설정"] },
   { q: "L은 항상 의자 위에서 무릎을 세우고 앉는다.", a: true, img: "/assets/quiz/deathnote-img/image copy 16.png", explanation: "그렇게 앉지 않으면 추리력이 40% 저하된다고 주장합니다.", tags: ["캐릭터"] },
   { q: "라이토는 대학 입시에서 전국 수석을 차지했다.", a: true, img: "/assets/quiz/deathnote-img/image copy 17.png", explanation: "라이토는 전국 1등을 놓치지 않는 수재 설정입니다.", tags: ["캐릭터"] },
-  { q: "데스노트를 포기하면 관련 기억이 모두 사라진다.", a: true, img: "/assets/quiz/deathnote-img/image copy 18.png", explanation: "소유권을 포기하면 노트와 관련된 기억이 즉시 삭제됩니다.", tags: ["설정"] },
+  { q: "데스노트의 소유권을 포기하면 관련 기억이 모두 사라진다.", a: true, img: "/assets/quiz/deathnote-img/image copy 18.png", explanation: "소유권을 포기하면 노트와 관련된 기억이 즉시 삭제됩니다.", tags: ["설정"] },
   { q: "멜로(M)는 초콜릿을 즐겨 먹는다.", a: true, img: "/assets/quiz/deathnote-img/image copy 19.png", explanation: "니아의 라이벌인 멜로는 항상 판 초콜릿을 들고 다닙니다.", tags: ["캐릭터"] },
   { q: "키라 사건을 전담하는 수사 본부장은 라이토의 아버지다.", a: true, img: "/assets/quiz/deathnote-img/image copy 20.png", explanation: "야가미 소이치로 국장이 수사 본부를 지휘합니다.", tags: ["스토리"] },
   { q: "데스노트에 이름을 적어 사람을 조종할 수 있는 기간은 최대 23일이다.", a: true, img: "/assets/quiz/deathnote-img/image copy 21.png", explanation: "데스노트로 조종 가능한 시간상의 한계는 23일입니다.", tags: ["설정"] },
