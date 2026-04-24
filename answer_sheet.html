@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  answer_sheet.html — 채점지 페이지                             ║
+║  담당: 팀원                                                    ║
+║                                                              ║
+║  [페이지 진입 경로]                                            ║
+║  result.html 에서 "채점지 보기" 버튼 클릭 → 이 페이지로 이동    ║
+║                                                              ║
+║  [데이터 수신 방법]                                            ║
+║  quiz_test2.html에서 퀴즈가 끝날 때 sessionStorage에 저장함     ║
+║  키 이름: "quizAnswerSheet"                                   ║
+║  형식 (JSON):                                                 ║
+║  [                                                           ║
+║    {                                                         ║
+║      q: "문제 텍스트",          ← 문제 내용                    ║
+║      correct: true / false,    ← 정답 (true=YES, false=NO)   ║
+║      userAnswer: true / false, ← 유저가 선택한 답              ║
+║      isRight: true / false     ← 맞았는지 여부                ║
+║    },                                                        ║
+║    ...                                                       ║
+║  ]                                                           ║
+║                                                              ║
+║  ※ quiz_test2.html에 아직 저장 로직이 없음                     ║
+║     → nextQuestion() 안에서 각 문제 결과를 배열에 push하고,     ║
+║       goToResult() 직전에 sessionStorage.setItem() 해야 함    ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>덕력 감별소 — 채점지</title>
+  <link rel="stylesheet" href="common.css" />
+  <style>
+    /* TODO: 전체 페이지 스타일 작성 (common.css 변수 활용 가능) */
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- TODO: 페이지 제목 영역 -->
+    <!-- 예시: "📋 채점지", 카테고리명, 노말/하드 모드 표시 -->
+
+    <!-- TODO: 총점 요약 영역 -->
+    <!-- 예시: "10문제 중 7문제 정답" 같은 요약 표시 -->
+
+    <!-- TODO: 문제 목록 영역 -->
+    <!--
+      sessionStorage에서 "quizAnswerSheet" 키로 JSON.parse() 해서 배열 꺼내기
+      배열을 forEach로 돌면서 각 문제 카드 생성
+
+      각 카드에 표시할 것:
+      - 문제 번호 (Q1, Q2 ...)
+      - 문제 텍스트 (item.q)
+      - 정답 표시 (item.correct === true ? "YES" : "NO")
+      - 유저 선택 표시 (item.userAnswer === true ? "YES" : "NO")
+      - 맞았는지 O / X 표시 (item.isRight)
+    -->
+
+    <!-- TODO: 하단 버튼 영역 -->
+    <!--
+      버튼 1: "결과로 돌아가기" → history.back() 또는 result.html로 이동
+      버튼 2: "처음으로" → index.html로 이동
+    -->
+
+  </div>
+
+  <script>
+    // TODO: sessionStorage에서 데이터 불러오기
+    // const raw = sessionStorage.getItem('quizAnswerSheet');
+    // if (!raw) { 데이터 없을 때 처리 (예: "퀴즈를 먼저 풀어주세요" 안내) }
+    // const sheet = JSON.parse(raw);
+
+    // TODO: sheet 배열로 문제 카드 동적 생성
+
+    // TODO: 정답 개수 계산 후 요약 영역에 표시
+    // const correctCount = sheet.filter(item => item.isRight).length;
+  </script>
+
+</body>
+</html>

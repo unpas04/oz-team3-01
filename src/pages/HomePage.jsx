@@ -8,6 +8,11 @@ const CATEGORIES = [
   { id: "aot", name: "진격의 거인", emoji: "⚔️" },
   { id: "kimetsu", name: "귀멸의 칼날", emoji: "🔥" },
   { id: "fma", name: "강철의 연금술사", emoji: "⚗️" },
+  { id: "jjk", name: "주술회전", emoji: "🔮" },
+  { id: "dragonball", name: "드래곤볼", emoji: "🐉" },
+  { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
+  { id: "deathnote", name: "데스노트", emoji: "📓" },
+  { id: "slamdunk", name: "슬램덩크", emoji: "🏀" },
 ];
 
 const GRADES = [
