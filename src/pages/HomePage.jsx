@@ -13,7 +13,6 @@ const CATEGORIES = [
   { id: "dragonball", name: "드래곤볼", emoji: "🐉" },
   { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
   { id: "deathnote", name: "데스노트", emoji: "📓" },
-  { id: "slamdunk", name: "슬램덩크", emoji: "🏀" },
   { id: "fate", name: "페이트 시리즈", emoji: "📜" },
 ];
 
