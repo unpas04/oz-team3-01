@@ -69,6 +69,50 @@ export const CATEGORY_MAP = {
       { min: 30, label: 'C', title: '마술사 지망생', desc: '기초 마술 회로조차 제대로 돌리지 못합니다.', quote: '사람은 죽으면 죽는 법이야. (시로)', color: 'linear-gradient(90deg, #84FAB0, #8FD3F4)' },
       { min: 0, label: 'D', title: '성배전쟁 탈락자', desc: '가장 먼저 퇴장하게 될 비운의 인물.', quote: '아... 버서커는 강하구나... (이리야)', color: 'linear-gradient(90deg, #CFD9DF, #E2E2E2)' }
     ]
+  },
+  jjk: {
+    title: '주술회전 능력 고사',
+    emoji: '🔮',
+    grades: [
+      { min: 90, label: 'S', title: '특급 주술사', desc: '고죠 사토루마저 인정한 차세대 최강의 주술사!', quote: '다이죠부, 보쿠 사이쿄다카라. (고죠 사토루)', color: 'linear-gradient(135deg, #1A1A1A, #4B0082)' },
+      { min: 70, label: 'A', title: '1급 주술사', desc: '주술 고전의 핵심 전력이자 든든한 선배!', quote: '주술사는 똥입니다! 노동도 똥입니다! (나나미)', color: 'linear-gradient(135deg, #2C3E50, #000000)' },
+      { min: 50, label: 'B', title: '준 1급 주술사', desc: '전투 경험을 더 쌓으면 1급도 머지않았군요.', quote: '살아남아라, 이타도리. (후시구로)', color: 'linear-gradient(135deg, #4A0E0E, #8B0000)' },
+      { min: 30, label: 'C', title: '2급 주술사', desc: '아직은 임무 수행에 지원이 필요해 보입니다.', quote: '나는... 불행해지고 싶지 않아. (노바라)', color: 'linear-gradient(135deg, #3D3D3D, #7F8C8D)' },
+      { min: 0, label: 'D', title: '창(窓)', desc: '주령을 볼 수만 있는 일반인 수준입니다.', quote: '그치만... 무서운걸요... (이치지)', color: 'linear-gradient(135deg, #BDC3C7, #2C3E50)' }
+    ]
+  },
+  dragonball: {
+    title: '드래곤볼 능력 고사',
+    emoji: '🐉',
+    grades: [
+      { min: 90, label: 'S', title: '우주 최강의 전사', desc: '파괴신도 긴장하게 만들 무의식의 극의!', quote: '나... 화났다!!! (손오공)', color: 'linear-gradient(135deg, #FFD700, #FF8C00)' },
+      { min: 70, label: 'A', title: '초사이어인', desc: '행성 하나쯤은 가볍게 날려버릴 실력자!', quote: '내 이름은 베지터, 사이어인의 왕자다! (베지터)', color: 'linear-gradient(135deg, #FFD700, #FFA500)' },
+      { min: 50, label: 'B', title: '지구의 영웅', desc: 'Z전사의 일원으로 활약하기에 충분합니다.', quote: '지구의 평화는 내가 지킨다! (크리링)', color: 'linear-gradient(135deg, #FF4500, #FFD700)' },
+      { min: 30, label: 'C', title: '무천도사의 제자', desc: '아직은 에네르기파를 연습해야 할 단계.', quote: '거북 선인류의 무술을 보여주마! (무천도사)', color: 'linear-gradient(135deg, #FAD0C4, #FFD1FF)' },
+      { min: 0, label: 'D', title: '야무치...', desc: '재배맨을 조심해야 할 것 같네요.', quote: '야... 야무치가 당했다! (크리링)', color: 'linear-gradient(135deg, #E2E2E2, #D5D5D5)' }
+    ]
+  },
+  chainsawman: {
+    title: '체인소맨 능력 고사',
+    emoji: '🪚',
+    grades: [
+      { min: 90, label: 'S', title: '체인소의 심장', desc: '지옥의 영웅, 모든 악마가 두려워하는 존재!', quote: '평범한 생활을 하고 싶어... (덴지)', color: 'linear-gradient(135deg, #FF4B2B, #FF416C)' },
+      { min: 70, label: 'A', title: '특이 4과 에이스', desc: '공안 최고의 데빌 헌터로 인정받았습니다.', quote: '개는 필요 없어. 내겐 평등한 관계뿐이야. (마키마)', color: 'linear-gradient(135deg, #232526, #414345)' },
+      { min: 50, label: 'B', title: '포치타의 친구', desc: '악마와 계약하여 싸울 준비가 되었군요.', quote: '나의 심장을 줄게. 대신 네 꿈을 보여줘. (포치타)', color: 'linear-gradient(135deg, #FF7E5F, #FEB47B)' },
+      { min: 30, label: 'C', title: '수습 데빌 헌터', desc: '악마의 공포에 질려 도망치지 마세요.', quote: '나는... 죽는 게 무서워! (코베니)', color: 'linear-gradient(135deg, #606c88, #3f4c6b)' },
+      { min: 0, label: 'D', title: '악마의 먹이', desc: '민간인으로서 조용히 사는 게 답입니다.', quote: '살려주세요... (지나가던 행인)', color: 'linear-gradient(135deg, #bdc3c7, #2c3e50)' }
+    ]
+  },
+  deathnote: {
+    title: '데스노트 능력 고사',
+    emoji: '📓',
+    grades: [
+      { min: 90, label: 'S', title: '신세계의 신', desc: '모든 계획을 완벽하게 실행한 천재 지략가!', quote: '계획대로야. (야가미 라이토)', color: 'linear-gradient(135deg, #1f1c2c, #928dab)' },
+      { min: 70, label: 'A', title: 'L의 후계자', desc: '정의를 위해 끝까지 진실을 추적하는 자.', quote: '틀리지 않았습니다. 제가 L입니다. (니아)', color: 'linear-gradient(135deg, #ECE9E6, #FFFFFF)' },
+      { min: 50, label: 'B', title: '유능한 수사관', desc: '키라 수사 본부의 핵심 인재입니다.', quote: '나는 정의다! (L)', color: 'linear-gradient(135deg, #000000, #434343)' },
+      { min: 30, label: 'C', title: '노트 주운 평범남', desc: '이름을 적기엔 아직 용기가 부족하군요.', quote: '인간은... 정말 흥미로워! (류크)', color: 'linear-gradient(135deg, #757f9a, #d7dde8)' },
+      { min: 0, label: 'D', title: '미사미사 광팬', desc: '추리보다는 아이돌 덕질이 적성에 맞네요.', quote: '라이토를 위해서라면 뭐든지 할게! (미사)', color: 'linear-gradient(135deg, #bdc3c7, #2c3e50)' }
+    ]
   }
 };
 
