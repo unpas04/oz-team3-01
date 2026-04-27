@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage"
 import QuizPage from "./pages/QuizPage"
 import ResultPage from "./pages/ResultPage"
 import SharePage from "./pages/SharePage"
+import TestResultPage from "./pages/TestResultPage"
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/result" element={<ResultPage />} />
       <Route path="/share" element={<SharePage />} />
+      <Route path="/test-result" element={<TestResultPage />} />
     </Routes>
     </BrowserRouter>
   )

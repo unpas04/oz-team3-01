@@ -190,6 +190,34 @@ export default function ResultPage() {
           <h2 className="grade-title">{gradeInfo.title}</h2>
           <p className="grade-description">{gradeInfo.desc}</p>
 
+          {gradeInfo.introduction && (
+            <div style={{
+              fontSize: '0.95rem',
+              lineHeight: '1.6',
+              color: '#475569',
+              margin: '20px 0',
+              padding: '15px',
+              backgroundColor: 'rgba(255,255,255,0.5)',
+              borderRadius: '8px',
+              whiteSpace: 'pre-wrap'
+            }}>
+              {gradeInfo.introduction}
+            </div>
+          )}
+
+          {gradeInfo.characteristic && (
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              color: '#6366f1',
+              margin: '15px 0',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }}>
+              ✦ {gradeInfo.characteristic} ✦
+            </div>
+          )}
+
           <div className="grade-quote">"{gradeInfo.quote}"</div>
 
           <div className="score-display-wrap">

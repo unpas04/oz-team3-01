@@ -41,11 +41,72 @@ export const CATEGORY_MAP = {
     title: '귀멸의 칼날 퀴즈',
     emoji: '🔥',
     grades: [
-      { min: 90, label: 'S', title: '해의 호흡 계승자', desc: '오니마저 가엾게 여기는 최고의 검사!', quote: '가슴을 펴고 살아라. 마음의 불꽃을 태워라! (렌고쿠)', color: 'linear-gradient(135deg, #FF0844, #FFB199)' },
-      { min: 70, label: 'A', title: '주(柱)급 검사', desc: '기둥이 되기에 부족함이 없는 실력입니다.', quote: '화려하게 가보자고! (우즈이 텐겐)', color: 'linear-gradient(90deg, #F093FB, #F5576C)' },
-      { min: 50, label: 'B', title: '귀살대 계급: 갑', desc: '장정 한두 명쯤은 거튼히 지켜낼 실력!', quote: '잃어도 잃어도 살아가는 수밖에 없어요. (탄지로)', color: 'linear-gradient(90deg, #5EE7DF, #B490CA)' },
-      { min: 30, label: 'C', title: '귀살대 계급: 계', desc: '최종선발을 갓 통과한 풋내기 대원.', quote: '우와아아아앙! 죽고 싶지 않아! (젠이츠)', color: 'linear-gradient(90deg, #D4FC79, #96E6A1)' },
-      { min: 0, label: 'D', title: '그냥 일반인', desc: '오니를 만나면 도망치는 게 상책입니다.', quote: '수련을 게을리 한 자에게 가르칠 호흡은 없다. (우로코다키)', color: 'linear-gradient(90deg, #A1C4FD, #C2E9FB)' }
+      {
+        min: 90,
+        label: 'S',
+        title: '해의 호흡 계승자',
+        desc: '기둥급 오타쿠',
+        introduction: `당신은 귀멸의 칼날 세계에서 기둥 수준의 덕력을 자랑합니다.
+호흡의 종류부터 각 기둥의 가족사, 악마의 설정까지...
+당신 앞에선 공식 설정도 숨을 죽입니다.
+이미 동인지 창작 구상 중이지 않나요?`,
+        characteristic: '당신의 뇌는 이미 각본가입니다',
+        quote: '"가슴을 펴고 살아라. 마음의 불꽃을 태워라!" - 렌고쿠',
+        color: 'linear-gradient(135deg, #FF0844, #FFB199)'
+      },
+      {
+        min: 70,
+        label: 'A',
+        title: '주(柱)급 검사',
+        desc: '동인지작가 감',
+        introduction: `귀멸을 충분히 깊이있게 즐기는 당신.
+주인공 탄지로의 매력은 물론, 옆 캐릭터들의 매력까지 완벽히 포착했습니다.
+당신은 충분히 팬픽션 커뮤니티에서 반길 준비가 되어있습니다.
+"아 이 장면 이렇게 하면 더 좋겠는데?"라는 생각 많이 드시죠?`,
+        characteristic: '당신과 얘기하면 귀멸이 더 재미있어집니다',
+        quote: '"화려하게 가보자고!" - 우즈이 텐겐',
+        color: 'linear-gradient(90deg, #F093FB, #F5576C)'
+      },
+      {
+        min: 50,
+        label: 'B',
+        title: '귀살대 갑급',
+        desc: '제2차 팬심',
+        introduction: `귀멸을 재밌게 보고 있는 당신.
+주인공 탄지로와 메인 캐릭터들은 완벽하지만,
+뒷배경 설정까지는 아직 공략 중입니다.
+충분히 좋은 팬인데, 혹시 원작도 한 번 더 볼 시간 있으세요?`,
+        characteristic: '탄지로 옹호 봇의 기질을 가졌습니다',
+        quote: '"잃어도 잃어도 살아가는 수밖에 없어요." - 탄지로',
+        color: 'linear-gradient(90deg, #5EE7DF, #B490CA)'
+      },
+      {
+        min: 30,
+        label: 'C',
+        title: '유튜브 클립 덕후',
+        desc: '애니 클립으로 입장',
+        introduction: `유명한 장면은 알지만, 원작은 아직 잘 모르는 당신.
+렌고쿠의 죽음, 무잔과의 전투...
+명장면은 다 유튜브에서 봤어도,
+전체 스토리는 조금 흐릿할 수 있습니다.`,
+        characteristic: '괜찮습니다! 언제든 재도전하면 됩니다',
+        quote: '"우와아아아앙! 죽고 싶지 않아!" - 젠이츠',
+        color: 'linear-gradient(90deg, #D4FC79, #96E6A1)'
+      },
+      {
+        min: 0,
+        label: 'D',
+        title: '지나가던 일반인',
+        desc: '악마? 칼? 복잡한데요',
+        introduction: `귀신이 나오고... 호흡하면서... 칼을 휘두른다고요?
+당신에겐 귀멸은 아직 미스터리입니다.
+하지만 걱정하지 마세요!
+모두가 처음엔 일반인에서 시작합니다.
+언제든 다시 도전해보세요. 충분히 중독될 겁니다.`,
+        characteristic: '당신은 아직 기둥이 될 가능성이 무한합니다',
+        quote: '"저... 저게 뭔가요?" - 당신',
+        color: 'linear-gradient(90deg, #A1C4FD, #C2E9FB)'
+      }
     ]
   },
   fma: {
