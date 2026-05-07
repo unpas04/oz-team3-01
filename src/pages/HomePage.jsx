@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getTotalScore } from '../modules/storage-module';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  getTotalRanking,
+  getCategoryRanking,
+  getMyRank,
+  getLastMonthChampion,
+  getMyMonthlyDoc,
+} from '../modules/firestore';
+import { signOutUser } from '../modules/auth';
+import AuthModal from '../components/AuthModal';
+import {
+  trackPageView,
+  trackCategorySelect,
+  trackRankingTab,
+} from '../modules/analytics';
 import "../styles/home.css"
 
 const CATEGORIES = [
@@ -24,16 +39,34 @@ const GRADES = [
   { min: 0, label: "입문자" },
 ];
 
-const MAX_SCORE = 180;
+const MAX_SCORE = 300;
+const MAX_STARS = 10;
+const DEFAULT_CHAMPION = { nickname: "덕후의왕", starCount: 8, totalScore: 240 };
 
 function App() {
+  const { user, profile } = useAuth();
   const [totalScore, setTotalScore] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [rankingTab, setRankingTab] = useState("total");
+  const [starsModalOpen, setStarsModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  // 별딱지 (Firestore 우선, 없으면 빈 배열)
+  const myStars = profile?.stars || [];
+  const starCount = myStars.length;
+
+  // 랭킹 데이터
+  const [rankingTotal, setRankingTotal] = useState([]);
+  const [categoryRanking, setCategoryRanking] = useState({});
+  const [myInfo, setMyInfo] = useState(null);
+  const [myMonthlyTotal, setMyMonthlyTotal] = useState(0);
+  const [champion, setChampion] = useState(null);
 
   useEffect(() => {
     document.body.classList.add("home");
+    trackPageView("/", "덕력 감별소 - 메인");
     return () => {
       document.body.classList.remove("home");
     };
@@ -45,12 +78,80 @@ function App() {
     setTotalScore(score);
   }, []);
 
+  // 종합 랭킹 + 챔피언 (마운트 시 1회)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const top = await getTotalRanking(5);
+        if (!cancelled) setRankingTotal(top);
+      } catch (e) {
+        console.error("[ranking] 종합 랭킹 로드 실패:", e?.code, e?.message);
+        if (e?.message?.includes("index")) {
+          console.error("[ranking] ★ Firestore 인덱스 필요. 콘솔에서 위 링크 클릭해서 생성하세요.");
+        }
+      }
+      try {
+        const ch = await getLastMonthChampion();
+        if (!cancelled) setChampion(ch);
+      } catch (e) {
+        console.error("[champion] 지난달 챔피언 로드 실패:", e?.code, e?.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // 카테고리별 랭킹 (탭 변경 시)
+  useEffect(() => {
+    if (rankingTab === "total") return;
+    if (categoryRanking[rankingTab]) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await getCategoryRanking(rankingTab, 5);
+        if (!cancelled) {
+          setCategoryRanking((prev) => ({ ...prev, [rankingTab]: list }));
+        }
+      } catch (e) {
+        console.error("category ranking error", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [rankingTab, categoryRanking]);
+
+  // 내 순위
+  useEffect(() => {
+    if (!user) {
+      setMyInfo(null);
+      setMyMonthlyTotal(0);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [rank, monthly] = await Promise.all([
+          getMyRank(user.uid),
+          getMyMonthlyDoc(user.uid),
+        ]);
+        if (!cancelled) {
+          setMyInfo(rank);
+          setMyMonthlyTotal(monthly?.totalScore || 0);
+          setTotalScore(monthly?.totalScore || 0);
+        }
+      } catch (e) {
+        console.error("my rank error", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, profile]);
+
   const pct = Math.min(100, Math.round((totalScore / MAX_SCORE) * 100));
   const currentGrade = GRADES.find((g) => pct >= g.min)?.label || "아직 시작 전 ✦";
 
   const openModal = (category) => {
     setSelectedCategory(category);
     setIsModalOpen(true);
+    trackCategorySelect(category.id);
   };
 
   const closeModal = () => {
@@ -77,26 +178,397 @@ function App() {
 
       {/* ② 헤더 */}
       <header className="main-header">
+        <div className="header-auth">
+          {user ? (
+            <div className="header-user">
+              <span className="header-user-nick">{profile?.nickname || user.displayName || "유저"}</span>
+              <button
+                type="button"
+                className="header-auth-btn header-auth-btn-out"
+                onClick={() => signOutUser()}
+              >
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="header-auth-btn"
+              onClick={() => setAuthModalOpen(true)}
+            >
+              로그인 / 가입
+            </button>
+          )}
+        </div>
         <span className="header-tag">CHARACTER QUIZ</span>
         <h1 className="main-title">덕력 감별소</h1>
         <p className="main-subtitle">나의 진짜 덕력을 확인해봐 ✦</p>
       </header>
 
-      {/* ③ 덕력 게이지 */}
-      <section className="gauge-section">
-        <div className="card gauge-wrap">
-          <div className="gauge-header">
-            <span className="gauge-label">나의 덕력 게이지</span>
-            <span className="gauge-score">
-              <strong>{totalScore}</strong> / {MAX_SCORE}점
+      {/* ③-2 별딱지 슬림 pill */}
+      <section className="summary-section">
+        <button
+          type="button"
+          className="summary-pill summary-pill-stars"
+          onClick={() => setStarsModalOpen(true)}
+        >
+          {/* SVG 스티커 아이콘 */}
+          <svg className="pill-sticker" viewBox="0 0 44 44" aria-hidden="true">
+            <defs>
+              <linearGradient id="stickerGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFE5A8" />
+                <stop offset="50%" stopColor="#FFB347" />
+                <stop offset="100%" stopColor="#FF85A1" />
+              </linearGradient>
+              <radialGradient id="stickerHighlight" cx="0.35" cy="0.3" r="0.4">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.7)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </radialGradient>
+            </defs>
+            {/* 메인 별 */}
+            <path
+              d="M22 4 L26.5 16.5 L40 17 L29 25.5 L33 39 L22 31 L11 39 L15 25.5 L4 17 L17.5 16.5 Z"
+              fill="url(#stickerGrad)"
+              stroke="#FF8C42"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+            {/* 광택 */}
+            <path
+              d="M22 4 L26.5 16.5 L40 17 L29 25.5 L33 39 L22 31 L11 39 L15 25.5 L4 17 L17.5 16.5 Z"
+              fill="url(#stickerHighlight)"
+            />
+            {/* 주변 반짝이 */}
+            <circle cx="6" cy="8" r="1.5" fill="#fff" opacity="0.9" />
+            <circle cx="38" cy="9" r="1.2" fill="#fff" opacity="0.85" />
+            <circle cx="40" cy="36" r="1" fill="#fff" opacity="0.75" />
+          </svg>
+
+          <div className="pill-text-stack">
+            <span className="pill-label">별딱지</span>
+            {/* 미니 별 진행 표시 */}
+            <div className="pill-mini-stars" aria-hidden="true">
+              {Array.from({ length: MAX_STARS }).map((_, i) => (
+                <svg
+                  key={i}
+                  className={`mini-star ${i < starCount ? "filled" : ""}`}
+                  viewBox="0 0 24 24"
+                >
+                  <defs>
+                    <linearGradient id={`miniStarGrad-${i}`} x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#FFE48A" />
+                      <stop offset="50%" stopColor="#FFB347" />
+                      <stop offset="100%" stopColor="#FF85A1" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
+                    fill={i < starCount ? `url(#miniStarGrad-${i})` : "rgba(180, 160, 200, 0.18)"}
+                    stroke={i < starCount ? "#FF8C42" : "rgba(180, 160, 200, 0.5)"}
+                    strokeWidth="1.2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ))}
+            </div>
+          </div>
+
+          <span className="pill-count">
+            <strong>{starCount}</strong>
+            <span className="pill-count-divider">/</span>
+            <span className="pill-count-max">{MAX_STARS}</span>
+          </span>
+
+          <svg className="pill-arrow" viewBox="0 0 16 16" aria-hidden="true">
+            <path
+              d="M5 3 L11 8 L5 13"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </section>
+
+      {/* ③-2-b 지난달 챔피언 (독립 섹션) */}
+      <section className="champion-section">
+        <div className="ranking-champion">
+          <svg className="champion-trophy" viewBox="0 0 48 48" aria-hidden="true">
+            <defs>
+              <linearGradient id="trophyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#FFE48A" />
+                <stop offset="50%" stopColor="#FFC54D" />
+                <stop offset="100%" stopColor="#D89A1A" />
+              </linearGradient>
+              <linearGradient id="trophyShine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="rgba(255,255,255,0)" />
+                <stop offset="50%" stopColor="rgba(255,255,255,0.6)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+              </linearGradient>
+            </defs>
+            <path d="M11 14 Q5 14 5 20 Q5 26 13 27" fill="none" stroke="url(#trophyGrad)" strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M37 14 Q43 14 43 20 Q43 26 35 27" fill="none" stroke="url(#trophyGrad)" strokeWidth="2.4" strokeLinecap="round" />
+            <path d="M11 8 L37 8 L35 28 Q33 33 24 33 Q15 33 13 28 Z" fill="url(#trophyGrad)" stroke="#B8870A" strokeWidth="1.2" />
+            <path d="M14 12 L34 12 L33 16 L15 16 Z" fill="url(#trophyShine)" opacity="0.7" />
+            <path d="M24 14 L25.5 18.5 L30 18.5 L26.5 21.5 L28 26 L24 23 L20 26 L21.5 21.5 L18 18.5 L22.5 18.5 Z" fill="#fff" opacity="0.9" />
+            <rect x="20" y="33" width="8" height="4" fill="url(#trophyGrad)" />
+            <rect x="14" y="37" width="20" height="4" rx="1.5" fill="url(#trophyGrad)" stroke="#B8870A" strokeWidth="1" />
+            <circle cx="6" cy="6" r="1.2" fill="#FFE48A" opacity="0.9" />
+            <circle cx="42" cy="8" r="1" fill="#FFE48A" opacity="0.85" />
+            <circle cx="44" cy="32" r="0.9" fill="#FFE48A" opacity="0.7" />
+          </svg>
+          <div className="champion-text">
+            <span className="champion-label">지난달 챔피언</span>
+            <span className="champion-nick">
+              {(champion || DEFAULT_CHAMPION).nickname}
+            </span>
+            <span className="champion-meta">
+              <span className="champion-stars">
+                <svg className="champion-star-mark" viewBox="0 0 16 16" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="championStarGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#FFE48A" />
+                      <stop offset="50%" stopColor="#FFB347" />
+                      <stop offset="100%" stopColor="#FF85A1" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M8 1 L10 6 L15 6 L11 9 L12.5 14 L8 11 L3.5 14 L5 9 L1 6 L6 6 Z"
+                    fill="url(#championStarGrad)"
+                    stroke="#FF8C42"
+                    strokeWidth="0.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {(champion || DEFAULT_CHAMPION).starCount}
+              </span>
+              <span className="champion-divider" aria-hidden="true" />
+              <span className="champion-score">
+                {(champion || DEFAULT_CHAMPION).totalScore}점
+              </span>
             </span>
           </div>
-          <div className="gauge-track">
-            <div className="gauge-fill" style={{ width: `${pct}%` }} />
+        </div>
+      </section>
+
+      {/* ③-3 랭킹 (펼쳐진 형태) */}
+      <section className="ranking-section">
+        <div className="card ranking-card">
+          <div className="ranking-header">
+            <div className="ranking-title">
+              <span>이번달 랭킹</span>
+            </div>
+            <span className="ranking-month">
+              {new Date().getFullYear()}.{String(new Date().getMonth() + 1).padStart(2, "0")}
+            </span>
           </div>
-          <div className="gauge-footer">
-            <span className="gauge-grade-badge">{currentGrade}</span>
+
+          <div className="ranking-tabs">
+            <button
+              type="button"
+              className={`ranking-tab ${rankingTab === "total" ? "active" : ""}`}
+              onClick={() => { setRankingTab("total"); trackRankingTab("total"); }}
+            >
+              종합
+            </button>
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className={`ranking-tab ${rankingTab === cat.id ? "active" : ""}`}
+                onClick={() => { setRankingTab(cat.id); trackRankingTab(cat.id); }}
+              >
+                {cat.name}
+              </button>
+            ))}
           </div>
+
+          {(() => {
+            const rows = (rankingTab === "total"
+              ? rankingTotal.map((u, i) => ({
+                  rank: i + 1,
+                  nickname: u.nickname,
+                  primary: `✦${u.starCount ?? 0}`,
+                  secondary: `${u.totalScore ?? 0}점`,
+                }))
+              : (categoryRanking[rankingTab] || []).map((u, i) => ({
+                  rank: i + 1,
+                  nickname: u.nickname,
+                  primary: `${u.score}점`,
+                  secondary: `/30`,
+                }))
+            );
+            if (rows.length === 0) {
+              return (
+                <div className="ranking-empty">
+                  아직 등록된 도전자가 없어요.<br />첫 주인공이 되어보세요 ✦
+                </div>
+              );
+            }
+            return null;
+          })()}
+          <ol className="ranking-list">
+            {(() => {
+              if (rankingTab === "total") {
+                return rankingTotal.map((u, i) => ({
+                  rank: i + 1,
+                  nickname: u.nickname,
+                  isStarMode: true,
+                  primaryNum: u.starCount ?? 0,
+                  secondary: `${u.totalScore ?? 0}점`,
+                }));
+              }
+              return (categoryRanking[rankingTab] || []).map((u, i) => ({
+                rank: i + 1,
+                nickname: u.nickname,
+                isStarMode: false,
+                primaryNum: u.score,
+                secondary: `/30`,
+              }));
+            })().map((row) => (
+              <li key={row.rank} className={`ranking-row rank-${row.rank}`}>
+                <span className="rank-medal" aria-hidden="true">
+                  {row.rank <= 3 ? (
+                    row.rank === 1 ? "🥇" : row.rank === 2 ? "🥈" : "🥉"
+                  ) : (
+                    <svg className="rank-badge-svg" viewBox="0 0 36 36" aria-hidden="true">
+                      <defs>
+                        <linearGradient id={`rankGrad${row.rank}`} x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#FFE0EC" />
+                          <stop offset="100%" stopColor="#F0D9FF" />
+                        </linearGradient>
+                      </defs>
+                      <circle cx="18" cy="18" r="15" fill={`url(#rankGrad${row.rank})`} stroke="#D8B4E8" strokeWidth="1.5" />
+                      <circle cx="18" cy="18" r="11" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="0.8" />
+                      <text x="18" y="23" textAnchor="middle" fontFamily="YPairingFont, sans-serif" fontSize="14" fontWeight="bold" fill="#9A4570">{row.rank}</text>
+                    </svg>
+                  )}
+                </span>
+                <span className="rank-nick">{row.nickname}</span>
+                <span className="rank-primary">
+                  {row.isStarMode && (
+                    <svg className="rank-star-mark" viewBox="0 0 16 16" aria-hidden="true">
+                      <defs>
+                        <linearGradient id={`rankStarGrad-${row.rank}`} x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#FFE48A" />
+                          <stop offset="50%" stopColor="#FFB347" />
+                          <stop offset="100%" stopColor="#FF85A1" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M8 1 L10 6 L15 6 L11 9 L12.5 14 L8 11 L3.5 14 L5 9 L1 6 L6 6 Z"
+                        fill={`url(#rankStarGrad-${row.rank})`}
+                        stroke="#FF8C42"
+                        strokeWidth="0.8"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                  <span>{row.isStarMode ? row.primaryNum : `${row.primaryNum}점`}</span>
+                </span>
+                <span className="rank-secondary">{row.secondary}</span>
+              </li>
+            ))}
+          </ol>
+
+          {/* 나의 순위 */}
+          <div className="ranking-me">
+            <svg className="me-icon" viewBox="0 0 40 44" aria-hidden="true">
+              <defs>
+                <linearGradient id="meIconGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#FF85A1" />
+                  <stop offset="100%" stopColor="#C084FC" />
+                </linearGradient>
+                <radialGradient id="meIconHighlight" cx="0.35" cy="0.3" r="0.4">
+                  <stop offset="0%" stopColor="rgba(255,255,255,0.65)" />
+                  <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+                </radialGradient>
+              </defs>
+              {/* 핀 본체 (티어드롭) */}
+              <path
+                d="M20 3
+                   C 11 3, 5 9, 5 18
+                   C 5 26, 14 36, 18 41
+                   C 19 42.2, 21 42.2, 22 41
+                   C 26 36, 35 26, 35 18
+                   C 35 9, 29 3, 20 3 Z"
+                fill="url(#meIconGrad)"
+                stroke="#fff"
+                strokeWidth="2"
+              />
+              {/* 광택 */}
+              <path
+                d="M20 3
+                   C 11 3, 5 9, 5 18
+                   C 5 26, 14 36, 18 41
+                   C 19 42.2, 21 42.2, 22 41
+                   C 26 36, 35 26, 35 18
+                   C 35 9, 29 3, 20 3 Z"
+                fill="url(#meIconHighlight)"
+              />
+              {/* 안쪽 흰 원 */}
+              <circle cx="20" cy="17" r="6.5" fill="#fff" />
+              {/* 안쪽 핑크 점 (포인트) */}
+              <circle cx="20" cy="17" r="3" fill="#FF6FA8" />
+            </svg>
+            <div className="me-text">
+              <span className="me-label">나의 순위</span>
+              {user && myInfo ? (
+                <span className="me-stats">
+                  <span className="me-rank">
+                    <strong>{myInfo.rank}</strong>위
+                  </span>
+                  <span className="me-divider" aria-hidden="true" />
+                  <span className="me-stars">
+                    <svg className="me-star-mark" viewBox="0 0 16 16" aria-hidden="true">
+                      <defs>
+                        <linearGradient id="meStarGrad" x1="0" y1="0" x2="1" y2="1">
+                          <stop offset="0%" stopColor="#FFE48A" />
+                          <stop offset="50%" stopColor="#FFB347" />
+                          <stop offset="100%" stopColor="#FF85A1" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M8 1 L10 6 L15 6 L11 9 L12.5 14 L8 11 L3.5 14 L5 9 L1 6 L6 6 Z"
+                        fill="url(#meStarGrad)"
+                        stroke="#FF8C42"
+                        strokeWidth="0.8"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {myInfo.starCount ?? starCount}
+                  </span>
+                  <span className="me-divider" aria-hidden="true" />
+                  <span className="me-score">{myMonthlyTotal}점</span>
+                </span>
+              ) : (
+                <span className="me-empty-msg">
+                  <svg className="me-empty-sparkle" viewBox="0 0 16 16" aria-hidden="true">
+                    <defs>
+                      <linearGradient id="meEmptyStarGrad" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#FFE48A" />
+                        <stop offset="50%" stopColor="#FFB347" />
+                        <stop offset="100%" stopColor="#FF85A1" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M8 1 L10 6 L15 6 L11 9 L12.5 14 L8 11 L3.5 14 L5 9 L1 6 L6 6 Z"
+                      fill="url(#meEmptyStarGrad)"
+                      stroke="#FF8C42"
+                      strokeWidth="0.8"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {user
+                    ? `${profile?.nickname || ""}님의 첫 도전을 기다리고 있어요`
+                    : "퀴즈를 풀면 순위가 표시돼요"}
+                </span>
+              )}
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -135,6 +607,80 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* ⑤ 별딱지 도감 모달 */}
+      {starsModalOpen && (
+        <div className="modal-overlay active" onClick={() => setStarsModalOpen(false)}>
+          <div
+            className="modal-card stars-modal-card"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className="modal-close" onClick={() => setStarsModalOpen(false)}>✕</button>
+            <div className="stars-card stars-card-in-modal">
+              <div className="stars-header">
+                <div className="stars-title">
+                  <span>별딱지 도감</span>
+                </div>
+                <span className="stars-count">
+                  <strong>{starCount}</strong> / {MAX_STARS}
+                </span>
+              </div>
+              <div className="stars-grid">
+                {CATEGORIES.map((cat) => {
+                  const owned = myStars.includes(cat.id);
+                  return (
+                    <div
+                      key={cat.id}
+                      className={`star-slot ${owned ? "owned" : "empty"}`}
+                      data-category={cat.id}
+                      title={cat.name}
+                    >
+                      <div className="star-slot-inner">
+                        {/* 배경 별 SVG (모든 슬롯) */}
+                        <svg className="star-slot-bg" viewBox="0 0 60 60" aria-hidden="true">
+                          <path
+                            d="M30 4 L36 22 L55 22 L40 33 L46 52 L30 41 L14 52 L20 33 L5 22 L24 22 Z"
+                            fill={owned ? "rgba(255,255,255,0.55)" : "none"}
+                            stroke={owned ? "rgba(255,180,50,0.6)" : "rgba(180,160,200,0.4)"}
+                            strokeWidth="1.4"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        {owned ? (
+                          <span className="star-slot-emoji">{cat.emoji}</span>
+                        ) : (
+                          <svg className="star-slot-lock-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                              d="M7 10V7a5 5 0 0 1 10 0v3"
+                              fill="none"
+                              stroke="rgba(160,140,180,0.7)"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                            />
+                            <rect x="5.5" y="10" width="13" height="10" rx="2" fill="rgba(180,160,200,0.18)" stroke="rgba(160,140,180,0.7)" strokeWidth="1.6" />
+                            <circle cx="12" cy="14.5" r="1.4" fill="rgba(160,140,180,0.85)" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="star-slot-name">{cat.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="stars-hint">
+                각 카테고리를 <strong>30/30 만점</strong>으로 클리어하면 별딱지를 받아요 ✦
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ⑤-3 로그인/가입 모달 */}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => setAuthModalOpen(false)}
+      />
 
       {/* ⑤ 난이도 선택 모달 */}
       {isModalOpen && selectedCategory && (

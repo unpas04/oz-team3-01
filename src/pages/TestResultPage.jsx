@@ -1,8 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   evaluateQuizResult,
   calculatePercentile,
 } from '../modules/data-module';
+import { useAuth } from '../contexts/AuthContext';
+import { submitQuizScore, getMyRank } from '../modules/firestore';
+import AuthModal from '../components/AuthModal';
+import { trackRankCheck, trackStarEarned, trackShare } from '../modules/analytics';
+import '../styles/result.css';
+
+const CATEGORY_NAMES = {
+  sanrio: "산리오", pokemon: "포켓몬", aot: "진격의 거인",
+  kimetsu: "귀멸의 칼날", fma: "강철의 연금술사", jjk: "주술회전",
+  dragonball: "드래곤볼", chainsawman: "체인소맨", deathnote: "데스노트",
+  fate: "페이트 시리즈",
+};
 
 function useCountUp(target) {
     const [value, setValue] = useState(0);
@@ -76,11 +89,90 @@ const GRADE_THEMES = {
 };
 
 export default function TestResultPage() {
-  const [score, setScore] = useState(27);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
+
+  // URL에서 결과 파라미터
+  const urlCategory = searchParams.get('category') || 'kimetsu';
+  const urlMode = searchParams.get('mode') || 'normal';
+  const urlScore = parseInt(searchParams.get('score'));
+
+  const [score, setScore] = useState(Number.isFinite(urlScore) ? urlScore : 27);
   const [toast, setToast] = useState(null);
-  const category = 'kimetsu';
-  const mode = 'normal';
-  const wrongIndices = [];
+  const category = urlCategory;
+  const mode = urlMode;
+  const wrongStr = sessionStorage.getItem('oz_wrong_indices') || "";
+  const wrongIndices = wrongStr ? wrongStr.split(',').map(Number) : [];
+
+  // 점수/별딱지 등록 + 결과 모달
+  const [authOpen, setAuthOpen] = useState(false);
+  const [rankModalOpen, setRankModalOpen] = useState(false);
+  const [submitState, setSubmitState] = useState("idle");
+  const [submitError, setSubmitError] = useState("");
+  const [gotStar, setGotStar] = useState(false);
+  const [myRankInfo, setMyRankInfo] = useState(null);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
+  const submittedRef = useRef(false);
+
+  const doSubmitAndShow = async () => {
+    if (!user || !profile?.nickname) return;
+    if (submittedRef.current) {
+      setRankModalOpen(true);
+      return;
+    }
+    submittedRef.current = true;
+    setSubmitState("submitting");
+    setSubmitError("");
+    try {
+      const res = await submitQuizScore({
+        uid: user.uid,
+        nickname: profile.nickname,
+        category,
+        score,
+      });
+      if (res?.gotStar) {
+        setGotStar(true);
+        trackStarEarned(category);
+      }
+
+      // getMyRank 실패해도 모달은 열리도록 방어
+      try {
+        const rank = await getMyRank(user.uid);
+        setMyRankInfo(rank);
+      } catch (rankErr) {
+        console.warn("rank lookup failed (non-blocking):", rankErr);
+        setMyRankInfo(null);
+      }
+
+      setSubmitState("done");
+      setRankModalOpen(true);
+    } catch (err) {
+      console.error("submit score failed", err);
+      setSubmitState("failed");
+      const code = err?.code || err?.message || "unknown";
+      setSubmitError(`등록 실패: ${code}`);
+      submittedRef.current = false;
+    }
+  };
+
+  const handleCheckRank = () => {
+    trackRankCheck(category, score);
+    if (!user) {
+      setPendingSubmit(true);
+      setAuthOpen(true);
+      return;
+    }
+    doSubmitAndShow();
+  };
+
+  useEffect(() => {
+    if (pendingSubmit && user && profile?.nickname) {
+      setPendingSubmit(false);
+      doSubmitAndShow();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSubmit, user, profile]);
 
   const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
   const animScore = useCountUp(score);
@@ -101,6 +193,7 @@ export default function TestResultPage() {
   };
 
   const handleKakaoShare = () => {
+    trackShare("kakao", category);
     if (typeof window !== 'undefined' && window.Kakao && window.Kakao.Share) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
@@ -117,10 +210,12 @@ export default function TestResultPage() {
   };
 
   const handleInstaShare = () => {
+    trackShare("instagram", category);
     showToast('이미지로 저장 후 인스타에 올려주세요 ✦');
   };
 
   const handleImageSave = async () => {
+    trackShare("image_save", category);
     try {
       const { toPng } = await import('html-to-image');
       const card = document.getElementById('result-share-card');
@@ -158,6 +253,7 @@ export default function TestResultPage() {
   };
 
   const handleLinkCopy = async () => {
+    trackShare("link_copy", category);
     try {
       await navigator.clipboard.writeText(window.location.href);
       showToast('링크가 복사되었어요 ✦');
@@ -456,37 +552,59 @@ export default function TestResultPage() {
         }
       `}</style>
 
-      {/* 테스트 버튼 */}
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        marginBottom: '30px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-        position: 'relative',
-        zIndex: 2
-      }}>
-        {testScores.map(t => (
-          <button
-            key={t.value}
-            onClick={() => setScore(t.value)}
-            style={{
-              padding: '10px 16px',
-              background: score === t.value ? '#FF8FAB' : '#ffffff',
-              color: score === t.value ? '#fff' : '#6B4A5C',
-              border: score === t.value ? 'none' : '2px solid #FFD9E4',
-              borderRadius: '999px',
-              cursor: 'pointer',
-              fontWeight: score === t.value ? '800' : '700',
-              fontSize: '0.8rem',
-              boxShadow: score === t.value ? '0 6px 16px rgba(255, 143, 171, 0.4)' : '0 2px 8px rgba(0,0,0,0.05)',
-              transition: 'all 0.2s'
-            }}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* 순위 확인하기 CTA */}
+      <button
+        type="button"
+        onClick={handleCheckRank}
+        disabled={submitState === "submitting"}
+        className="check-rank-btn"
+        style={{
+          maxWidth: '360px',
+          width: '100%',
+          marginBottom: '20px',
+          position: 'relative',
+          zIndex: 2,
+          padding: '13px 18px',
+          border: 'none',
+          borderRadius: '16px',
+          background: 'linear-gradient(135deg, #FF85A1 0%, #C084FC 100%)',
+          color: '#fff',
+          fontFamily: 'YPairingFont, sans-serif',
+          fontWeight: 'bold',
+          fontSize: '1rem',
+          letterSpacing: '1.5px',
+          cursor: submitState === "submitting" ? 'not-allowed' : 'pointer',
+          boxShadow: '0 6px 20px rgba(192, 132, 252, 0.4), inset 0 1px 0 rgba(255,255,255,0.55)',
+          opacity: submitState === "submitting" ? 0.65 : 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
+            fill="#FFE48A" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+        </svg>
+        <span>
+          {submitState === "submitting"
+            ? "등록 중…"
+            : submitState === "done"
+            ? "내 순위 다시 보기"
+            : "순위 확인하기"}
+        </span>
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M5 3 L11 8 L5 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {submitError && (
+        <div style={{
+          maxWidth: '360px', width: '100%', marginBottom: '14px',
+          padding: '9px 12px', background: 'rgba(255,220,225,0.85)',
+          border: '1px solid rgba(255,100,120,0.35)', borderRadius: '10px',
+          color: '#B82844', fontSize: '0.84rem', textAlign: 'center', zIndex: 2,
+        }}>{submitError}</div>
+      )}
 
       {/* 공유 카드 */}
       <div
@@ -1049,6 +1167,7 @@ export default function TestResultPage() {
 
         {/* 메인으로 버튼 */}
         <button
+          onClick={() => navigate('/')}
           style={{
             marginTop: '12px',
             padding: '14px 36px',
@@ -1067,6 +1186,82 @@ export default function TestResultPage() {
           ✿ 메인으로
         </button>
       </div>
+
+      {/* ═══════ 로그인/가입 모달 ═══════ */}
+      <AuthModal
+        open={authOpen}
+        onClose={() => { setAuthOpen(false); setPendingSubmit(false); }}
+        onSuccess={() => setAuthOpen(false)}
+      />
+
+      {/* ═══════ 순위 + 별딱지 결과 모달 ═══════ */}
+      {rankModalOpen && (
+        <div className="modal-overlay active" onClick={() => setRankModalOpen(false)}>
+          <div className="modal-card rank-modal-card" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setRankModalOpen(false)}>✕</button>
+
+            {gotStar && (
+              <div className="rank-modal-star-banner">
+                <svg className="rank-modal-star-svg" viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="bigStarGradTRP" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#FFE48A" />
+                      <stop offset="50%" stopColor="#FFB347" />
+                      <stop offset="100%" stopColor="#FF85A1" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M32 6 L38 24 L58 25 L42 37 L48 56 L32 45 L16 56 L22 37 L6 25 L26 24 Z"
+                    fill="url(#bigStarGradTRP)"
+                    stroke="#fff"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="rank-modal-star-text">
+                  <span className="rank-modal-star-title">별딱지 획득!</span>
+                  <span className="rank-modal-star-sub">
+                    {CATEGORY_NAMES[category] || category} 마스터 인증 ✦
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="rank-modal-section">
+              <span className="rank-modal-label">이번달 내 순위</span>
+              <span className="rank-modal-rank">
+                <strong>{myRankInfo?.rank ?? "—"}</strong>위
+              </span>
+              <div className="rank-modal-meta">
+                <span>✦ {myRankInfo?.starCount ?? 0}개</span>
+                <span className="rank-modal-meta-divider" />
+                <span>{myRankInfo?.totalScore ?? 0}점</span>
+              </div>
+            </div>
+
+            <div className="rank-modal-stars">
+              <span className="rank-modal-stars-label">보유 별딱지</span>
+              <div className="rank-modal-stars-list">
+                {(profile?.stars || []).length === 0 ? (
+                  <span className="rank-modal-stars-empty">아직 없어요. 30점 만점에 도전!</span>
+                ) : (
+                  (profile?.stars || []).map((id) => (
+                    <span key={id} className="rank-modal-star-chip">{CATEGORY_NAMES[id] || id}</span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="rank-modal-home-btn"
+              onClick={() => navigate("/")}
+            >
+              메인으로 돌아가기
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════ 토스트 ═══════ */}
       {toast && (

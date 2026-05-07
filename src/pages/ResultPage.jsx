@@ -6,7 +6,17 @@ import {
   calculatePercentile,
 } from '../modules/data-module';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { useAuth } from '../contexts/AuthContext';
+import { submitQuizScore, getMyRank } from '../modules/firestore';
+import AuthModal from '../components/AuthModal';
 import "../styles/result.css";
+
+const CATEGORY_NAMES = {
+  sanrio: "산리오", pokemon: "포켓몬", aot: "진격의 거인",
+  kimetsu: "귀멸의 칼날", fma: "강철의 연금술사", jjk: "주술회전",
+  dragonball: "드래곤볼", chainsawman: "체인소맨", deathnote: "데스노트",
+  fate: "페이트 시리즈",
+};
 
 // 원본 에모지 설정 1:1 복제
 const EMOJI_MAP = {
@@ -38,6 +48,15 @@ function useCountUp(target) {
 export default function ResultPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [rankModalOpen, setRankModalOpen] = useState(false);
+  const [submitState, setSubmitState] = useState("idle"); // idle | submitting | done | failed
+  const [submitError, setSubmitError] = useState("");
+  const [gotStar, setGotStar] = useState(false);
+  const [myRankInfo, setMyRankInfo] = useState(null);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
+  const submittedRef = useRef(false);
 
   const category = searchParams.get('category') || 'sanrio';
   const mode = searchParams.get('mode') || 'normal';
@@ -49,6 +68,55 @@ export default function ResultPage() {
   const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
   const percentile = calculatePercentile(scorePct);
   const animScore = useCountUp(score);
+
+  // 점수 저장 + 내 순위 조회
+  const doSubmitAndShow = async () => {
+    if (!user || !profile?.nickname) return;
+    if (submittedRef.current) {
+      setRankModalOpen(true);
+      return;
+    }
+    submittedRef.current = true;
+    setSubmitState("submitting");
+    setSubmitError("");
+    try {
+      const res = await submitQuizScore({
+        uid: user.uid,
+        nickname: profile.nickname,
+        category,
+        score,
+      });
+      if (res?.gotStar) setGotStar(true);
+      const rank = await getMyRank(user.uid);
+      setMyRankInfo(rank);
+      setSubmitState("done");
+      setRankModalOpen(true);
+    } catch (err) {
+      console.error("submit score failed", err);
+      setSubmitState("failed");
+      setSubmitError("등록에 실패했어요. 잠시 후 다시 시도해주세요.");
+      submittedRef.current = false;
+    }
+  };
+
+  // "순위 확인하기" 버튼 핸들러
+  const handleCheckRank = () => {
+    if (!user) {
+      setPendingSubmit(true);
+      setAuthOpen(true);
+      return;
+    }
+    doSubmitAndShow();
+  };
+
+  // 로그인 직후 자동 등록 트리거
+  useEffect(() => {
+    if (pendingSubmit && user && profile?.nickname) {
+      setPendingSubmit(false);
+      doSubmitAndShow();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSubmit, user, profile]);
 
   const [imgSrc, setImgSrc] = useState("");
   const [analysis, setAnalysis] = useState({ s: 0, c: 0, l: 0, m: 0 });
@@ -177,6 +245,35 @@ export default function ResultPage() {
 
       <div className="container result-container">
         <div className="card result-card">
+          {/* 순위 확인하기 CTA */}
+          <button
+            type="button"
+            className="check-rank-btn"
+            onClick={handleCheckRank}
+            disabled={submitState === "submitting"}
+          >
+            <svg className="check-rank-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
+                fill="#FFE48A"
+                stroke="#fff"
+                strokeWidth="1.4"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span>
+              {submitState === "submitting"
+                ? "등록 중…"
+                : submitState === "done"
+                ? "내 순위 다시 보기"
+                : "순위 확인하기"}
+            </span>
+            <svg className="check-rank-arrow" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M5 3 L11 8 L5 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+          {submitError && <div className="check-rank-error">{submitError}</div>}
+
           <div className="grade-badge-wrap">
             <span className={`gauge-grade-badge grade-${gradeInfo.label}`}>
               {gradeInfo.label} 등급
@@ -306,6 +403,84 @@ export default function ResultPage() {
           </button>
         </div>
       </div>
+
+      <AuthModal
+        open={authOpen}
+        onClose={() => {
+          setAuthOpen(false);
+          setPendingSubmit(false);
+        }}
+        onSuccess={() => setAuthOpen(false)}
+      />
+
+      {/* 순위 + 별딱지 결과 모달 */}
+      {rankModalOpen && (
+        <div className="modal-overlay active" onClick={() => setRankModalOpen(false)}>
+          <div className="modal-card rank-modal-card" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setRankModalOpen(false)}>✕</button>
+
+            {gotStar && (
+              <div className="rank-modal-star-banner">
+                <svg className="rank-modal-star-svg" viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="bigStarGrad" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor="#FFE48A" />
+                      <stop offset="50%" stopColor="#FFB347" />
+                      <stop offset="100%" stopColor="#FF85A1" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M32 6 L38 24 L58 25 L42 37 L48 56 L32 45 L16 56 L22 37 L6 25 L26 24 Z"
+                    fill="url(#bigStarGrad)"
+                    stroke="#fff"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="rank-modal-star-text">
+                  <span className="rank-modal-star-title">별딱지 획득!</span>
+                  <span className="rank-modal-star-sub">
+                    {CATEGORY_NAMES[category] || category} 마스터 인증 ✦
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="rank-modal-section">
+              <span className="rank-modal-label">이번달 내 순위</span>
+              <span className="rank-modal-rank">
+                <strong>{myRankInfo?.rank ?? "—"}</strong>위
+              </span>
+              <div className="rank-modal-meta">
+                <span>✦ {myRankInfo?.starCount ?? 0}개</span>
+                <span className="rank-modal-meta-divider" />
+                <span>{myRankInfo?.totalScore ?? 0}점</span>
+              </div>
+            </div>
+
+            <div className="rank-modal-stars">
+              <span className="rank-modal-stars-label">보유 별딱지</span>
+              <div className="rank-modal-stars-list">
+                {(profile?.stars || []).length === 0 ? (
+                  <span className="rank-modal-stars-empty">아직 없어요. 30점 만점에 도전!</span>
+                ) : (
+                  (profile?.stars || []).map((id) => (
+                    <span key={id} className="rank-modal-star-chip">{CATEGORY_NAMES[id] || id}</span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="rank-modal-home-btn"
+              onClick={() => navigate("/")}
+            >
+              메인으로 돌아가기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

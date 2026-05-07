@@ -1,12 +1,12 @@
     @font-face {
       font-family: 'YPairingFont';
-      src: url('fonts/YPairingFont-Regular.ttf') format('truetype');
+      src: url('/fonts/YPairingFont-Regular.ttf') format('truetype');
       font-weight: normal;
     }
 
     @font-face {
       font-family: 'YPairingFont';
-      src: url('fonts/YPairingFont-Bold.ttf') format('truetype');
+      src: url('/fonts/YPairingFont-Bold.ttf') format('truetype');
       font-weight: bold;
     }
 
@@ -280,32 +280,312 @@
       .progress-dots { margin-bottom: 8px; gap: 5px; }
       .ph-emoji { font-size: 3rem; }
     }
-    /* 문제 해설 기능 */
+    /* ── 해설 패널 ── */
     .explain-wrap {
-    display: none;
-    margin: 8px 0 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(0, 0, 0, 0.12);
+      position: relative;
+      margin: 12px 0 14px;
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.96) 0%, rgba(252, 244, 255, 0.96) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(192, 132, 252, 0.35);
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04),
+        0 10px 30px rgba(192, 132, 252, 0.18),
+        0 0 0 4px rgba(255, 255, 255, 0.5);
+      animation: explainSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 좌측 컬러 액센트 바 */
+    .explain-wrap::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 4px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #FF85A1, #C084FC, #87CEEB);
+      box-shadow: 0 2px 8px rgba(192, 132, 252, 0.4);
+    }
+
+    @keyframes explainSlideIn {
+      0%   { opacity: 0; transform: translateY(12px) scale(0.96); }
+      60%  { opacity: 1; transform: translateY(-2px) scale(1.01); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .explain-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed rgba(192, 132, 252, 0.3);
+    }
+
+    .explain-icon {
+      font-size: 1.2rem;
+      filter: drop-shadow(0 2px 4px rgba(255, 200, 0, 0.4));
+      animation: explainIconBob 2.4s ease-in-out infinite;
+    }
+    @keyframes explainIconBob {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50%      { transform: translateY(-3px) rotate(4deg); }
+    }
+
+    .explain-title {
+      font-family: 'YPairingFont', sans-serif;
+      font-weight: bold;
+      font-size: 0.92rem;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, #C084FC, #FF85A1);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .explain-text {
+      margin: 0 0 14px;
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 0.96rem;
+      line-height: 1.7;
+      color: #4a3a5e;
+      text-align: left;
+      word-break: keep-all;
+    }
+
+    .explain-next-btn {
+      width: 100%;
+      padding: 13px 18px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #C084FC 0%, #FF85A1 100%);
+      color: #fff;
+      font-family: 'YPairingFont', sans-serif;
+      font-weight: bold;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow:
+        0 6px 18px rgba(192, 132, 252, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.08);
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, filter 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .explain-next-btn:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.02);
+      filter: brightness(1.07);
+      box-shadow:
+        0 10px 26px rgba(192, 132, 252, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+    .explain-next-btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.99);
+    }
+    .explain-next-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .explain-next-arrow {
+      display: inline-block;
+      font-weight: bold;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .explain-next-btn:hover:not(:disabled) .explain-next-arrow {
+      transform: translateX(4px);
+    }
+
+  /* ──────────────────────────────────────────────
+     박진감 + 퀄리티 업 효과
+     ────────────────────────────────────────────── */
+
+  /* 컨테이너 진동 (오답/시간초과 시) */
+  @keyframes screenShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
   }
-  #explainText {
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-    color: #333;
-    text-align: center;
+  .quiz-container.shake {
+    animation: screenShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
   }
-  #btnNext {
-    width: 100%;
-    padding: 10px 0;
-    border: none;
-    border-radius: 10px;
-    background: #318fde;
+
+  /* 화면 전체 플래시 오버레이 */
+  .screen-flash {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+  }
+  .screen-flash.correct {
+    background: radial-gradient(circle at center, rgba(80, 220, 120, 0.35) 0%, rgba(80, 220, 120, 0) 70%);
+    box-shadow: inset 0 0 100px rgba(60, 200, 100, 0.5);
+    animation: flashFade 0.45s ease-out;
+  }
+  .screen-flash.wrong {
+    background: radial-gradient(circle at center, rgba(255, 60, 80, 0.3) 0%, rgba(255, 60, 80, 0) 70%);
+    box-shadow: inset 0 0 100px rgba(255, 50, 70, 0.5);
+    animation: flashFade 0.5s ease-out;
+  }
+  @keyframes flashFade {
+    0%   { opacity: 0; }
+    20%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* 콤보 배지 */
+  .combo-badge {
+    position: fixed;
+    top: 80px;
+    right: 18px;
+    z-index: 100;
+    background: linear-gradient(135deg, #FFD700, #FF85A1);
     color: #fff;
-    font-weight: bold;
-    cursor: pointer;
+    padding: 8px 14px;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(255, 133, 161, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.6) inset;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-family: 'YPairingFont', sans-serif;
+    transform-origin: center;
+    animation: comboPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  #btnNext:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  .combo-badge .combo-num {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    line-height: 1;
+  }
+  .combo-badge .combo-label {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    opacity: 0.95;
+  }
+  .combo-badge.flash {
+    animation: comboFlash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes comboPop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes comboFlash {
+    0%   { transform: scale(1); }
+    30%  { transform: scale(1.4) rotate(-3deg); filter: brightness(1.5); }
+    60%  { transform: scale(1.15) rotate(2deg); }
+    100% { transform: scale(1); }
+  }
+
+  /* 카운트다운 큰 숫자 */
+  .countdown-num {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'YPairingFont', sans-serif;
+    font-size: 9rem;
+    font-weight: bold;
+    color: rgba(255, 60, 80, 0.7);
+    text-shadow: 0 0 30px rgba(255, 60, 80, 0.5), 0 8px 30px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+    pointer-events: none;
+    animation: countdownPulse 1s ease-out forwards;
+  }
+  @keyframes countdownPulse {
+    0%   { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+    20%  { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2);   opacity: 0; }
+  }
+
+  /* 타이머 urgent 강화: 글로우 + 살짝 흔들림 */
+  .timer-fill.urgent {
+    background: linear-gradient(90deg, #FF2244, #FF4466) !important;
+    box-shadow: 0 0 12px rgba(255, 50, 70, 0.7), 0 0 4px rgba(255, 50, 70, 0.9);
+    animation: timerUrgentPulse 0.5s ease-in-out infinite alternate !important;
+  }
+  @keyframes timerUrgentPulse {
+    from { filter: brightness(1);   box-shadow: 0 0 8px rgba(255, 50, 70, 0.6); }
+    to   { filter: brightness(1.5); box-shadow: 0 0 18px rgba(255, 50, 70, 1); }
+  }
+
+  /* 타이머 urgent 시 timer-wrap 도 강조 */
+  .timer-wrap:has(.timer-fill.urgent) {
+    box-shadow: 0 0 0 1.5px rgba(255, 50, 70, 0.6), 0 0 16px rgba(255, 50, 70, 0.4);
+    animation: timerWrapShake 0.15s ease-in-out infinite alternate;
+  }
+  @keyframes timerWrapShake {
+    from { transform: translateX(-1px); }
+    to   { transform: translateX(1px); }
+  }
+
+  /* YES/NO 버튼 hover/active 강화 */
+  .action-btns .btn {
+    transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.15s, filter 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .action-btns .btn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.08);
+  }
+  .action-btns .btn:active:not(:disabled) {
+    transform: translateY(1px) scale(0.98);
+  }
+  .action-btns .btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease-out, height 0.4s ease-out, opacity 0.4s;
+    opacity: 0;
+  }
+  .action-btns .btn:active:not(:disabled)::after {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: 0s;
+  }
+
+  /* 폴라로이드 진입 애니메이션 강화 */
+  @keyframes polaroidPop {
+    0%   { transform: rotate(8deg) scale(0.7) translateY(-30px); opacity: 0.3; }
+    50%  { transform: rotate(-2deg) scale(1.04) translateY(0); opacity: 1; }
+    80%  { transform: rotate(0.4deg) scale(0.99); }
+    100% { transform: rotate(-0.8deg) scale(1); opacity: 1; }
+  }
+  .polaroid.pop {
+    animation: polaroidPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* 피드백 배지 등장 효과 */
+  .feedback.correct, .feedback.wrong {
+    animation: feedbackPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes feedbackPop {
+    0%   { transform: scale(0.6) translateY(-6px); opacity: 0; }
+    60%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  /* 점수 게이지 라벨 변경 시 강조 */
+  .gauge-score {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
