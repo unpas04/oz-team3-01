@@ -1,9 +1,40 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { trackQuizStart, trackQuizComplete, trackQuizAnswer } from '../modules/analytics';
 import "../styles/quiz.css";
 
-const TIMER_SEC = 20;
+const TIMER_SEC = 15;
 const TOTAL_QUESTIONS = 30;
+
+// 사운드 (Web Audio API로 동적 생성, 외부 파일 불필요)
+let _audioCtx = null;
+const getAudioCtx = () => {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  }
+  return _audioCtx;
+};
+const playTone = (freq, duration = 0.1, type = 'sine', vol = 0.15) => {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(ctx.currentTime + duration);
+};
+const sfx = {
+  correct: () => { playTone(880, 0.12, 'sine'); setTimeout(() => playTone(1320, 0.18, 'sine'), 90); },
+  wrong:   () => { playTone(220, 0.18, 'square', 0.12); setTimeout(() => playTone(160, 0.25, 'square', 0.12), 100); },
+  tick:    () => playTone(1000, 0.05, 'square', 0.08),
+  timeout: () => { playTone(180, 0.4, 'sawtooth', 0.18); },
+  click:   () => playTone(600, 0.05, 'triangle', 0.08),
+  combo:   () => { playTone(660, 0.08); setTimeout(() => playTone(880, 0.08), 60); setTimeout(() => playTone(1100, 0.12), 120); },
+};
 
 const CATEGORY_META = {
   fma:     { emoji: '⚗️',  label: 'FMA',     cls: 'placeholder-fma'     },
@@ -26,6 +57,18 @@ function makeCategoryVariableName(categoryName) {
   return `QUIZ_DATA_${key}`;
 }
 
+function resolveQuizImage(img, category, index) {
+  if (!img) return null;
+
+  const lastSegment = img.split('/').pop();
+  const hasExtension = /\.[a-zA-Z0-9]+$/.test(lastSegment);
+  if (img.endsWith('/') || !hasExtension) {
+    const directory = img.endsWith('/') ? img : `${img}/`;
+    return `${directory}${category}-img${index + 1}.png`;
+  }
+  return img;
+}
+
 export default function QuizPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -37,9 +80,11 @@ export default function QuizPage() {
 
   useEffect(() => {
     document.body.classList.add("quiz");
+    trackQuizStart(category, mode);
     return () => {
       document.body.classList.remove("quiz");
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ── State ── */
@@ -56,6 +101,10 @@ export default function QuizPage() {
   const [explainText, setExplainText] = useState('');
   const [polaroidPop, setPolaroidPop] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
+  const [combo, setCombo] = useState(0);
+  const [comboFlash, setComboFlash] = useState(false);
+  const [screenFx, setScreenFx] = useState(''); // 'correct' | 'wrong' | ''
+  const lastTickRef = useRef(-1);
 
   const timerRef = useRef(null);
   const remainRef = useRef(TIMER_SEC);
@@ -106,12 +155,22 @@ export default function QuizPage() {
       const pct = Math.max((remainRef.current / TIMER_SEC) * 100, 0);
       setRemainSec(remainRef.current);
       setTimerPct(pct);
-      
+
       if (remainRef.current <= 5) setTimerUrgent(true);
-      
+
+      // 마지막 5초 째깍 사운드
+      if (remainRef.current > 0 && remainRef.current <= 5 && lastTickRef.current !== remainRef.current) {
+        lastTickRef.current = remainRef.current;
+        sfx.tick();
+      }
+
       if (remainRef.current <= 0) {
         stopTimer();
-        // 시간 초과 처리 (HTML startTimer 내 로직)
+        sfx.timeout();
+        setCombo(0);
+        setScreenFx('wrong');
+        setTimeout(() => setScreenFx(''), 500);
+        // 시간 초과 처리
         setAnswered(true);
         setFeedback({ text: '시간 초과! ⏰ 자동 오답 처리', type: 'wrong' });
         setExplainText(questions[currentIndex]?.explanation || '시간 초과입니다. 해설을 확인한 뒤 다음 문제를 눌러주세요.');
@@ -146,21 +205,41 @@ export default function QuizPage() {
   /* ── 답변 처리 (HTML btnYes/No 클릭 로직) ── */
   const handleAnswer = (userAnswer) => {
     if (answered || !questions[currentIndex]) return;
-    
+
     setAnswered(true);
     stopTimer();
     setBtnDisabled(true);
+    sfx.click();
 
     const isRight = questions[currentIndex].a === userAnswer;
-    
-    // showFeedback 로직 이식
+    trackQuizAnswer(category, isRight, currentIndex);
+
     if (isRight) {
-      setFeedback({ text: '정답입니다! ✨', type: 'correct' });
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+      sfx.correct();
+      setScreenFx('correct');
+      setTimeout(() => setScreenFx(''), 450);
+
+      if (newCombo >= 3) {
+        sfx.combo();
+        setComboFlash(true);
+        setTimeout(() => setComboFlash(false), 600);
+      }
+
+      setFeedback({
+        text: newCombo >= 2 ? `정답! ✨ ${newCombo} COMBO!` : '정답입니다! ✨',
+        type: 'correct',
+      });
       setTimeout(() => goNext(true), 800);
     } else {
       const currentItem = questions[currentIndex];
       const oid = (currentItem && currentItem._originalIdx !== undefined) ? currentItem._originalIdx : currentIndex;
       setWrongAnswers(prev => [...prev, oid]);
+      setCombo(0);
+      sfx.wrong();
+      setScreenFx('wrong');
+      setTimeout(() => setScreenFx(''), 500);
 
       setFeedback({ text: '오답입니다! 💦', type: 'wrong' });
       setExplainText(questions[currentIndex]?.explanation || '오답입니다. 해설을 확인하고, 다음 문제 버튼을 눌러주세요.');
@@ -184,7 +263,8 @@ export default function QuizPage() {
         mode
       }).toString();
       
-      navigate(`/result?${query}`);
+      trackQuizComplete(category, finalScore, mode);
+      navigate(`/test-result?${query}`);
       return;
     }
     setCurrentIndex(next);
@@ -201,10 +281,26 @@ export default function QuizPage() {
   else if (scoreWidth >= 30) scoreBadge = '라이트 팬';
   else if (currentIndex > 0) scoreBadge = '입문자';
 
-  const imgSrc = item?.img || (window.CATEGORY_IMAGES_30?.[category]?.[currentIndex]) || null;
+  const imgSrc = resolveQuizImage(item?.img, category, currentIndex) || (window.CATEGORY_IMAGES_30?.[category]?.[currentIndex]) || null;
 
   return (
-    <div className="container">
+    <div className={`container quiz-container ${screenFx === 'wrong' ? 'shake' : ''}`}>
+      {/* 화면 플래시 오버레이 */}
+      <div className={`screen-flash ${screenFx}`} aria-hidden="true" />
+
+      {/* 콤보 표시 */}
+      {combo >= 2 && (
+        <div className={`combo-badge ${comboFlash ? 'flash' : ''}`}>
+          <span className="combo-num">{combo}</span>
+          <span className="combo-label">COMBO</span>
+        </div>
+      )}
+
+      {/* 카운트다운 (마지막 5초) */}
+      {timerUrgent && remainSec > 0 && !answered && (
+        <div key={remainSec} className="countdown-num">{remainSec}</div>
+      )}
+
       {/* 헤더 */}
       <div className="quiz-header">
         <div>
@@ -268,9 +364,16 @@ export default function QuizPage() {
 
       {/* 해설 (explainWrap) */}
       {showExplain && (
-        <div className="explain-wrap" style={{ display: 'block' }}>
-          <div>{explainText}</div>
-          <button id="btnNext" onClick={() => goNext(false)}>다음 문제</button>
+        <div className="explain-wrap" role="dialog" aria-label="해설">
+          <div className="explain-header">
+            <span className="explain-icon" aria-hidden="true">💡</span>
+            <span className="explain-title">해설</span>
+          </div>
+          <p className="explain-text">{explainText}</p>
+          <button className="explain-next-btn" onClick={() => goNext(false)}>
+            <span>다음 문제</span>
+            <span className="explain-next-arrow" aria-hidden="true">→</span>
+          </button>
         </div>
       )}
 

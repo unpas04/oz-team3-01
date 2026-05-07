@@ -6,37 +6,37 @@
 /* ── 0. 웹폰트 등록 ── */
 @font-face {
   font-family: 'EF_jejudoldam';
-  src: url('fonts/EF_jejudoldam(TTF).ttf') format('truetype');
+  src: url('/fonts/EF_jejudoldam(TTF).ttf') format('truetype');
   font-display: swap;
 }
 
 @font-face {
   font-family: 'MonaS12TextHK';
-  src: url('fonts/MonaS12TextHK.ttf') format('truetype');
+  src: url('/fonts/MonaS12TextHK.ttf') format('truetype');
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Griun_PolFairness';
-  src: url('fonts/Griun_PolFairness-Rg.ttf') format('truetype');
+  src: url('/fonts/Griun_PolFairness-Rg.ttf') format('truetype');
   font-display: swap;
 }
 
 @font-face {
   font-family: 'OmyuPretty';
-  src: url('fonts/omyu_pretty.ttf') format('truetype');
+  src: url('/fonts/omyu_pretty.ttf') format('truetype');
   font-display: swap;
 }
 
 @font-face {
   font-family: 'MonaEmoji';
-  src: url('fonts/Mona12ColorEmoji.ttf') format('truetype');
+  src: url('/fonts/Mona12ColorEmoji.ttf') format('truetype');
   font-display: swap;
 }
 
 @font-face {
   font-family: 'MonaS12KR';
-  src: url('fonts/MonaS12TextKR.ttf') format('truetype');
+  src: url('/fonts/MonaS12TextKR.ttf') format('truetype');
   font-display: swap;
 }
 
