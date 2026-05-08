@@ -4,6 +4,9 @@ import {
   evaluateQuizResult,
   calculatePercentile,
 } from '../modules/data-module';
+import {
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer
+} from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { submitQuizScore, getMyRank } from '../modules/firestore';
 import AuthModal from '../components/AuthModal';
@@ -174,7 +177,7 @@ export default function TestResultPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSubmit, user, profile]);
 
-  const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
+  const { gradeInfo, scorePct, radarData } = evaluateQuizResult(category, mode, score, wrongIndices);
   const animScore = useCountUp(score);
   const percentile = calculatePercentile(scorePct);
 
@@ -194,24 +197,12 @@ export default function TestResultPage() {
 
   const handleKakaoShare = () => {
     trackShare("kakao", category);
-    if (typeof window !== 'undefined' && window.Kakao && window.Kakao.Share) {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: `덕력 감별소 — ${gradeInfo.title}`,
-          description: gradeInfo.desc,
-          imageUrl: window.location.origin + '/assets/main-cards/kimetsu.png',
-          link: { mobileWebUrl: window.location.href, webUrl: window.location.href }
-        }
-      });
-    } else {
-      showToast('카카오톡 SDK 연동 준비중이에요 💛');
-    }
+    showToast('이미지를 저장하여 카톡 친구들에게 공유해보세요! 💛');
   };
 
   const handleInstaShare = () => {
     trackShare("instagram", category);
-    showToast('이미지로 저장 후 인스타에 올려주세요 ✦');
+    showToast('이미지를 저장하여 인스타 스토리에 올려보세요! ✦');
   };
 
   const handleImageSave = async () => {
@@ -228,24 +219,20 @@ export default function TestResultPage() {
 
       const dataUrl = await toPng(card, {
         cacheBust: true,
-        pixelRatio: 3,
-        backgroundColor: null,
-        width: card.offsetWidth,
-        height: card.offsetHeight,
+        pixelRatio: 2, // 3은 너무 높아서 일부 브라우저에서 실패할 수 있음
+        backgroundColor: '#FFF8F5', // 투명도 문제 방지 위해 배경 명시
         style: {
-          transform: 'none',
-          margin: '0'
-        },
-        // 외부 이미지 (인스타/카카오 로고 등) 안전하게 처리
-        skipFonts: false,
-        fontEmbedCSS: undefined,
+          transform: 'scale(1)',
+          borderRadius: '36px'
+        }
       });
 
+      const safeTitle = (gradeInfo.title || 'result').replace(/\s+/g, '_');
       const link = document.createElement('a');
-      link.download = `덕력감별소_${gradeInfo.title}.png`;
+      link.download = `dukryeok_result_${category}_${safeTitle}.png`;
       link.href = dataUrl;
       link.click();
-      showToast('이미지가 저장되었어요 ✦');
+      showToast('이미지가 갤러리에 저장되었습니다! ✦');
     } catch (err) {
       console.error('이미지 저장 실패:', err);
       showToast('이미지 저장에 실패했어요 ✦');
@@ -255,8 +242,9 @@ export default function TestResultPage() {
   const handleLinkCopy = async () => {
     trackShare("link_copy", category);
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast('링크가 복사되었어요 ✦');
+      const shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}&utm_source=share&utm_medium=link`;
+      await navigator.clipboard.writeText(shareUrl);
+      showToast('공유 링크가 복사되었어요! ✦');
     } catch {
       showToast('복사에 실패했어요 ✦');
     }
@@ -793,6 +781,33 @@ export default function TestResultPage() {
         }}>
           {gradeInfo.introduction}
         </div>
+        
+        {/* 4분면 레이더 차트 (Recharts) */}
+        <div style={{
+          position: 'relative',
+          zIndex: 4,
+          width: '100%',
+          height: '220px',
+          margin: '10px 0'
+        }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
+              <PolarGrid stroke={theme.accent} strokeOpacity={0.3} />
+              <PolarAngleAxis 
+                dataKey="subject" 
+                tick={{ fill: theme.textMid, fontSize: 11, fontWeight: 700 }}
+              />
+              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar
+                name="덕력"
+                dataKey="A"
+                stroke={theme.deepAccent}
+                fill={theme.accent}
+                fillOpacity={0.5}
+              />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* 점수 영역 */}
         <div style={{
@@ -951,7 +966,7 @@ export default function TestResultPage() {
               letterSpacing: '-1px',
               textShadow: `0 2px 8px ${theme.glow}`
             }}>
-              {animScore}
+              {Math.min(animScore, 30)}
             </span>
             <span style={{
               fontSize: '18px',
