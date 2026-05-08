@@ -178,6 +178,18 @@ export default function TestResultPage() {
   }, [pendingSubmit, user, profile]);
 
   const { gradeInfo, scorePct, radarData } = evaluateQuizResult(category, mode, score, wrongIndices);
+
+  useEffect(() => {
+    const categoryTitle = {
+      fma: '강철의 연금술사', aot: '진격의 거인', kimetsu: '귀멸의 칼날',
+      pokemon: '포켓몬', sanrio: '산리오', jjk: '주술회전',
+      dragonball: '드래곤볼', chainsawman: '체인소맨',
+      deathnote: '데스노트', fate: '페이트'
+    };
+    const ipName = categoryTitle[category] || '캐릭터';
+    document.title = `${ipName} 퀴즈 결과: ${gradeInfo.title} - 덕력 감별소`;
+  }, [category, gradeInfo.title]);
+
   const animScore = useCountUp(score);
   const percentile = calculatePercentile(scorePct);
 
