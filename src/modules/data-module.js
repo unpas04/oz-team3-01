@@ -300,18 +300,31 @@ export function evaluateQuizResult(category, mode, score, wrongIndices = []) {
       '매니아': { total: 0, correct: 0 }
     };
 
+    const hasWrongData = wrongIndices.length > 0;
+    const scoreRatio = score / EVAL_STANDARD;
+
     data.forEach((q, idx) => {
-      const tag = (q.tags && q.tags[0]) || '기타';
-      if (stats[tag]) {
-        stats[tag].total += 1;
-        if (!wrongIndices.includes(idx)) {
-          stats[tag].correct += 1;
-        }
+      if (q.tags && Array.isArray(q.tags)) {
+        q.tags.forEach(rawTag => {
+          const t = rawTag.trim();
+          if (stats[t]) {
+            stats[t].total += 1;
+            if (hasWrongData) {
+              if (!wrongIndices.includes(idx)) {
+                stats[t].correct += 1;
+              }
+            } else {
+              // 오답 데이터가 없는 경우 (URL 직접 진입 등) 점수 비율에 맞춰 자동 분배
+              stats[t].correct += scoreRatio;
+            }
+          }
+        });
       }
     });
 
     radarData = radarData.map(item => {
       const s = stats[item.subject];
+      // 0으로 나누기 방지 및 정수화
       const val = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
       return { ...item, A: val };
     });

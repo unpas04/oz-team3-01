@@ -103,10 +103,20 @@ export default function TestResultPage() {
 
   const [score, setScore] = useState(Number.isFinite(urlScore) ? urlScore : 27);
   const [toast, setToast] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false); // 데이터 로드 상태 추가
   const category = urlCategory;
   const mode = urlMode;
   const wrongStr = sessionStorage.getItem('oz_wrong_indices') || "";
   const wrongIndices = wrongStr ? wrongStr.split(',').map(Number) : [];
+
+  // 데이터 로드 보장 로직
+  useEffect(() => {
+    import('../modules/data-module').then(m => {
+      m.loadQuizData(category)
+        .then(() => setIsDataLoaded(true))
+        .catch(err => console.error("Data load failed:", err));
+    });
+  }, [category]);
 
   // 점수/별딱지 등록 + 결과 모달
   const [authOpen, setAuthOpen] = useState(false);
