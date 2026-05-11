@@ -325,6 +325,32 @@
       border-bottom: 1px dashed rgba(192, 132, 252, 0.3);
     }
 
+    /* 정답 표시 배지 (YES/NO) */
+    .explain-answer-badge {
+      margin-left: auto;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 1.2px;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .explain-answer-badge strong {
+      font-size: 0.92rem;
+      letter-spacing: 1.5px;
+      font-weight: bold;
+    }
+    .explain-answer-badge.yes {
+      background: linear-gradient(135deg, #5BC97A 0%, #3AAA3A 100%);
+    }
+    .explain-answer-badge.no {
+      background: linear-gradient(135deg, #FF7088 0%, #D12E46 100%);
+    }
+
     .explain-icon {
       font-size: 1.2rem;
       filter: drop-shadow(0 2px 4px rgba(255, 200, 0, 0.4));

@@ -57,16 +57,52 @@ function makeCategoryVariableName(categoryName) {
   return `QUIZ_DATA_${key}`;
 }
 
+// 카테고리별 이미지 파일명 prefix (디렉토리 안의 파일명)
+const CATEGORY_IMG_PREFIX = {
+  sanrio: 'san-',
+  pokemon: 'po-',
+  aot: 'aot-',
+  dragonball: 'db-',
+  // 아래는 다른 명명 규칙 사용 → 기본값 변형
+};
+const CATEGORY_IMG_BUILDER = {
+  fma:     (n) => `fma-img${n}`,
+  kimetsu: (n) => `kimetsu-image${n}`,
+};
+
 function resolveQuizImage(img, category, index) {
   if (!img) return null;
 
   const lastSegment = img.split('/').pop();
   const hasExtension = /\.[a-zA-Z0-9]+$/.test(lastSegment);
-  if (img.endsWith('/') || !hasExtension) {
-    const directory = img.endsWith('/') ? img : `${img}/`;
-    return `${directory}${category}-img${index + 1}.png`;
+  if (!img.endsWith('/') && hasExtension) return img;
+
+  const directory = img.endsWith('/') ? img : `${img}/`;
+  const n = index + 1;
+
+  // 카테고리별 빌더 우선
+  if (CATEGORY_IMG_BUILDER[category]) {
+    return `${directory}${CATEGORY_IMG_BUILDER[category](n)}.png`;
   }
-  return img;
+  const prefix = CATEGORY_IMG_PREFIX[category];
+  if (prefix) {
+    return `${directory}${prefix}${n}.png`;
+  }
+  // 레거시 fallback
+  return `${directory}${category}-img${n}.png`;
+}
+
+// 확장자 자동 폴백 (.png → .jpg → .jpeg)
+function tryNextImageExt(e) {
+  const cur = e.target.src;
+  const m = cur.match(/\.(png|jpg|jpeg)$/i);
+  if (!m) return false;
+  const order = ['png', 'jpg', 'jpeg'];
+  const idx = order.indexOf(m[1].toLowerCase());
+  const next = order[idx + 1];
+  if (!next) return false;
+  e.target.src = cur.replace(/\.(png|jpg|jpeg)$/i, `.${next}`);
+  return true;
 }
 
 export default function QuizPage() {
@@ -326,7 +362,16 @@ export default function QuizPage() {
         <div className={`polaroid ${polaroidPop ? 'pop' : ''}`}>
           <div className="polaroid-img-area">
             {imgSrc ? (
-              <img className="polaroid-img" src={imgSrc} alt="quiz" />
+              <img
+                className="polaroid-img"
+                src={imgSrc}
+                alt="quiz"
+                onError={(e) => {
+                  if (!tryNextImageExt(e)) {
+                    e.target.style.display = 'none';
+                  }
+                }}
+              />
             ) : (
               <div className={`polaroid-placeholder ${meta.cls}`}>
                 <span className="ph-emoji">{meta.emoji}</span>
@@ -368,6 +413,11 @@ export default function QuizPage() {
           <div className="explain-header">
             <span className="explain-icon" aria-hidden="true">💡</span>
             <span className="explain-title">해설</span>
+            {item && (
+              <span className={`explain-answer-badge ${item.a ? 'yes' : 'no'}`}>
+                정답: <strong>{item.a ? 'YES' : 'NO'}</strong>
+              </span>
+            )}
           </div>
           <p className="explain-text">{explainText}</p>
           <button className="explain-next-btn" onClick={() => goNext(false)}>
