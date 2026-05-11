@@ -158,23 +158,13 @@ export default function QuizPage() {
       }
       // 원본 인덱스 부여 및 부활 모드 처리
       const dataWithIndex = data.map((item, idx) => ({ ...item, _originalIdx: idx }));
-      
-      // 셔플 함수
-      const shuffle = (array) => {
-        const arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-      };
 
       if (mode === 'revival' && wrongInput) {
         const targetIndices = wrongInput.split(',').map(Number);
         setQuestions(dataWithIndex.filter((_, idx) => targetIndices.includes(idx)));
       } else {
-        // 랜덤으로 섞어서 30문제 추출
-        setQuestions(shuffle(dataWithIndex).slice(0, TOTAL_QUESTIONS));
+        // 데이터 순서 그대로 30문제 사용
+        setQuestions(dataWithIndex.slice(0, TOTAL_QUESTIONS));
       }
     };
     script.onerror = () => console.error('퀴즈 데이터를 불러올 수 없습니다.');
