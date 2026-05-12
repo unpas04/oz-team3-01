@@ -122,16 +122,16 @@ function resolveQuizImage(img, category, index) {
   return `${directory}${category}-img${n}.png`;
 }
 
-// 확장자 자동 폴백 (.png → .jpg → .jpeg)
+// 확장자 자동 폴백 (.png → .jpg → .jpeg → .webp)
 function tryNextImageExt(e) {
   const cur = e.target.src;
-  const m = cur.match(/\.(png|jpg|jpeg)$/i);
+  const m = cur.match(/\.(png|jpg|jpeg|webp)$/i);
   if (!m) return false;
-  const order = ['png', 'jpg', 'jpeg'];
+  const order = ['png', 'jpg', 'jpeg', 'webp'];
   const idx = order.indexOf(m[1].toLowerCase());
   const next = order[idx + 1];
   if (!next) return false;
-  e.target.src = cur.replace(/\.(png|jpg|jpeg)$/i, `.${next}`);
+  e.target.src = cur.replace(/\.(png|jpg|jpeg|webp)$/i, `.${next}`);
   return true;
 }
 
