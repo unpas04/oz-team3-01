@@ -86,7 +86,7 @@ function App() {
     let cancelled = false;
     (async () => {
       try {
-        const top = await getTotalRanking(5);
+        const top = await getTotalRanking(10);
         if (!cancelled) setRankingTotal(top);
       } catch (e) {
         console.error("[ranking] 종합 랭킹 로드 실패:", e?.code, e?.message);
@@ -111,7 +111,7 @@ function App() {
     let cancelled = false;
     (async () => {
       try {
-        const list = await getCategoryRanking(rankingTab, 5);
+        const list = await getCategoryRanking(rankingTab, 10);
         if (!cancelled) {
           setCategoryRanking((prev) => ({ ...prev, [rankingTab]: list }));
         }
