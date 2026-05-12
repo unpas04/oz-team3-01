@@ -27,31 +27,44 @@ const playTone = (freq, duration = 0.1, type = 'sine', vol = 0.15) => {
   osc.start();
   osc.stop(ctx.currentTime + duration);
 };
+// 펜타토닉 스케일 (Cmaj 펜타토닉) — 각 콤보마다 위로 한 음씩
+const PENTATONIC = [523.25, 587.33, 659.25, 783.99, 880.00]; // C5, D5, E5, G5, A5
+
 const sfx = {
   correct: () => { playTone(880, 0.12, 'sine'); setTimeout(() => playTone(1320, 0.18, 'sine'), 90); },
   wrong:   () => { playTone(220, 0.18, 'square', 0.12); setTimeout(() => playTone(160, 0.25, 'square', 0.12), 100); },
   tick:    () => playTone(1000, 0.05, 'square', 0.08),
   timeout: () => { playTone(180, 0.4, 'sawtooth', 0.18); },
   click:   () => playTone(600, 0.05, 'triangle', 0.08),
-  combo:   () => { playTone(660, 0.08); setTimeout(() => playTone(880, 0.08), 60); setTimeout(() => playTone(1100, 0.12), 120); },
-  comboMilestone: () => {
-    // 5콤보 마일스톤: 화려한 상승 멜로디
-    playTone(523, 0.08, 'sine', 0.2);   // C5
-    setTimeout(() => playTone(659, 0.08, 'sine', 0.2), 80);  // E5
-    setTimeout(() => playTone(784, 0.08, 'sine', 0.2), 160); // G5
-    setTimeout(() => playTone(1046, 0.12, 'sine', 0.22), 240); // C6
-    setTimeout(() => playTone(1568, 0.2, 'sine', 0.25), 340); // G6
+
+  // 콤보별 음정 — 매 콤보마다 한 음씩 위로
+  comboStep: (combo) => {
+    const n = combo - 2;
+    const idx = ((n % PENTATONIC.length) + PENTATONIC.length) % PENTATONIC.length;
+    const octave = Math.floor(n / PENTATONIC.length);
+    const freq = PENTATONIC[idx] * Math.pow(2, octave);
+    playTone(freq, 0.12, 'sine', 0.16);
+    setTimeout(() => playTone(freq * 1.5, 0.08, 'triangle', 0.07), 40);
+  },
+
+  // 5단위 티어업 — 짧은 상승 코드
+  tierUp: () => {
+    playTone(523, 0.08, 'sine', 0.18);
+    setTimeout(() => playTone(659, 0.08, 'sine', 0.18), 55);
+    setTimeout(() => playTone(784, 0.1, 'sine', 0.2), 110);
+    setTimeout(() => playTone(1046, 0.18, 'triangle', 0.18), 180);
   },
 };
 
 const COMBO_TIERS = [
-  { min: 25, label: 'INSANE!',    color: '#FF2D55', glow: 'rgba(255, 45, 85, 0.7)' },
-  { min: 20, label: 'GODLIKE!',   color: '#C084FC', glow: 'rgba(192, 132, 252, 0.7)' },
-  { min: 15, label: 'AMAZING!',   color: '#FFB347', glow: 'rgba(255, 180, 50, 0.7)' },
-  { min: 10, label: 'AWESOME!',   color: '#5BC97A', glow: 'rgba(91, 201, 122, 0.7)' },
-  { min: 5,  label: 'GREAT!',     color: '#FF85A1', glow: 'rgba(255, 133, 161, 0.7)' },
+  { min: 25, name: 'LEGENDARY', primary: '#FF2D55', secondary: '#FFD700', text: '#fff', ring: true,  ringSpeed: '3s' },
+  { min: 20, name: 'EPIC',      primary: '#C084FC', secondary: '#FF85A1', text: '#fff', ring: true,  ringSpeed: '4s' },
+  { min: 15, name: 'RARE',      primary: '#FFB347', secondary: '#FF8C42', text: '#fff', ring: true,  ringSpeed: '5s' },
+  { min: 10, name: 'NICE',      primary: '#5BC97A', secondary: '#3AAA3A', text: '#fff', ring: false, ringSpeed: '6s' },
+  { min: 5,  name: 'GOOD',      primary: '#FF85A1', secondary: '#C084FC', text: '#fff', ring: false, ringSpeed: '6s' },
+  { min: 2,  name: '',          primary: '#FFD4E5', secondary: '#FFE5A8', text: '#9A4570', ring: false, ringSpeed: '6s' },
 ];
-const getComboTier = (n) => COMBO_TIERS.find((t) => n >= t.min);
+const getComboTier = (n) => COMBO_TIERS.find((t) => n >= t.min) || COMBO_TIERS[COMBO_TIERS.length - 1];
 
 const CATEGORY_META = {
   fma:     { emoji: '⚗️',  label: 'FMA',     cls: 'placeholder-fma'     },
@@ -155,8 +168,8 @@ export default function QuizPage() {
   const [polaroidPop, setPolaroidPop] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [combo, setCombo] = useState(0);
-  const [comboFlash, setComboFlash] = useState(false);
-  const [milestone, setMilestone] = useState(null); // { value, label, color }
+  const [comboPulse, setComboPulse] = useState(0); // 매 콤보마다 증가 (애니메이션 재시작 키)
+  const [tierUpFlash, setTierUpFlash] = useState(false);
   const [screenFx, setScreenFx] = useState(''); // 'correct' | 'wrong' | ''
   const lastTickRef = useRef(-1);
 
@@ -276,18 +289,17 @@ export default function QuizPage() {
       setScreenFx('correct');
       setTimeout(() => setScreenFx(''), 450);
 
-      if (newCombo >= 3) {
-        sfx.combo();
-        setComboFlash(true);
-        setTimeout(() => setComboFlash(false), 600);
+      // 콤보 펄스 (매 콤보마다)
+      if (newCombo >= 2) {
+        setComboPulse((p) => p + 1);
+        sfx.comboStep(newCombo);
       }
 
-      // 5콤보 마일스톤 — 더 큰 효과
+      // 티어업 (5/10/15/20/25)
       if (newCombo >= 5 && newCombo % 5 === 0) {
-        sfx.comboMilestone();
-        const tier = getComboTier(newCombo) || COMBO_TIERS[COMBO_TIERS.length - 1];
-        setMilestone({ value: newCombo, label: tier.label, color: tier.color, glow: tier.glow });
-        setTimeout(() => setMilestone(null), 1400);
+        sfx.tierUp();
+        setTierUpFlash(true);
+        setTimeout(() => setTierUpFlash(false), 700);
       }
 
       setFeedback({
@@ -356,31 +368,29 @@ export default function QuizPage() {
       <div className={`screen-flash ${screenFx}`} aria-hidden="true" />
 
       {/* 콤보 표시 */}
-      {combo >= 2 && (
-        <div
-          className={`combo-badge ${comboFlash ? 'flash' : ''}`}
-          style={milestone ? { '--milestone-color': milestone.color, '--milestone-glow': milestone.glow } : undefined}
-        >
-          <span className="combo-num">{combo}</span>
-          <span className="combo-label">COMBO</span>
-        </div>
-      )}
-
-      {/* 5콤보 마일스톤 오버레이 */}
-      {milestone && (
-        <div className="combo-milestone-overlay" aria-hidden="true">
+      {combo >= 2 && (() => {
+        const tier = getComboTier(combo);
+        return (
           <div
-            className="combo-milestone-label"
-            style={{ color: milestone.color, '--ms-glow': milestone.glow }}
+            key={comboPulse}
+            className={`combo-badge tier-${(tier.name || 'start').toLowerCase()} ${tierUpFlash ? 'tier-up' : ''}`}
+            style={{
+              '--tier-primary': tier.primary,
+              '--tier-secondary': tier.secondary,
+              '--tier-text': tier.text,
+              '--ring-speed': tier.ringSpeed,
+            }}
           >
-            <span className="combo-milestone-num">{milestone.value}</span>
-            <span className="combo-milestone-x">×</span>
-            <span className="combo-milestone-text">{milestone.label}</span>
+            {tier.ring && <div className="combo-ring" aria-hidden="true" />}
+            <div className="combo-badge-content">
+              <span className="combo-num">{combo}</span>
+              <span className="combo-x" aria-hidden="true">×</span>
+              <span className="combo-label">COMBO</span>
+            </div>
+            {tier.name && <div className="combo-tier-name">{tier.name}</div>}
           </div>
-          {/* 방사형 라인 */}
-          <div className="combo-milestone-rays" style={{ '--ms-color': milestone.color }} />
-        </div>
-      )}
+        );
+      })()}
 
       {/* 카운트다운 (마지막 5초) */}
       {timerUrgent && remainSec > 0 && !answered && (
