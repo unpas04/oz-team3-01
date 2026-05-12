@@ -52,6 +52,8 @@ function App() {
   const [rankingTab, setRankingTab] = useState("total");
   const [starsModalOpen, setStarsModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("signin"); // "signin" | "signup"
+  const [pendingCategory, setPendingCategory] = useState(null); // 비로그인 시 클릭한 카테고리 저장
   const navigate = useNavigate();
 
   // 별딱지 (Firestore 우선, 없으면 빈 배열)
@@ -184,10 +186,32 @@ function App() {
       trackCategorySelect(`${category.id}_coming_soon`);
       return;
     }
+
+    // 비로그인이면 회원가입 모달 띄우고, 성공 후 자동으로 이 카테고리 진입
+    if (!user || !profile?.nickname) {
+      setPendingCategory(category);
+      setAuthMode("signup");
+      setAuthModalOpen(true);
+      return;
+    }
+
+    // 로그인 상태 → 카테고리 선택 모달 열기
     setSelectedCategory(category);
     setIsModalOpen(true);
     trackCategorySelect(category.id);
   };
+
+  // 가입/로그인 성공 후 pending 카테고리가 있으면 자동 진입
+  useEffect(() => {
+    if (pendingCategory && user && profile?.nickname) {
+      const cat = pendingCategory;
+      setPendingCategory(null);
+      setSelectedCategory(cat);
+      setIsModalOpen(true);
+      trackCategorySelect(cat.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingCategory, user, profile]);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -229,7 +253,10 @@ function App() {
             <button
               type="button"
               className="header-auth-btn"
-              onClick={() => setAuthModalOpen(true)}
+              onClick={() => {
+                setAuthMode("signin");
+                setAuthModalOpen(true);
+              }}
             >
               로그인 / 가입
             </button>
@@ -770,8 +797,15 @@ function App() {
       {/* ⑤-3 로그인/가입 모달 */}
       <AuthModal
         open={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        onSuccess={() => setAuthModalOpen(false)}
+        defaultMode={authMode}
+        onClose={() => {
+          setAuthModalOpen(false);
+          setPendingCategory(null); // 모달 취소 시 pending 카테고리 클리어
+        }}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          // pendingCategory가 있으면 위 useEffect가 자동으로 카테고리 모달 띄움
+        }}
       />
 
       {/* ⑤-4 Coming Soon 모달 */}

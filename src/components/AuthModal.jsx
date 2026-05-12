@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn, signUp, getAuthErrorMessage } from "../modules/auth";
 import { trackSignUp, trackSignIn } from "../modules/analytics";
 import "../styles/auth-modal.css";
@@ -9,6 +9,14 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+
+  // 모달이 열릴 때마다 defaultMode 반영
+  useEffect(() => {
+    if (open) {
+      setMode(defaultMode);
+      setError("");
+    }
+  }, [open, defaultMode]);
 
   if (!open) return null;
 
@@ -52,11 +60,11 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
         <button className="modal-close" onClick={close} aria-label="닫기">✕</button>
 
         <h2 className="auth-title">
-          {mode === "signup" ? "회원가입" : "로그인"}
+          {mode === "signup" ? "닉네임 만들기" : "로그인"}
         </h2>
         <p className="auth-subtitle">
           {mode === "signup"
-            ? "닉네임과 비밀번호로 별딱지를 모아요 ✦"
+            ? "닉네임과 비밀번호만 정해주세요 ✦"
             : "닉네임과 비밀번호를 입력해주세요"}
         </p>
 
@@ -92,7 +100,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
           {error && <div className="auth-error">{error}</div>}
 
           <button className="auth-submit-btn" type="submit" disabled={busy}>
-            {busy ? "처리 중..." : mode === "signup" ? "가입하고 시작" : "로그인"}
+            {busy ? "처리 중..." : "테스트 시작"}
           </button>
         </form>
 
@@ -105,8 +113,8 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
           }}
         >
           {mode === "signup"
-            ? "이미 계정이 있어요. 로그인"
-            : "처음이에요. 회원가입"}
+            ? "닉네임이 있나요?"
+            : "처음이에요? 닉네임 만들기"}
         </button>
       </div>
     </div>

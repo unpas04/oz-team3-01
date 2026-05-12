@@ -254,10 +254,58 @@ export default function TestResultPage() {
 
   const handleImageSave = async () => {
     trackShare("image_save", category);
+
+    const ua = navigator.userAgent || '';
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+    // 인앱 브라우저(카톡/인스타/페북 등)는 window.open이 제한적
+    const isInApp = /KAKAOTALK|Instagram|FBAN|FBAV|Line|NAVER|Twitter|wv\)/i.test(ua);
+
+    // 모바일이고 인앱이 아니면 사용자 클릭 직후 빈 새 창 미리 열기 (팝업 차단 회피)
+    let imageWindow = null;
+    if (isMobile && !isInApp) {
+      imageWindow = window.open('about:blank', '_blank');
+      if (imageWindow) {
+        try {
+          imageWindow.document.write(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>덕력 감별소 결과 카드</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'Pretendard',sans-serif;background:linear-gradient(180deg,#FFF8F5 0%,#FFEEF4 50%,#F0E8FF 100%);display:flex;flex-direction:column;align-items:center;color:#6B4A5C}
+.header{text-align:center;margin-bottom:20px;max-width:360px}
+.header h1{font-size:17px;font-weight:800;margin:0 0 6px;letter-spacing:-.3px}
+.header p{font-size:13px;margin:0;opacity:.7;line-height:1.55}
+#img-wrap{width:100%;max-width:360px;text-align:center;opacity:0;transition:opacity .4s ease-out}
+#img-wrap.loaded{opacity:1}
+#img-wrap img{width:100%;height:auto;border-radius:24px;box-shadow:0 12px 40px rgba(170,130,160,.25);-webkit-touch-callout:default!important;-webkit-user-select:auto!important;user-select:auto!important;pointer-events:auto!important}
+.loading{padding:60px 20px;text-align:center;color:#8B6B7D;font-size:14px}
+.footer{margin-top:24px;font-size:11px;color:#A88B9C;text-align:center;padding:0 20px;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>이미지 길게 눌러 저장하기 ✦</h1>
+<p>아래 이미지를 길게 눌러<br/>"사진에 저장" 또는 "이미지 다운로드"를 선택하세요</p>
+</div>
+<div id="img-wrap"><div class="loading" id="loading">이미지 준비 중... ✦</div></div>
+<div class="footer">덕력 감별소 ✦</div>
+</body>
+</html>`);
+          imageWindow.document.close();
+        } catch { /* noop */ }
+      }
+    }
+
     try {
       const { toPng } = await import('html-to-image');
       const card = document.getElementById('result-share-card');
-      if (!card) return;
+      if (!card) {
+        if (imageWindow && !imageWindow.closed) { try { imageWindow.close(); } catch { /* noop */ } }
+        return;
+      }
 
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
@@ -273,14 +321,16 @@ export default function TestResultPage() {
       const safeTitle = (gradeInfo.title || 'result').replace(/\s+/g, '_');
       const fileName = `dukryeok_result_${category}_${safeTitle}.png`;
 
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-
-      // 모바일: Web Share API (파일) 시도
       if (isMobile) {
+        // 1) Web Share API (파일) 시도 — 시스템 공유 시트에서 "사진에 저장" 가능
         try {
           const blob = await (await fetch(dataUrl)).blob();
           const file = new File([blob], fileName, { type: 'image/png' });
           if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            // 공유 시트가 뜨면 새 창은 불필요
+            if (imageWindow && !imageWindow.closed) {
+              try { imageWindow.close(); } catch { /* noop */ }
+            }
             await navigator.share({
               files: [file],
               title: '덕력 감별소 결과',
@@ -289,16 +339,44 @@ export default function TestResultPage() {
             return;
           }
         } catch (err) {
-          if (err?.name === 'AbortError') return;
-          // 다음 단계로 폴백
+          if (err?.name === 'AbortError') {
+            // 사용자가 공유 취소
+            if (imageWindow && !imageWindow.closed) {
+              try { imageWindow.close(); } catch { /* noop */ }
+            }
+            return;
+          }
+          // 다음 폴백으로 진행
         }
 
-        // 모바일 폴백: 인라인 이미지 오버레이 (사용자가 길게 눌러 저장)
+        // 2) 미리 열어둔 새 창에 이미지 채우기
+        if (imageWindow && !imageWindow.closed) {
+          try {
+            const doc = imageWindow.document;
+            const wrap = doc.getElementById('img-wrap');
+            const loading = doc.getElementById('loading');
+            if (wrap) {
+              const img = doc.createElement('img');
+              img.src = dataUrl;
+              img.alt = '덕력 감별소 결과';
+              img.onload = () => wrap.classList.add('loaded');
+              if (loading) loading.remove();
+              wrap.appendChild(img);
+              doc.title = `덕력감별소_${safeTitle}`;
+            }
+            showToast('새 창에서 이미지를 길게 눌러 저장하세요 ✦');
+            return;
+          } catch {
+            // 새 창 접근 실패 → 인라인 오버레이 폴백
+          }
+        }
+
+        // 3) 인앱 브라우저거나 새 창이 차단된 경우: 인라인 오버레이로 폴백
         setImagePreviewUrl(dataUrl);
         return;
       }
 
-      // 데스크탑: 다운로드
+      // 데스크탑: 자동 다운로드
       const link = document.createElement('a');
       link.download = fileName;
       link.href = dataUrl;
@@ -307,6 +385,9 @@ export default function TestResultPage() {
       document.body.removeChild(link);
       showToast('이미지가 다운로드 폴더에 저장됐어요! ✦');
     } catch (err) {
+      if (imageWindow && !imageWindow.closed) {
+        try { imageWindow.close(); } catch { /* noop */ }
+      }
       console.error('이미지 저장 실패:', err);
       showToast('이미지 저장에 실패했어요 ✦');
     }
