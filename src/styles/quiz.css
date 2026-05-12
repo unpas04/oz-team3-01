@@ -850,3 +850,39 @@
     background: linear-gradient(135deg, #C0A0B8, #9A8AA8);
   }
 
+
+  /* ════════════════════════════════════
+     콤보 배지 모바일 최적화 (이미지 가림 방지)
+     ════════════════════════════════════ */
+  @media (max-width: 480px) {
+    .combo-badge {
+      top: 60px;
+      right: 8px;
+      padding: 5px 10px 4px;
+      border-radius: 12px;
+    }
+    .combo-badge .combo-num {
+      font-size: 1.15rem;
+    }
+    .combo-badge .combo-x {
+      font-size: 0.7rem;
+      margin: 0;
+    }
+    .combo-badge .combo-label {
+      font-size: 0.56rem;
+      letter-spacing: 1.4px;
+    }
+    .combo-tier-name {
+      font-size: 0.52rem;
+      letter-spacing: 1.6px;
+      margin-top: 1px;
+    }
+    .combo-ring {
+      inset: -3px;
+      border-radius: 14px;
+    }
+    .combo-ring::after {
+      inset: 3px;
+      border-radius: 11px;
+    }
+  }

@@ -258,27 +258,61 @@ export default function TestResultPage() {
       const card = document.getElementById('result-share-card');
       if (!card) return;
 
-      // 폰트 로드 대기 (커스텀 폰트가 캡처에 반영되도록)
       if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
       }
 
       const dataUrl = await toPng(card, {
         cacheBust: true,
-        pixelRatio: 2, // 3은 너무 높아서 일부 브라우저에서 실패할 수 있음
-        backgroundColor: '#FFF8F5', // 투명도 문제 방지 위해 배경 명시
-        style: {
-          transform: 'scale(1)',
-          borderRadius: '36px'
-        }
+        pixelRatio: 2,
+        backgroundColor: '#FFF8F5',
+        style: { transform: 'scale(1)', borderRadius: '36px' },
       });
 
       const safeTitle = (gradeInfo.title || 'result').replace(/\s+/g, '_');
+      const fileName = `dukryeok_result_${category}_${safeTitle}.png`;
+
+      // dataURL → Blob → File
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      // 1) 모바일 + 파일 공유 지원 → 시스템 공유 시트 (사진 앱 저장 가능)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: '덕력 감별소 결과',
+            text: `${gradeInfo.title} 등급 받았어요!`,
+          });
+          return;
+        } catch (err) {
+          if (err?.name === 'AbortError') return; // 사용자가 취소
+          // 그 외 에러는 데스크탑 다운로드로 폴백
+        }
+      }
+
+      // 2) 데스크탑 (또는 파일 공유 미지원) → 다운로드
       const link = document.createElement('a');
-      link.download = `dukryeok_result_${category}_${safeTitle}.png`;
+      link.download = fileName;
       link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
-      showToast('이미지가 갤러리에 저장되었습니다! ✦');
+      document.body.removeChild(link);
+
+      // 3) iOS Safari 등에서 다운로드도 안 통할 경우 → 새 탭 폴백
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
+      if (isIOS) {
+        // 이미지를 새 탭에 열어서 사용자가 길게 눌러 저장하도록
+        const w = window.open();
+        if (w) {
+          w.document.write(`<img src="${dataUrl}" style="width:100%" alt="result"/>`);
+          showToast('이미지를 꾹 눌러서 사진 앱에 저장해주세요 ✦');
+        } else {
+          showToast('이미지 저장이 차단됐어요. 팝업을 허용해주세요.');
+        }
+      } else {
+        showToast('이미지가 다운로드 폴더에 저장됐어요! ✦');
+      }
     } catch (err) {
       console.error('이미지 저장 실패:', err);
       showToast('이미지 저장에 실패했어요 ✦');
