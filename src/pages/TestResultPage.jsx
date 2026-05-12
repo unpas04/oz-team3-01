@@ -193,14 +193,62 @@ export default function TestResultPage() {
     setTimeout(() => setToast(null), 2400);
   };
 
-  const handleKakaoShare = () => {
+  const handleKakaoShare = async () => {
     trackShare("kakao", category);
-    showToast('이미지를 저장하여 카톡 친구들에게 공유해보세요! 💛');
+    const shareUrl = window.location.href;
+    const shareText = `덕력 감별소 — ${gradeInfo.title} 등급 받았어요! 너도 도전해봐 ✦`;
+
+    // 1) 링크 복사
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+    } catch { /* ignore */ }
+
+    // 2) 모바일이면 OS 공유 시트 (카톡이 거기 포함됨)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: '덕력 감별소',
+          text: shareText,
+          url: shareUrl,
+        });
+        return;
+      } catch { /* 사용자 취소는 무시 */ }
+    }
+
+    // 3) 데스크탑 등 미지원 환경: 링크 복사 + 카톡 웹 띄우기 시도
+    showToast('링크가 복사됐어요! 카톡에 붙여넣어 공유해주세요 💛');
   };
 
-  const handleInstaShare = () => {
+  const handleInstaShare = async () => {
     trackShare("instagram", category);
-    showToast('이미지를 저장하여 인스타 스토리에 올려보세요! ✦');
+    const shareUrl = window.location.href;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+    } catch { /* ignore */ }
+
+    // 모바일 → 인스타 앱 직접 열기 (실패시 웹)
+    const ua = navigator.userAgent || '';
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+
+    if (isMobile) {
+      // iOS/Android — 인스타 앱 딥링크
+      const fallback = setTimeout(() => {
+        window.location.href = 'https://www.instagram.com/';
+      }, 800);
+      window.location.href = 'instagram://app';
+      // 앱이 열리면 자동으로 페이지 visibility가 hidden 됨
+      const onHidden = () => {
+        if (document.visibilityState === 'hidden') {
+          clearTimeout(fallback);
+          document.removeEventListener('visibilitychange', onHidden);
+        }
+      };
+      document.addEventListener('visibilitychange', onHidden);
+    } else {
+      // 데스크탑 → 새 탭으로 인스타 열기
+      window.open('https://www.instagram.com/', '_blank', 'noopener');
+      showToast('링크가 복사됐어요! 인스타에 붙여넣어 공유해주세요 ✦');
+    }
   };
 
   const handleImageSave = async () => {
@@ -1151,10 +1199,11 @@ export default function TestResultPage() {
           .share-link:hover { color: #fff; }
 
           @keyframes toastPop {
-            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
-            15% { opacity: 1; transform: translateY(0) scale(1); }
-            85% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+            12%  { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+            20%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            85%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
           }
         `}</style>
 
@@ -1303,21 +1352,23 @@ export default function TestResultPage() {
       {toast && (
         <div style={{
           position: 'fixed',
-          bottom: '40px',
+          top: '50%',
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: 'translate(-50%, -50%)',
           background: 'rgba(60, 30, 50, 0.92)',
           backdropFilter: 'blur(20px)',
           color: '#fff',
-          padding: '14px 26px',
-          borderRadius: '999px',
-          fontSize: '13px',
+          padding: '16px 28px',
+          borderRadius: '18px',
+          fontSize: '14px',
           fontWeight: '700',
           letterSpacing: '0.3px',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.1)',
-          zIndex: 100,
+          boxShadow: '0 16px 48px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.1)',
+          zIndex: 9999,
           animation: 'toastPop 2.4s ease-in-out forwards',
-          whiteSpace: 'nowrap'
+          maxWidth: '90vw',
+          textAlign: 'center',
+          lineHeight: '1.45',
         }}>
           {toast.message}
         </div>
