@@ -27,7 +27,7 @@ export const submitSuggestion = async ({ message, uid = null, nickname = null })
   });
 };
 
-const PERFECT_SCORE = 30;
+const STAR_THRESHOLD = 27; // 별딱지 지급 기준 (30점 만점 중 27점 이상)
 const STAR_WEIGHT = 1000; // compositeScore = starCount * 1000 + totalScore
 
 export const getCurrentMonth = () => {
@@ -106,7 +106,7 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
 
   let stars = Array.isArray(cur.stars) ? [...cur.stars] : [];
   const wasAlreadyEarnedThisMonth = stars.includes(category);
-  if (score >= PERFECT_SCORE && !wasAlreadyEarnedThisMonth) {
+  if (score >= STAR_THRESHOLD && !wasAlreadyEarnedThisMonth) {
     stars.push(category);
   }
 
@@ -129,7 +129,7 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
   );
 
   // 영구 별딱지 (users/{uid}.stars 누적)
-  if (score >= PERFECT_SCORE) {
+  if (score >= STAR_THRESHOLD) {
     const userRef = doc(db, "users", uid);
     const userSnap = await getDoc(userRef);
     const userStars = userSnap.exists() ? (userSnap.data().stars || []) : [];
@@ -141,7 +141,7 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
   return {
     newBest,
     prevBest,
-    gotStar: score >= PERFECT_SCORE && !wasAlreadyEarnedThisMonth,
+    gotStar: score >= STAR_THRESHOLD && !wasAlreadyEarnedThisMonth,
   };
 };
 

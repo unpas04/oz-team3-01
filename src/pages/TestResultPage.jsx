@@ -111,7 +111,6 @@ export default function TestResultPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [rankModalOpen, setRankModalOpen] = useState(false);
   const [submitState, setSubmitState] = useState("idle");
-  const [submitError, setSubmitError] = useState("");
   const [gotStar, setGotStar] = useState(false);
   const [myRankInfo, setMyRankInfo] = useState(null);
   const [pendingSubmit, setPendingSubmit] = useState(false);
@@ -125,7 +124,6 @@ export default function TestResultPage() {
     }
     submittedRef.current = true;
     setSubmitState("submitting");
-    setSubmitError("");
     try {
       const res = await submitQuizScore({
         uid: user.uid,
@@ -155,7 +153,8 @@ export default function TestResultPage() {
       console.error("submit score failed", err);
       setSubmitState("failed");
       const code = err?.code || err?.message || "unknown";
-      setSubmitError(`등록 실패: ${code}`);
+      // 자동 등록(showModal=false)에서는 조용히 콘솔에만, 수동 클릭시엔 토스트
+      if (showModal) showToast(`등록 실패: ${code}`);
       submittedRef.current = false;
     }
   };
@@ -632,60 +631,6 @@ export default function TestResultPage() {
           50% { transform: translateY(-4px); }
         }
       `}</style>
-
-      {/* 순위 확인하기 CTA */}
-      <button
-        type="button"
-        onClick={handleCheckRank}
-        disabled={submitState === "submitting"}
-        className="check-rank-btn"
-        style={{
-          maxWidth: '360px',
-          width: '100%',
-          marginBottom: '20px',
-          position: 'relative',
-          zIndex: 2,
-          padding: '13px 18px',
-          border: 'none',
-          borderRadius: '16px',
-          background: 'linear-gradient(135deg, #FF85A1 0%, #C084FC 100%)',
-          color: '#fff',
-          fontFamily: 'YPairingFont, sans-serif',
-          fontWeight: 'bold',
-          fontSize: '1rem',
-          letterSpacing: '1.5px',
-          cursor: submitState === "submitting" ? 'not-allowed' : 'pointer',
-          boxShadow: '0 6px 20px rgba(192, 132, 252, 0.4), inset 0 1px 0 rgba(255,255,255,0.55)',
-          opacity: submitState === "submitting" ? 0.65 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '10px',
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
-            fill="#FFE48A" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
-        </svg>
-        <span>
-          {submitState === "submitting"
-            ? "등록 중…"
-            : submitState === "done"
-            ? "내 순위 다시 보기"
-            : "순위 확인하기"}
-        </span>
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M5 3 L11 8 L5 13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-      {submitError && (
-        <div style={{
-          maxWidth: '360px', width: '100%', marginBottom: '14px',
-          padding: '9px 12px', background: 'rgba(255,220,225,0.85)',
-          border: '1px solid rgba(255,100,120,0.35)', borderRadius: '10px',
-          color: '#B82844', fontSize: '0.84rem', textAlign: 'center', zIndex: 2,
-        }}>{submitError}</div>
-      )}
 
       {/* 공유 카드 */}
       <div
@@ -1297,26 +1242,62 @@ export default function TestResultPage() {
           );
         })()}
 
-        {/* 메인으로 버튼 */}
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            marginTop: '12px',
-            padding: '14px 36px',
-            background: '#FF8FAB',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '999px',
-            fontWeight: '800',
-            fontSize: '14px',
-            cursor: 'pointer',
-            boxShadow: '0 6px 20px rgba(255, 143, 171, 0.4)',
-            transition: 'all 0.2s',
-            letterSpacing: '0.5px'
-          }}
-        >
-          ✿ 메인으로
-        </button>
+        {/* 하단 액션 버튼 — 순위 확인 + 메인으로 */}
+        <div style={{
+          marginTop: '12px',
+          display: 'flex',
+          gap: '10px',
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}>
+          <button
+            type="button"
+            onClick={handleCheckRank}
+            disabled={submitState === "submitting"}
+            style={{
+              padding: '14px 24px',
+              background: 'linear-gradient(135deg, #FF85A1 0%, #C084FC 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '999px',
+              fontWeight: '800',
+              fontSize: '14px',
+              cursor: submitState === "submitting" ? 'not-allowed' : 'pointer',
+              boxShadow: '0 6px 20px rgba(192, 132, 252, 0.35)',
+              transition: 'all 0.2s',
+              letterSpacing: '0.5px',
+              opacity: submitState === "submitting" ? 0.65 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
+                fill="#FFE48A" stroke="#fff" strokeWidth="1.4" strokeLinejoin="round" />
+            </svg>
+            {submitState === "submitting" ? "등록 중…" : "순위 확인"}
+          </button>
+
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              padding: '14px 24px',
+              background: '#FF8FAB',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '999px',
+              fontWeight: '800',
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 6px 20px rgba(255, 143, 171, 0.4)',
+              transition: 'all 0.2s',
+              letterSpacing: '0.5px'
+            }}
+          >
+            ✿ 메인으로 돌아가기
+          </button>
+        </div>
       </div>
 
       {/* ═══════ 로그인/가입 모달 ═══════ */}
