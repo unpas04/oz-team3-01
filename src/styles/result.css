@@ -1276,3 +1276,173 @@ body.result, .certificate-wrapper {
   border-color: transparent;
   transform: translateY(-1px);
 }
+
+/* ════════════════════════════════════
+   쿠팡 파트너스 광고 섹션
+   ════════════════════════════════════ */
+.affiliate-section {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  margin: 24px auto 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.affiliate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px;
+}
+.affiliate-label {
+  font-family: 'MonaS12TextHK', sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 2.5px;
+  color: #A88B9C;
+  text-transform: uppercase;
+  font-weight: 800;
+  opacity: 0.85;
+}
+.affiliate-swipe-hint {
+  font-size: 0.66rem;
+  color: #C8A0B8;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* 가로 스크롤 컨테이너 */
+.affiliate-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 4px 12px 12px;
+  margin: 0 -12px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.affiliate-scroll::-webkit-scrollbar { display: none; }
+
+.affiliate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 184, 200, 0.5);
+  border-radius: 16px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow:
+    0 4px 14px rgba(170, 130, 160, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, filter 0.2s;
+  cursor: pointer;
+  flex: 0 0 160px;
+  width: 160px;
+  height: 270px;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+}
+.affiliate-card:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.04);
+  box-shadow:
+    0 8px 22px rgba(255, 143, 171, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.affiliate-card:active { transform: translateY(0); }
+
+.affiliate-thumb {
+  width: 100%;
+  height: 140px;
+  border-radius: 12px;
+  object-fit: cover;
+  object-position: center;
+  background: #FFF5FA;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.affiliate-thumb-placeholder {
+  width: 100%;
+  height: 140px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FFE0EC, #F0D9FF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  text-align: center;
+  font-family: 'YPairingFont', sans-serif;
+  font-weight: bold;
+  font-size: 0.92rem;
+  color: #C060A0;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  word-break: keep-all;
+  flex-shrink: 0;
+}
+
+.affiliate-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.affiliate-title {
+  font-family: 'YPairingFont', sans-serif;
+  font-weight: bold;
+  font-size: 0.85rem;
+  color: #4A3A5E;
+  letter-spacing: 0.2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.3;
+  height: 2.2em;
+}
+.affiliate-subtitle {
+  font-size: 0.72rem;
+  color: #8B6B7D;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 2.6em;
+}
+.affiliate-cta {
+  margin-top: auto;
+}
+.affiliate-cta {
+  margin-top: 2px;
+  font-family: 'YPairingFont', sans-serif;
+  font-weight: bold;
+  font-size: 0.78rem;
+  color: #C060A0;
+  letter-spacing: 0.5px;
+}
+.affiliate-cta span {
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.affiliate-card:hover .affiliate-cta span {
+  transform: translateX(4px);
+}
+
+.affiliate-disclosure {
+  margin: 0;
+  padding: 4px 6px;
+  font-size: 0.66rem;
+  color: #A88B9C;
+  line-height: 1.5;
+  text-align: center;
+  opacity: 0.8;
+  letter-spacing: 0.1px;
+}

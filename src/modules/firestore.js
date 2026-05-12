@@ -3,14 +3,29 @@ import {
   getDoc,
   setDoc,
   updateDoc,
+  addDoc,
   collection,
   query,
   orderBy,
   limit,
   getDocs,
   onSnapshot,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
+
+/* ── 사용자 의견 (suggestions) ─────────────────── */
+export const submitSuggestion = async ({ message, uid = null, nickname = null }) => {
+  const trimmed = (message || "").trim();
+  if (trimmed.length < 2) throw new Error("의견은 2자 이상 입력해주세요.");
+  if (trimmed.length > 500) throw new Error("의견은 500자 이내로 입력해주세요.");
+  return await addDoc(collection(db, "suggestions"), {
+    message: trimmed,
+    uid,
+    nickname,
+    createdAt: serverTimestamp(),
+  });
+};
 
 const PERFECT_SCORE = 30;
 const STAR_WEIGHT = 1000; // compositeScore = starCount * 1000 + totalScore

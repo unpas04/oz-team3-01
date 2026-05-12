@@ -8,6 +8,7 @@ import {
   getMyRank,
   getLastMonthChampion,
   getMyMonthlyDoc,
+  submitSuggestion,
 } from '../modules/firestore';
 import { signOutUser } from '../modules/auth';
 import AuthModal from '../components/AuthModal';
@@ -28,7 +29,7 @@ const CATEGORIES = [
   { id: "dragonball", name: "드래곤볼", emoji: "🐉" },
   { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
   { id: "deathnote", name: "데스노트", emoji: "📓" },
-  { id: "fate", name: "페이트 시리즈", emoji: "📜" },
+  { id: "fate", name: "페이트 시리즈", emoji: "📜", comingSoon: true },
 ];
 
 const GRADES = [
@@ -148,7 +149,41 @@ function App() {
   const pct = Math.min(100, Math.round((totalScore / MAX_SCORE) * 100));
   const currentGrade = GRADES.find((g) => pct >= g.min)?.label || "아직 시작 전 ✦";
 
+  const [comingSoonOpen, setComingSoonOpen] = useState(false);
+  const [comingSoonCategory, setComingSoonCategory] = useState(null);
+
+  // 의견 폼
+  const [suggestion, setSuggestion] = useState("");
+  const [suggestState, setSuggestState] = useState("idle"); // idle | submitting | done | failed
+  const [suggestError, setSuggestError] = useState("");
+
+  const handleSuggestionSubmit = async (e) => {
+    e.preventDefault();
+    if (suggestState === "submitting" || suggestState === "done") return;
+    setSuggestError("");
+    setSuggestState("submitting");
+    try {
+      await submitSuggestion({
+        message: suggestion,
+        uid: user?.uid || null,
+        nickname: profile?.nickname || null,
+      });
+      setSuggestState("done");
+      setSuggestion("");
+    } catch (err) {
+      console.error("suggestion submit failed", err);
+      setSuggestError(err?.message || "전송에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setSuggestState("failed");
+    }
+  };
+
   const openModal = (category) => {
+    if (category.comingSoon) {
+      setComingSoonCategory(category);
+      setComingSoonOpen(true);
+      trackCategorySelect(`${category.id}_coming_soon`);
+      return;
+    }
     setSelectedCategory(category);
     setIsModalOpen(true);
     trackCategorySelect(category.id);
@@ -579,9 +614,12 @@ function App() {
           {CATEGORIES.map((cat) => (
             <div
               key={cat.id}
-              className="card category-card"
+              className={`card category-card ${cat.comingSoon ? "category-card-soon" : ""}`}
               onClick={() => openModal(cat)}
             >
+              {cat.comingSoon && (
+                <div className="category-soon-badge">COMING SOON</div>
+              )}
               <div className="card-image-wrap">
                 <img
                   src={`/assets/main-cards/${cat.id}.png`}
@@ -607,6 +645,60 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* ⑥ 사용자 의견 푸터 폼 */}
+      <section className="suggestion-section">
+        <div className="suggestion-card">
+          <div className="suggestion-header">
+            <svg className="suggestion-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
+                fill="#FFB347"
+                stroke="#FF8C42"
+                strokeWidth="1"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <div>
+              <h3 className="suggestion-title">보고 싶은 시리즈가 있나요?</h3>
+              <p className="suggestion-subtitle">
+                자유롭게 의견을 남겨주세요. 추가됐으면 하는 IP, 개선 아이디어, 칭찬·불만 뭐든 환영해요 ✦
+              </p>
+            </div>
+          </div>
+
+          {suggestState === "done" ? (
+            <div className="suggestion-thanks">
+              <span aria-hidden="true">✦</span>
+              <span>의견 잘 받았어요! 소중히 검토할게요.</span>
+            </div>
+          ) : (
+            <form className="suggestion-form" onSubmit={handleSuggestionSubmit}>
+              <textarea
+                className="suggestion-textarea"
+                value={suggestion}
+                onChange={(e) => setSuggestion(e.target.value)}
+                placeholder="예: 원피스 시리즈도 만들어주세요! / 결과 페이지가 더 다양했으면 좋겠어요"
+                maxLength={500}
+                rows={3}
+                disabled={suggestState === "submitting"}
+                required
+              />
+              <div className="suggestion-footer">
+                <span className="suggestion-count">{suggestion.length}/500</span>
+                <button
+                  type="submit"
+                  className="suggestion-submit-btn"
+                  disabled={suggestState === "submitting" || suggestion.trim().length < 2}
+                >
+                  {suggestState === "submitting" ? "보내는 중…" : "의견 보내기 →"}
+                </button>
+              </div>
+              {suggestError && <div className="suggestion-error">{suggestError}</div>}
+            </form>
+          )}
+        </div>
+      </section>
 
       {/* ⑤ 별딱지 도감 모달 */}
       {starsModalOpen && (
@@ -681,6 +773,29 @@ function App() {
         onClose={() => setAuthModalOpen(false)}
         onSuccess={() => setAuthModalOpen(false)}
       />
+
+      {/* ⑤-4 Coming Soon 모달 */}
+      {comingSoonOpen && (
+        <div className="modal-overlay active" onClick={() => setComingSoonOpen(false)}>
+          <div className="modal-card coming-soon-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setComingSoonOpen(false)}>✕</button>
+            <div className="coming-soon-emoji" aria-hidden="true">{comingSoonCategory?.emoji}</div>
+            <div className="coming-soon-tag">COMING SOON</div>
+            <h2 className="coming-soon-title">{comingSoonCategory?.name}</h2>
+            <p className="coming-soon-desc">
+              열심히 준비 중이에요.<br />
+              곧 만나요 ✦
+            </p>
+            <button
+              type="button"
+              className="coming-soon-btn"
+              onClick={() => setComingSoonOpen(false)}
+            >
+              알겠어요
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ⑤ 난이도 선택 모달 */}
       {isModalOpen && selectedCategory && (

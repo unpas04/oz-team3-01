@@ -4,13 +4,11 @@ import {
   evaluateQuizResult,
   calculatePercentile,
 } from '../modules/data-module';
-import {
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer
-} from 'recharts';
 import { useAuth } from '../contexts/AuthContext';
 import { submitQuizScore, getMyRank } from '../modules/firestore';
 import AuthModal from '../components/AuthModal';
 import { trackRankCheck, trackStarEarned, trackShare } from '../modules/analytics';
+import { getAffiliateProducts, COUPANG_DISCLOSURE } from '../modules/affiliate';
 import '../styles/result.css';
 
 const CATEGORY_NAMES = {
@@ -177,7 +175,7 @@ export default function TestResultPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSubmit, user, profile]);
 
-  const { gradeInfo, scorePct, radarData } = evaluateQuizResult(category, mode, score, wrongIndices);
+  const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
   const animScore = useCountUp(score);
   const percentile = calculatePercentile(scorePct);
 
@@ -711,7 +709,12 @@ export default function TestResultPage() {
             gap: '6px',
             animation: 'bounce 3s ease-in-out infinite'
           }}>
-            <span style={{ fontSize: '28px' }}>{theme.emoji}</span>
+            <span style={{
+              fontSize: '32px',
+              fontFamily: "'MonaEmoji', monospace",
+              imageRendering: 'pixelated',
+              lineHeight: 1
+            }}>{theme.emoji}</span>
             <div style={{
               background: 'rgba(255, 255, 255, 0.6)',
               backdropFilter: 'blur(10px)',
@@ -767,48 +770,23 @@ export default function TestResultPage() {
           zIndex: 4,
           background: 'rgba(255, 255, 255, 0.55)',
           backdropFilter: 'blur(10px)',
-          borderRadius: '20px',
-          padding: '16px 18px',
-          margin: '16px 0',
-          border: '1.5px solid rgba(255, 255, 255, 0.8)',
-          boxShadow: `0 4px 16px ${theme.glow}`,
-          fontSize: '12.5px',
+          borderRadius: '22px',
+          padding: '24px 22px',
+          margin: '18px 0',
+          border: '1.5px solid rgba(255, 255, 255, 0.85)',
+          boxShadow: `0 6px 22px ${theme.glow}`,
+          fontSize: '13.5px',
           fontWeight: '600',
           color: theme.textMid,
-          lineHeight: '1.7',
-          textAlign: 'center',
-          whiteSpace: 'pre-wrap'
+          lineHeight: '1.75',
+          textAlign: 'left',
+          whiteSpace: 'pre-wrap',
+          letterSpacing: '0.1px',
+          wordBreak: 'keep-all'
         }}>
           {gradeInfo.introduction}
         </div>
         
-        {/* 4분면 레이더 차트 (Recharts) */}
-        <div style={{
-          position: 'relative',
-          zIndex: 4,
-          width: '100%',
-          height: '220px',
-          margin: '10px 0'
-        }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radarData}>
-              <PolarGrid stroke={theme.accent} strokeOpacity={0.3} />
-              <PolarAngleAxis 
-                dataKey="subject" 
-                tick={{ fill: theme.textMid, fontSize: 11, fontWeight: 700 }}
-              />
-              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar
-                name="덕력"
-                dataKey="A"
-                stroke={theme.deepAccent}
-                fill={theme.accent}
-                fillOpacity={0.5}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-
         {/* 점수 영역 */}
         <div style={{
           position: 'relative',
@@ -1179,6 +1157,49 @@ export default function TestResultPage() {
             100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
           }
         `}</style>
+
+        {/* ═══════ 쿠팡 파트너스 광고 (카테고리별 다중 상품 가로 스크롤) ═══════ */}
+        {(() => {
+          const products = getAffiliateProducts(category);
+          return (
+            <div className="affiliate-section">
+              <div className="affiliate-header">
+                <span className="affiliate-label">SPONSORED · 관련 굿즈</span>
+                <span className="affiliate-swipe-hint">← 좌우로 넘겨보기 →</span>
+              </div>
+              <div className="affiliate-scroll">
+                {products.map((p, i) => (
+                  <a
+                    key={i}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="affiliate-card"
+                    onClick={() => trackShare("affiliate_coupang", category)}
+                  >
+                    {p.image ? (
+                      <img src={p.image} alt={p.title} className="affiliate-thumb" />
+                    ) : (
+                      <div className="affiliate-thumb-placeholder">
+                        <span>{p.keyword}</span>
+                      </div>
+                    )}
+                    <div className="affiliate-text">
+                      <div className="affiliate-title">{p.title}</div>
+                      {p.subtitle && (
+                        <div className="affiliate-subtitle">{p.subtitle}</div>
+                      )}
+                      <div className="affiliate-cta">
+                        쿠팡에서 보기 <span aria-hidden="true">→</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <p className="affiliate-disclosure">{COUPANG_DISCLOSURE}</p>
+            </div>
+          );
+        })()}
 
         {/* 메인으로 버튼 */}
         <button
