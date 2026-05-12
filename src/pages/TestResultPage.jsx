@@ -117,10 +117,10 @@ export default function TestResultPage() {
   const [pendingSubmit, setPendingSubmit] = useState(false);
   const submittedRef = useRef(false);
 
-  const doSubmitAndShow = async () => {
+  const doSubmitAndShow = async ({ showModal = true } = {}) => {
     if (!user || !profile?.nickname) return;
     if (submittedRef.current) {
-      setRankModalOpen(true);
+      if (showModal) setRankModalOpen(true);
       return;
     }
     submittedRef.current = true;
@@ -136,6 +136,8 @@ export default function TestResultPage() {
       if (res?.gotStar) {
         setGotStar(true);
         trackStarEarned(category);
+        // 자동 등록(모달 안 뜨는 경우)에서도 별딱지는 토스트로 알림
+        if (!showModal) showToast("⭐ 별딱지를 획득했어요!");
       }
 
       // getMyRank 실패해도 모달은 열리도록 방어
@@ -148,7 +150,7 @@ export default function TestResultPage() {
       }
 
       setSubmitState("done");
-      setRankModalOpen(true);
+      if (showModal) setRankModalOpen(true);
     } catch (err) {
       console.error("submit score failed", err);
       setSubmitState("failed");
@@ -175,6 +177,20 @@ export default function TestResultPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSubmit, user, profile]);
+
+  // 자동 점수 등록: 결과 페이지 진입 + 로그인 + 닉네임 있으면 백그라운드로 등록
+  // (URL에 점수가 실제로 있는 진짜 결과 페이지일 때만)
+  useEffect(() => {
+    if (
+      Number.isFinite(urlScore) &&
+      user &&
+      profile?.nickname &&
+      !submittedRef.current
+    ) {
+      doSubmitAndShow({ showModal: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile, urlScore]);
 
   const { gradeInfo, scorePct } = evaluateQuizResult(category, mode, score, wrongIndices);
   const animScore = useCountUp(score);
