@@ -101,6 +101,7 @@ export default function TestResultPage() {
 
   const [score, setScore] = useState(Number.isFinite(urlScore) ? urlScore : 27);
   const [toast, setToast] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const category = urlCategory;
   const mode = urlMode;
   const wrongStr = sessionStorage.getItem('oz_wrong_indices') || "";
@@ -272,47 +273,39 @@ export default function TestResultPage() {
       const safeTitle = (gradeInfo.title || 'result').replace(/\s+/g, '_');
       const fileName = `dukryeok_result_${category}_${safeTitle}.png`;
 
-      // dataURL → Blob → File
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], fileName, { type: 'image/png' });
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
 
-      // 1) 모바일 + 파일 공유 지원 → 시스템 공유 시트 (사진 앱 저장 가능)
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // 모바일: Web Share API (파일) 시도
+      if (isMobile) {
         try {
-          await navigator.share({
-            files: [file],
-            title: '덕력 감별소 결과',
-            text: `${gradeInfo.title} 등급 받았어요!`,
-          });
-          return;
+          const blob = await (await fetch(dataUrl)).blob();
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: '덕력 감별소 결과',
+              text: `${gradeInfo.title} 등급 받았어요!`,
+            });
+            return;
+          }
         } catch (err) {
-          if (err?.name === 'AbortError') return; // 사용자가 취소
-          // 그 외 에러는 데스크탑 다운로드로 폴백
+          if (err?.name === 'AbortError') return;
+          // 다음 단계로 폴백
         }
+
+        // 모바일 폴백: 인라인 이미지 오버레이 (사용자가 길게 눌러 저장)
+        setImagePreviewUrl(dataUrl);
+        return;
       }
 
-      // 2) 데스크탑 (또는 파일 공유 미지원) → 다운로드
+      // 데스크탑: 다운로드
       const link = document.createElement('a');
       link.download = fileName;
       link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // 3) iOS Safari 등에서 다운로드도 안 통할 경우 → 새 탭 폴백
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent || '');
-      if (isIOS) {
-        // 이미지를 새 탭에 열어서 사용자가 길게 눌러 저장하도록
-        const w = window.open();
-        if (w) {
-          w.document.write(`<img src="${dataUrl}" style="width:100%" alt="result"/>`);
-          showToast('이미지를 꾹 눌러서 사진 앱에 저장해주세요 ✦');
-        } else {
-          showToast('이미지 저장이 차단됐어요. 팝업을 허용해주세요.');
-        }
-      } else {
-        showToast('이미지가 다운로드 폴더에 저장됐어요! ✦');
-      }
+      showToast('이미지가 다운로드 폴더에 저장됐어요! ✦');
     } catch (err) {
       console.error('이미지 저장 실패:', err);
       showToast('이미지 저장에 실패했어요 ✦');
@@ -1383,6 +1376,65 @@ export default function TestResultPage() {
       )}
 
       {/* ═══════ 토스트 ═══════ */}
+      {/* 모바일 이미지 저장 폴백: 인라인 미리보기 (꾹 눌러서 저장) */}
+      {imagePreviewUrl && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10000,
+            background: 'rgba(0,0,0,0.92)',
+            backdropFilter: 'blur(8px)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            padding: '24px 16px',
+            overflowY: 'auto',
+          }}
+          onClick={() => setImagePreviewUrl(null)}
+        >
+          <div style={{
+            background: 'rgba(255,255,255,0.95)',
+            padding: '12px 18px',
+            borderRadius: '999px',
+            fontSize: '13px',
+            fontWeight: 700,
+            color: '#3D1A2E',
+            marginBottom: '16px',
+            textAlign: 'center',
+            lineHeight: 1.5,
+            maxWidth: '320px',
+          }}>
+            이미지를 <strong style={{ color: '#FF6FA8' }}>꾹 눌러서</strong> '사진에 저장'을 선택하세요 ✦
+          </div>
+          <img
+            src={imagePreviewUrl}
+            alt="결과 이미지"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '70vh',
+              borderRadius: '16px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+          />
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setImagePreviewUrl(null); }}
+            style={{
+              marginTop: '20px',
+              padding: '10px 24px',
+              borderRadius: '999px',
+              border: 'none',
+              background: 'rgba(255,255,255,0.95)',
+              color: '#3D1A2E',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            닫기
+          </button>
+        </div>
+      )}
+
       {toast && (
         <div style={{
           position: 'fixed',
