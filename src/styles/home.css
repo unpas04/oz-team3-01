@@ -857,11 +857,13 @@
       align-items: center;
       gap: 5px;
       font-family: 'YPairingFont', sans-serif;
-      font-size: 0.92rem;
-      letter-spacing: 0.6px;
+      font-size: 0.86rem;
+      letter-spacing: 0.4px;
       line-height: 1.4;
       color: #C060A0;
       font-weight: bold;
+      text-align: right;
+      flex-shrink: 0;
     }
     .me-empty-sparkle {
       width: 14px;
@@ -979,8 +981,8 @@
     .ranking-me {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
+      gap: 14px;
+      padding: 16px 18px;
       background:
         linear-gradient(135deg, #FFE6F0 0%, #F5DCFF 100%);
       border: 1.5px solid rgba(192, 132, 252, 0.4);
@@ -1041,8 +1043,10 @@
     }
     .me-text {
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       flex: 1;
       min-width: 0;
       position: relative;
@@ -1050,17 +1054,18 @@
     }
     .me-label {
       font-family: 'YPairingFont', sans-serif;
-      font-size: 0.78rem;
+      font-size: 0.88rem;
       color: #9A4570;
       font-weight: bold;
-      letter-spacing: 2.5px;
-      line-height: 1;
-      opacity: 0.85;
+      letter-spacing: 1.5px;
+      line-height: 1.1;
+      flex-shrink: 0;
     }
     .me-stats {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      flex-shrink: 0;
     }
     .me-rank {
       font-family: 'YPairingFont', sans-serif;

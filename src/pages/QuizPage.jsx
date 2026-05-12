@@ -34,7 +34,24 @@ const sfx = {
   timeout: () => { playTone(180, 0.4, 'sawtooth', 0.18); },
   click:   () => playTone(600, 0.05, 'triangle', 0.08),
   combo:   () => { playTone(660, 0.08); setTimeout(() => playTone(880, 0.08), 60); setTimeout(() => playTone(1100, 0.12), 120); },
+  comboMilestone: () => {
+    // 5콤보 마일스톤: 화려한 상승 멜로디
+    playTone(523, 0.08, 'sine', 0.2);   // C5
+    setTimeout(() => playTone(659, 0.08, 'sine', 0.2), 80);  // E5
+    setTimeout(() => playTone(784, 0.08, 'sine', 0.2), 160); // G5
+    setTimeout(() => playTone(1046, 0.12, 'sine', 0.22), 240); // C6
+    setTimeout(() => playTone(1568, 0.2, 'sine', 0.25), 340); // G6
+  },
 };
+
+const COMBO_TIERS = [
+  { min: 25, label: 'INSANE!',    color: '#FF2D55', glow: 'rgba(255, 45, 85, 0.7)' },
+  { min: 20, label: 'GODLIKE!',   color: '#C084FC', glow: 'rgba(192, 132, 252, 0.7)' },
+  { min: 15, label: 'AMAZING!',   color: '#FFB347', glow: 'rgba(255, 180, 50, 0.7)' },
+  { min: 10, label: 'AWESOME!',   color: '#5BC97A', glow: 'rgba(91, 201, 122, 0.7)' },
+  { min: 5,  label: 'GREAT!',     color: '#FF85A1', glow: 'rgba(255, 133, 161, 0.7)' },
+];
+const getComboTier = (n) => COMBO_TIERS.find((t) => n >= t.min);
 
 const CATEGORY_META = {
   fma:     { emoji: '⚗️',  label: 'FMA',     cls: 'placeholder-fma'     },
@@ -139,6 +156,7 @@ export default function QuizPage() {
   const [btnDisabled, setBtnDisabled] = useState(false);
   const [combo, setCombo] = useState(0);
   const [comboFlash, setComboFlash] = useState(false);
+  const [milestone, setMilestone] = useState(null); // { value, label, color }
   const [screenFx, setScreenFx] = useState(''); // 'correct' | 'wrong' | ''
   const lastTickRef = useRef(-1);
 
@@ -264,6 +282,14 @@ export default function QuizPage() {
         setTimeout(() => setComboFlash(false), 600);
       }
 
+      // 5콤보 마일스톤 — 더 큰 효과
+      if (newCombo >= 5 && newCombo % 5 === 0) {
+        sfx.comboMilestone();
+        const tier = getComboTier(newCombo) || COMBO_TIERS[COMBO_TIERS.length - 1];
+        setMilestone({ value: newCombo, label: tier.label, color: tier.color, glow: tier.glow });
+        setTimeout(() => setMilestone(null), 1400);
+      }
+
       setFeedback({
         text: newCombo >= 2 ? `정답! ✨ ${newCombo} COMBO!` : '정답입니다! ✨',
         type: 'correct',
@@ -331,9 +357,28 @@ export default function QuizPage() {
 
       {/* 콤보 표시 */}
       {combo >= 2 && (
-        <div className={`combo-badge ${comboFlash ? 'flash' : ''}`}>
+        <div
+          className={`combo-badge ${comboFlash ? 'flash' : ''}`}
+          style={milestone ? { '--milestone-color': milestone.color, '--milestone-glow': milestone.glow } : undefined}
+        >
           <span className="combo-num">{combo}</span>
           <span className="combo-label">COMBO</span>
+        </div>
+      )}
+
+      {/* 5콤보 마일스톤 오버레이 */}
+      {milestone && (
+        <div className="combo-milestone-overlay" aria-hidden="true">
+          <div
+            className="combo-milestone-label"
+            style={{ color: milestone.color, '--ms-glow': milestone.glow }}
+          >
+            <span className="combo-milestone-num">{milestone.value}</span>
+            <span className="combo-milestone-x">×</span>
+            <span className="combo-milestone-text">{milestone.label}</span>
+          </div>
+          {/* 방사형 라인 */}
+          <div className="combo-milestone-rays" style={{ '--ms-color': milestone.color }} />
         </div>
       )}
 
@@ -442,17 +487,43 @@ export default function QuizPage() {
         </button>
       </div>
 
-      {/* 점수 게이지 */}
-      <div className="card gauge-wrap">
-        <div className="gauge-header">
-          <span className="gauge-label">현재 점수</span>
-          <span className="gauge-score">{score}</span>
+      {/* 점수 게이지 (퀄리티 업) */}
+      <div className="quiz-gauge-card">
+        <div className="quiz-gauge-top">
+          <div className="quiz-gauge-label-wrap">
+            <svg className="quiz-gauge-mini-star" viewBox="0 0 16 16" aria-hidden="true">
+              <defs>
+                <linearGradient id="quizGaugeStarGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#FFE48A" />
+                  <stop offset="50%" stopColor="#FFB347" />
+                  <stop offset="100%" stopColor="#FF85A1" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M8 1 L10 6 L15 6 L11 9 L12.5 14 L8 11 L3.5 14 L5 9 L1 6 L6 6 Z"
+                fill="url(#quizGaugeStarGrad)"
+                stroke="#FF8C42"
+                strokeWidth="0.8"
+                strokeLinejoin="round"
+              />
+            </svg>
+            <span className="quiz-gauge-label">현재 점수</span>
+          </div>
+          <div className="quiz-gauge-score-wrap">
+            <span className="quiz-gauge-score">{score}</span>
+            <span className="quiz-gauge-score-max">/ {TOTAL_QUESTIONS}</span>
+          </div>
         </div>
-        <div className="gauge-track">
-          <div className="gauge-fill" style={{ width: `${scoreWidth}%` }} />
+        <div className="quiz-gauge-track">
+          <div
+            className="quiz-gauge-fill"
+            style={{ width: `${scoreWidth}%` }}
+          />
         </div>
-        <div className="gauge-footer">
-          <span className="gauge-grade-badge">{scoreBadge}</span>
+        <div className="quiz-gauge-footer">
+          <span className={`quiz-gauge-badge tier-${scoreBadge === '전설의 덕후' ? 's' : scoreBadge === '고인물' ? 'a' : scoreBadge === '진성 팬' ? 'b' : scoreBadge === '라이트 팬' ? 'c' : 'd'}`}>
+            {scoreBadge}
+          </span>
         </div>
       </div>
     </div>
