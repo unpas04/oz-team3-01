@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dukryeok-quiz.web.app/sitemap.xml
