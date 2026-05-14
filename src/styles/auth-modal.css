@@ -36,24 +36,30 @@
 }
 
 .auth-field span {
-  font-family: 'YPairingFont', sans-serif;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
   font-size: 0.78rem;
-  font-weight: bold;
-  color: #9A4570;
-  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #6B5575;
+  letter-spacing: 0.2px;
   padding-left: 4px;
 }
 
 .auth-field input {
-  padding: 11px 14px;
+  padding: 13px 16px;
   border: 1.5px solid rgba(192, 132, 252, 0.35);
   border-radius: 12px;
   background: #fff;
-  font-size: 0.95rem;
-  font-family: inherit;
-  color: #4A3A5E;
+  font-size: 1rem;
+  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: #2A2030;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+.auth-field input::placeholder {
+  color: #b8a8c2;
+  font-weight: 400;
 }
 
 .auth-field input:focus {
@@ -164,6 +170,7 @@
   letter-spacing: 2.5px;
 }
 .auth-mode-icon {
+  font-family: "MonaEmoji", "MonaS12TextHK", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   font-size: 0.95rem;
   line-height: 1;
 }
