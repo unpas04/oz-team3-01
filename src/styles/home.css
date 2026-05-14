@@ -2340,7 +2340,6 @@
        퀴즈 자체의 애니메이션은 body.speed-quiz 컨텍스트라 그대로 작동.
        ════════════════════════════════════════════════════ */
     body.home .blob,
-    body.home .pixel-floats span,
     body.home .summary-pill,
     body.home .pill-count strong,
     body.home .sticker-icon,
