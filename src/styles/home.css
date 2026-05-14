@@ -526,11 +526,15 @@
       transform: translateX(4px);
     }
 
-    /* 별딱지/랭킹 모달 카드: 넓고 패딩 적게 */
+    /* 별딱지/랭킹 모달 카드: 넓고 패딩 적게 + 모바일 화면 높이 제한 */
     .stars-modal-card,
     .ranking-modal-card {
       max-width: 420px !important;
+      max-height: 85vh !important;
       padding: 44px 16px 18px !important;  /* 상단 X 버튼 자리 확보 */
+      display: flex !important;
+      flex-direction: column !important;
+      overflow: hidden !important;
     }
     .stars-card-in-modal,
     .ranking-card-in-modal {
@@ -539,6 +543,27 @@
       padding: 4px 4px 0 !important;
       background: transparent !important;
       overflow: visible !important;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+    /* 별딱지 그리드 영역만 세로 스크롤 — 나머지(헤더/설명)는 고정 */
+    .stars-grid-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 2px 6px;
+      margin: 0 -2px;
+      /* 스크롤바 살짝 표시 */
+      scrollbar-width: thin;
+      scrollbar-color: rgba(154, 69, 112, 0.3) transparent;
+    }
+    .stars-grid-scroll::-webkit-scrollbar { width: 6px; }
+    .stars-grid-scroll::-webkit-scrollbar-thumb {
+      background: rgba(154, 69, 112, 0.3);
+      border-radius: 3px;
     }
     .stars-card-in-modal::before,
     .ranking-card-in-modal::before {
@@ -628,7 +653,7 @@
       grid-template-columns: repeat(5, 1fr);
       grid-auto-rows: 1fr;             /* 모든 행 동일 높이 강제 */
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 0;
       align-items: start;              /* 슬롯이 row 안에서 늘어나지 않게 */
     }
     .star-slot {
@@ -719,15 +744,27 @@
 
     .stars-hint {
       margin: 0;
-      padding: 8px 12px;
-      background: rgba(255, 240, 248, 0.7);
-      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(255, 240, 248, 0.85);
+      border-radius: 12px;
       text-align: center;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
       font-size: 0.78rem;
-      color: #9A6A8A;
-      letter-spacing: 0.2px;
+      font-weight: 500;
+      color: #6E4C7E;
+      letter-spacing: -0.2px;
+      line-height: 1.5;
+      word-break: keep-all;
     }
-    .stars-hint strong { color: #FF6FA8; font-weight: 800; }
+    .stars-hint strong {
+      color: #C2407A;
+      font-weight: 700;
+    }
+    /* 상단에 붙는 안내 — 그리드 위 */
+    .stars-hint-top {
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
 
     /* ════════════════════════════════════
        랭킹 섹션

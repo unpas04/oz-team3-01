@@ -759,6 +759,10 @@ function App() {
                   <strong>{starCount}</strong>개 수집
                 </span>
               </div>
+              <p className="stars-hint stars-hint-top">
+                ✦ <strong>이미지 퀴즈</strong> 27점 이상 · <strong>스피드 퀴즈</strong> 20점 이상 · <strong>테마 퀴즈</strong> 15점 이상 — 카테고리 클리어 시 별딱지 1개!
+              </p>
+              <div className="stars-grid-scroll">
               <div className="stars-grid">
                 {CATEGORIES.map((cat) => {
                   const owned = myStars.includes(cat.id);
@@ -801,9 +805,7 @@ function App() {
                   );
                 })}
               </div>
-              <p className="stars-hint">
-                ✦ <strong>이미지 퀴즈</strong> 27점 이상 · <strong>스피드 퀴즈</strong> 20점 이상 · <strong>테마 퀴즈</strong> 15점 이상 — 카테고리 클리어 시 별딱지 1개!
-              </p>
+              </div>
             </div>
           </div>
         </div>
