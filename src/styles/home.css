@@ -436,6 +436,20 @@
       line-height: 1;
       opacity: 0.9;
     }
+    .pill-subtitle {
+      font-family: "MonaS12TextHK", -apple-system, "Apple SD Gothic Neo", sans-serif;
+      font-size: 0.68rem;
+      color: rgba(154, 69, 112, 0.65);
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .pill-count-suffix {
+      margin-left: 3px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #B08090;
+    }
 
     /* 미니 별 진행 표시 */
     .pill-mini-stars {
@@ -516,7 +530,7 @@
     .stars-modal-card,
     .ranking-modal-card {
       max-width: 420px !important;
-      padding: 18px 14px 14px !important;
+      padding: 44px 16px 18px !important;  /* 상단 X 버튼 자리 확보 */
     }
     .stars-card-in-modal,
     .ranking-card-in-modal {
@@ -524,10 +538,20 @@
       border: none !important;
       padding: 4px 4px 0 !important;
       background: transparent !important;
+      overflow: visible !important;
     }
     .stars-card-in-modal::before,
     .ranking-card-in-modal::before {
-      display: none;
+      display: none !important;
+      content: none !important;
+    }
+
+    /* 별딱지 모달 X 버튼 — 항상 클릭 가능하도록 최상위 */
+    .stars-modal-card .modal-close,
+    .ranking-modal-card .modal-close {
+      z-index: 10;
+      top: 10px;
+      right: 10px;
     }
 
     /* ════════════════════════════════════
@@ -602,24 +626,29 @@
     .stars-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
+      grid-auto-rows: 1fr;             /* 모든 행 동일 높이 강제 */
+      gap: 10px;
       margin-bottom: 12px;
+      align-items: start;              /* 슬롯이 row 안에서 늘어나지 않게 */
     }
     .star-slot {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 4px;
+      min-width: 0;                    /* grid 셀에서 잘못된 확장 방지 */
     }
     .star-slot-inner {
       position: relative;
       width: 100%;
+      max-width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-sizing: border-box;
     }
     .star-slot.empty .star-slot-inner {
       background: linear-gradient(135deg, #F5EFFA 0%, #EDE5F4 100%);
@@ -668,15 +697,20 @@
       height: 26px;
     }
     .star-slot-name {
-      font-size: 0.62rem;
+      font-family: "MonaS12TextHK", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      font-size: 0.66rem;
+      font-weight: 600;
       color: #9A8AA8;
-      letter-spacing: 0.3px;
+      letter-spacing: 0;
       max-width: 100%;
       text-align: center;
-      line-height: 1.2;
-      white-space: nowrap;
+      line-height: 1.25;
+      word-break: keep-all;        /* 단어 단위 줄바꿈 (한글 친화) */
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;       /* 2줄까지만 표시 */
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
     .star-slot.owned .star-slot-name {
       color: #C060A0;
@@ -1300,7 +1334,7 @@
       z-index: 1;
       max-width: 480px;
       margin: 0 auto;
-      padding: 0 20px 80px;
+      padding: 0 0 60px;
     }
 
     .section-label {
@@ -1313,7 +1347,88 @@
       padding-left: 2px;
     }
 
-    /* ── 카테고리 그리드: 2열 ── */
+    /* ════════════════════════════════════
+       카테고리 그룹 (가로 스크롤)
+       ════════════════════════════════════ */
+    .category-group {
+      padding: 14px 0 22px;
+      margin: 0 0 8px;
+      position: relative;
+    }
+
+    .group-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px 12px;
+    }
+    .group-icon {
+      font-family: 'MonaEmoji', monospace;
+      font-size: 1.7rem;
+      image-rendering: pixelated;
+      filter: drop-shadow(0 3px 6px rgba(255, 133, 161, 0.3));
+      animation: groupIconFloat 3.2s ease-in-out infinite;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .group-pink .group-icon { filter: drop-shadow(0 3px 6px rgba(255, 133, 161, 0.35)); }
+    .group-gold .group-icon { filter: drop-shadow(0 3px 6px rgba(255, 180, 50, 0.4)); }
+    .group-purple .group-icon { filter: drop-shadow(0 3px 6px rgba(140, 110, 220, 0.4)); }
+    @keyframes groupIconFloat {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-2px) rotate(3deg); }
+    }
+    .group-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .group-name {
+      margin: 0 0 2px;
+      font-family: 'YPairingFont', sans-serif;
+      font-size: 1.05rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      color: #6E4C7E;
+    }
+    .group-subtitle {
+      margin: 0;
+      font-size: 0.74rem;
+      line-height: 1.4;
+      word-break: keep-all;
+      color: #9A8AA8;
+    }
+
+    /* 가로 스크롤 (행 우선 2줄 그리드) */
+    .group-scroll {
+      display: grid;
+      grid-auto-flow: row;
+      grid-template-columns: repeat(var(--cols, 6), 140px);
+      grid-template-rows: repeat(2, auto);
+      gap: 12px;
+      overflow-x: auto;
+      padding: 4px 20px 6px;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .group-scroll::-webkit-scrollbar { display: none; }
+    .group-scroll > * {
+      scroll-snap-align: start;
+    }
+    .group-scroll .category-card {
+      width: 140px;
+    }
+    .group-scroll .category-card-coming {
+      width: 140px;
+      aspect-ratio: 3 / 4;
+    }
+    /* 아이템 ≤2개면 1줄로 (스피드/테마 그룹) */
+    .group-scroll:has(> :nth-child(-n+2):last-child) {
+      grid-template-rows: auto;
+    }
+
+    /* ── 카테고리 그리드: 2열 (레거시) ── */
     .category-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1372,6 +1487,260 @@
       box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.08),
         0 24px 48px rgba(255, 133, 161, 0.22);
+    }
+
+    /* ── 테마 텍스트 카드 (살아 움직이는 오로라 배경) ── */
+    .theme-text-card {
+      --tone-a: #f6e1ff;
+      --tone-b: #e1ecff;
+      --tone-c: #ffe7f3;
+      --tone-d: #fff4d6;
+      --tone-text: #2a2030;
+
+      aspect-ratio: 3 / 4;
+      background: var(--tone-a);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      isolation: isolate;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 2px 6px rgba(60, 40, 80, 0.08),
+        0 14px 28px rgba(60, 40, 80, 0.12);
+      transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+                  box-shadow 0.35s ease;
+    }
+
+    .theme-text-card:hover {
+      transform: translateY(-6px);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 4px 10px rgba(60, 40, 80, 0.1),
+        0 24px 48px rgba(120, 80, 160, 0.28);
+    }
+
+    /* 오로라 — 천천히 회전하며 색이 흐르는 conic 그라데이션 */
+    .theme-text-card .theme-card-aurora {
+      position: absolute;
+      inset: -30%;
+      background: conic-gradient(
+        from 0deg,
+        var(--tone-a),
+        var(--tone-b),
+        var(--tone-c),
+        var(--tone-d),
+        var(--tone-a)
+      );
+      filter: blur(28px);
+      opacity: 0.85;
+      animation: themeAuroraSpin 18s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes themeAuroraSpin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* 떠다니는 발광 orb 3개 */
+    .theme-text-card .theme-card-orbs {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .theme-text-card .theme-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(14px);
+      opacity: 0.7;
+    }
+    .theme-text-card .theme-orb-1 {
+      width: 70px; height: 70px;
+      left: -12px; top: 18%;
+      background: var(--tone-c);
+      animation: themeOrbFloat1 9s ease-in-out infinite;
+    }
+    .theme-text-card .theme-orb-2 {
+      width: 90px; height: 90px;
+      right: -16px; top: 55%;
+      background: var(--tone-b);
+      animation: themeOrbFloat2 11s ease-in-out infinite;
+    }
+    .theme-text-card .theme-orb-3 {
+      width: 55px; height: 55px;
+      left: 30%; bottom: 8%;
+      background: var(--tone-d);
+      animation: themeOrbFloat3 7s ease-in-out infinite;
+    }
+    @keyframes themeOrbFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1);    opacity: 0.7; }
+      50%      { transform: translate(20px, -12px) scale(1.15); opacity: 0.9; }
+    }
+    @keyframes themeOrbFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1);    opacity: 0.6; }
+      50%      { transform: translate(-18px, 14px) scale(0.85); opacity: 0.85; }
+    }
+    @keyframes themeOrbFloat3 {
+      0%, 100% { transform: translate(0, 0) scale(1);    opacity: 0.75; }
+      50%      { transform: translate(10px, -16px) scale(1.2); opacity: 0.95; }
+    }
+
+    /* 종이 그레인 — 오로라의 부드러움에 입자감 부여 */
+    .theme-text-card .theme-card-grain {
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.3'/></svg>");
+      mix-blend-mode: multiply;
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* 얇은 안쪽 보더 */
+    .theme-text-card .theme-card-border {
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 10px;
+      box-shadow: 0 0 0 1px rgba(60, 40, 80, 0.08);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* 이모지 백드롭 — 흐릿하게 크게 깔린 같은 이모지 */
+    .theme-text-card .theme-card-emoji-bg {
+      position: absolute;
+      font-family: "MonaEmoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+      font-size: 10rem;
+      line-height: 1;
+      bottom: -2.2rem;
+      right: -1.5rem;
+      opacity: 0.08;
+      transform: rotate(-12deg);
+      pointer-events: none;
+      filter: blur(0.5px);
+      z-index: 2;
+    }
+
+    /* 본문 */
+    .theme-text-card .theme-card-inner {
+      position: relative;
+      z-index: 4;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px 16px;
+    }
+
+    .theme-text-card .theme-card-emoji {
+      font-family: "MonaEmoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+      font-size: 3.4rem;
+      line-height: 1;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 4px 10px rgba(60, 40, 80, 0.2));
+    }
+
+    .theme-text-card .theme-card-name {
+      font-family: "YPairingFont", "Nanum Myeongjo", serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--tone-text);
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    .theme-text-card .theme-card-name::after {
+      content: "";
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: rgba(60, 40, 80, 0.3);
+      margin: 8px auto 0;
+    }
+
+    .theme-text-card .theme-card-subtitle {
+      font-family: "MonaS12TextHK", "MonaEmoji", -apple-system, "Apple SD Gothic Neo", sans-serif;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: rgba(60, 40, 80, 0.7);
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+      text-align: center;
+      padding: 0 4px;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+    }
+
+    /* 톤별 팔레트 — 4색 그라데이션 + 텍스트 */
+    .theme-tone-memorial {
+      --tone-a: #efe2ff; --tone-b: #d8e8ff; --tone-c: #ffe1f0; --tone-d: #fff2d4;
+      --tone-text: #3a2a4a;
+    }
+    /* 빌런 — 보라/검정/빨강, 어두운 톤 */
+    .theme-tone-villain {
+      --tone-a: #d8c4e8; --tone-b: #c8a8d0; --tone-c: #e8b4b8; --tone-d: #b8a0c8;
+      --tone-text: #2a1530;
+    }
+    /* 라이벌즈 — 빨강 vs 파랑 대비 */
+    .theme-tone-rivals {
+      --tone-a: #ffd2d8; --tone-b: #c8e2ff; --tone-c: #ffe0e8; --tone-d: #b8d8ff;
+      --tone-text: #2a1f3d;
+    }
+    /* 사제지간 — 카키/베이지 차분 톤 */
+    .theme-tone-mentor {
+      --tone-a: #f5e8d0; --tone-b: #e8d8c0; --tone-c: #f0e0c0; --tone-d: #d8c8a8;
+      --tone-text: #3a2f1d;
+    }
+    /* 첫사랑 — 핑크/연노랑/베이지 달콤한 톤 */
+    .theme-tone-firstlove {
+      --tone-a: #ffd6e2; --tone-b: #ffe8d0; --tone-c: #fff0e0; --tone-d: #ffc8d4;
+      --tone-text: #5a2030;
+    }
+    /* 변신·각성 — 골드/네온 톤 */
+    .theme-tone-transform {
+      --tone-a: #ffe8a8; --tone-b: #ffd4f0; --tone-c: #d4f0ff; --tone-d: #ffc878;
+      --tone-text: #3a2a00;
+    }
+    /* 명대사 — 차분한 회색/네이비/크림 */
+    .theme-tone-quotes {
+      --tone-a: #e8e4d8; --tone-b: #d4d8e4; --tone-c: #f0ece0; --tone-d: #c4c8d4;
+      --tone-text: #1f2a3a;
+    }
+    /* 한국 더빙명 — 태극 톤 (빨강/파랑/노랑/흰) */
+    .theme-tone-dubname {
+      --tone-a: #ffd6d6; --tone-b: #d6e2ff; --tone-c: #fff4c8; --tone-d: #ffe0e0;
+      --tone-text: #2a1530;
+    }
+    /* 흑막·반전 — 보라/검정 미스테리 */
+    .theme-tone-twist {
+      --tone-a: #c8b8d8; --tone-b: #b0a0c0; --tone-c: #d8c8e0; --tone-d: #a890b8;
+      --tone-text: #1f0f2f;
+    }
+    /* 부모님 — 따뜻한 베이지 */
+    .theme-tone-family {
+      --tone-a: #ffe8c8; --tone-b: #f8dcb8; --tone-c: #ffd8a8; --tone-d: #f0c898;
+      --tone-text: #3a2515;
+    }
+    /* 2인자 — 실버/회색 톤 */
+    .theme-tone-second {
+      --tone-a: #e0e4e8; --tone-b: #d0d4d8; --tone-c: #ecf0f4; --tone-d: #c4c8cc;
+      --tone-text: #2a3540;
+    }
+    /* 트리비아 — 종이 누런 톤 */
+    .theme-tone-trivia {
+      --tone-a: #f8ecc8; --tone-b: #ecd8a8; --tone-c: #f4e0b8; --tone-d: #e0c898;
+      --tone-text: #3a2810;
+    }
+
+    /* 모션 줄이기 환경 — 애니메이션 정지 */
+    @media (prefers-reduced-motion: reduce) {
+      .theme-text-card .theme-card-aurora,
+      .theme-text-card .theme-orb {
+        animation: none !important;
+      }
     }
 
     /* 카드 이미지 영역 */

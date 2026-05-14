@@ -4,7 +4,6 @@ import { getTotalScore } from '../modules/storage-module';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getTotalRanking,
-  getCategoryRanking,
   getMyRank,
   getLastMonthChampion,
   getMyMonthlyDoc,
@@ -15,22 +14,72 @@ import AuthModal from '../components/AuthModal';
 import {
   trackPageView,
   trackCategorySelect,
-  trackRankingTab,
 } from '../modules/analytics';
 import "../styles/home.css"
 
-const CATEGORIES = [
-  { id: "sanrio", name: "산리오", emoji: "🎀" },
-  { id: "pokemon", name: "포켓몬", emoji: "⚡" },
-  { id: "aot", name: "진격의 거인", emoji: "⚔️" },
-  { id: "kimetsu", name: "귀멸의 칼날", emoji: "🔥" },
-  { id: "fma", name: "강철의 연금술사", emoji: "⚗️" },
-  { id: "jjk", name: "주술회전", emoji: "🔮" },
-  { id: "dragonball", name: "드래곤볼", emoji: "🐉" },
-  { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
-  { id: "deathnote", name: "데스노트", emoji: "📓" },
-  { id: "fate", name: "페이트 시리즈", emoji: "📜", comingSoon: true },
+const CATEGORY_GROUPS = [
+  {
+    id: "ip",
+    name: "IP 캐릭터 퀴즈",
+    subtitle: "내가 좋아하는 IP의 진짜 덕력 테스트",
+    icon: "🎴",
+    theme: "pink",
+    items: [
+      { id: "sanrio", name: "산리오", emoji: "🎀" },
+      { id: "pokemon", name: "포켓몬", emoji: "⚡" },
+      { id: "aot", name: "진격의 거인", emoji: "⚔️" },
+      { id: "kimetsu", name: "귀멸의 칼날", emoji: "🔥" },
+      { id: "fma", name: "강철의 연금술사", emoji: "⚗️" },
+      { id: "jjk", name: "주술회전", emoji: "🔮" },
+      { id: "dragonball", name: "드래곤볼", emoji: "🐉" },
+      { id: "chainsawman", name: "체인소맨", emoji: "🪚" },
+      { id: "deathnote", name: "데스노트", emoji: "📓" },
+      { id: "fate", name: "페이트 시리즈", emoji: "📜" },
+    ],
+  },
+  {
+    id: "speed",
+    name: "스피드 퀴즈",
+    subtitle: "30초 + 목숨 3개. 빠르고 정확하게!",
+    icon: "⚡",
+    theme: "gold",
+    items: [
+      { id: "onepiece", name: "원피스",        emoji: "🏴‍☠️", route: "/speed-quiz?category=onepiece" },
+      { id: "naruto",   name: "나루토",        emoji: "🍥",   route: "/speed-quiz?category=naruto" },
+      { id: "slamdunk", name: "슬램덩크",      emoji: "🏀",   route: "/speed-quiz?category=slamdunk" },
+      { id: "conan",    name: "명탐정 코난",   emoji: "🔍",   route: "/speed-quiz?category=conan" },
+      { id: "shinchan", name: "짱구는 못말려", emoji: "🖍️",   route: "/speed-quiz?category=shinchan" },
+      { id: "doraemon", name: "도라에몽",      emoji: "🔵",   route: "/speed-quiz?category=doraemon" },
+      { id: "hxh",      name: "헌터x헌터",     emoji: "🃏",   route: "/speed-quiz?category=hxh" },
+      { id: "yugioh",   name: "유희왕",        emoji: "🐉",   route: "/speed-quiz?category=yugioh" },
+      { id: "digimon",  name: "디지몬",        emoji: "💾",   route: "/speed-quiz?category=digimon" },
+    ],
+  },
+  {
+    id: "theme",
+    name: "테마 퀴즈",
+    subtitle: "캐릭터를 모아 묶어보는 새로운 재미",
+    icon: "🎯",
+    theme: "purple",
+    items: [
+      { id: "theme_memorial",  name: "추모관",     emoji: "⚱️", subtitle: "작품 속에서 떠나간 그들",     textCard: true, cardTone: "memorial",  route: "/speed-quiz?category=theme_memorial" },
+      { id: "theme_villain",   name: "빌런 열전",  emoji: "😈", subtitle: "9개 IP의 악역들만 모았다",     textCard: true, cardTone: "villain",   route: "/speed-quiz?category=theme_villain" },
+      { id: "theme_rivals",    name: "라이벌즈",   emoji: "⚔️", subtitle: "둘 사이의 불꽃 튀는 관계",     textCard: true, cardTone: "rivals",    route: "/speed-quiz?category=theme_rivals" },
+      { id: "theme_mentor",    name: "사제지간",   emoji: "🎓", subtitle: "스승과 제자의 인연",          textCard: true, cardTone: "mentor",    route: "/speed-quiz?category=theme_mentor" },
+      { id: "theme_firstlove", name: "첫사랑",     emoji: "💘", subtitle: "그땐 몰랐던 두근거림",        textCard: true, cardTone: "firstlove", route: "/speed-quiz?category=theme_firstlove" },
+      { id: "theme_transform", name: "변신·각성",  emoji: "✨", subtitle: "진화·모드체인지·궁극형태",   textCard: true, cardTone: "transform", route: "/speed-quiz?category=theme_transform" },
+      { id: "theme_quotes",    name: "명대사 OX",  emoji: "💬", subtitle: "이 대사, 누가 했게?",         textCard: true, cardTone: "quotes",    route: "/speed-quiz?category=theme_quotes" },
+      { id: "theme_dubname",   name: "한국 더빙명", emoji: "🎙️", subtitle: "우리말 이름 기억나?",         textCard: true, cardTone: "dubname",   route: "/speed-quiz?category=theme_dubname" },
+      { id: "theme_twist",     name: "흑막·반전",  emoji: "🎭", subtitle: "알고 보니 그가 범인이었다",   textCard: true, cardTone: "twist",     route: "/speed-quiz?category=theme_twist" },
+      { id: "theme_family",    name: "부모님 찾기", emoji: "👨‍👩‍👧", subtitle: "DNA는 못 속여",                textCard: true, cardTone: "family",    route: "/speed-quiz?category=theme_family" },
+      { id: "theme_second",    name: "2인자의 슬픔", emoji: "🥈", subtitle: "은메달도 영광이야",           textCard: true, cardTone: "second",    route: "/speed-quiz?category=theme_second" },
+      { id: "theme_trivia",    name: "장수 만화 트리비아", emoji: "📚", subtitle: "찐팬만 아는 매니아 지식", textCard: true, cardTone: "trivia",    route: "/speed-quiz?category=theme_trivia" },
+    ],
+  },
 ];
+
+// 평탄화: 기존 코드에서 CATEGORIES 사용하던 곳 호환
+const CATEGORIES = CATEGORY_GROUPS.flatMap((g) => g.items);
 
 const GRADES = [
   { min: 90, label: "전설의 덕후 ✦✦✦" },
@@ -49,7 +98,6 @@ function App() {
   const [totalScore, setTotalScore] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [rankingTab, setRankingTab] = useState("total");
   const [starsModalOpen, setStarsModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState("signin"); // "signin" | "signup"
@@ -62,7 +110,6 @@ function App() {
 
   // 랭킹 데이터
   const [rankingTotal, setRankingTotal] = useState([]);
-  const [categoryRanking, setCategoryRanking] = useState({});
   const [myInfo, setMyInfo] = useState(null);
   const [myMonthlyTotal, setMyMonthlyTotal] = useState(0);
   const [champion, setChampion] = useState(null);
@@ -103,24 +150,6 @@ function App() {
     })();
     return () => { cancelled = true; };
   }, []);
-
-  // 카테고리별 랭킹 (탭 변경 시)
-  useEffect(() => {
-    if (rankingTab === "total") return;
-    if (categoryRanking[rankingTab]) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const list = await getCategoryRanking(rankingTab, 10);
-        if (!cancelled) {
-          setCategoryRanking((prev) => ({ ...prev, [rankingTab]: list }));
-        }
-      } catch (e) {
-        console.error("category ranking error", e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [rankingTab, categoryRanking]);
 
   // 내 순위
   useEffect(() => {
@@ -184,6 +213,13 @@ function App() {
       setComingSoonCategory(category);
       setComingSoonOpen(true);
       trackCategorySelect(`${category.id}_coming_soon`);
+      return;
+    }
+
+    // route 가 명시된 카테고리 (스피드 퀴즈 등) → 바로 이동
+    if (category.route) {
+      trackCategorySelect(category.id);
+      navigate(category.route);
       return;
     }
 
@@ -308,37 +344,12 @@ function App() {
 
           <div className="pill-text-stack">
             <span className="pill-label">별딱지</span>
-            {/* 미니 별 진행 표시 */}
-            <div className="pill-mini-stars" aria-hidden="true">
-              {Array.from({ length: MAX_STARS }).map((_, i) => (
-                <svg
-                  key={i}
-                  className={`mini-star ${i < starCount ? "filled" : ""}`}
-                  viewBox="0 0 24 24"
-                >
-                  <defs>
-                    <linearGradient id={`miniStarGrad-${i}`} x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0%" stopColor="#FFE48A" />
-                      <stop offset="50%" stopColor="#FFB347" />
-                      <stop offset="100%" stopColor="#FF85A1" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M12 2 L14.5 9 L22 9 L16 13.5 L18.5 21 L12 16.5 L5.5 21 L8 13.5 L2 9 L9.5 9 Z"
-                    fill={i < starCount ? `url(#miniStarGrad-${i})` : "rgba(180, 160, 200, 0.18)"}
-                    stroke={i < starCount ? "#FF8C42" : "rgba(180, 160, 200, 0.5)"}
-                    strokeWidth="1.2"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ))}
-            </div>
+            <span className="pill-subtitle">내 컬렉션</span>
           </div>
 
           <span className="pill-count">
             <strong>{starCount}</strong>
-            <span className="pill-count-divider">/</span>
-            <span className="pill-count-max">{MAX_STARS}</span>
+            <span className="pill-count-suffix">개</span>
           </span>
 
           <svg className="pill-arrow" viewBox="0 0 16 16" aria-hidden="true">
@@ -427,69 +438,19 @@ function App() {
             </span>
           </div>
 
-          <div className="ranking-tabs">
-            <button
-              type="button"
-              className={`ranking-tab ${rankingTab === "total" ? "active" : ""}`}
-              onClick={() => { setRankingTab("total"); trackRankingTab("total"); }}
-            >
-              종합
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`ranking-tab ${rankingTab === cat.id ? "active" : ""}`}
-                onClick={() => { setRankingTab(cat.id); trackRankingTab(cat.id); }}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {(() => {
-            const rows = (rankingTab === "total"
-              ? rankingTotal.map((u, i) => ({
-                  rank: i + 1,
-                  nickname: u.nickname,
-                  primary: `✦${u.starCount ?? 0}`,
-                  secondary: `${u.totalScore ?? 0}점`,
-                }))
-              : (categoryRanking[rankingTab] || []).map((u, i) => ({
-                  rank: i + 1,
-                  nickname: u.nickname,
-                  primary: `${u.score}점`,
-                  secondary: `/30`,
-                }))
-            );
-            if (rows.length === 0) {
-              return (
-                <div className="ranking-empty">
-                  아직 등록된 도전자가 없어요.<br />첫 주인공이 되어보세요 ✦
-                </div>
-              );
-            }
-            return null;
-          })()}
+          {rankingTotal.length === 0 && (
+            <div className="ranking-empty">
+              아직 등록된 도전자가 없어요.<br />첫 주인공이 되어보세요 ✦
+            </div>
+          )}
           <ol className="ranking-list">
-            {(() => {
-              if (rankingTab === "total") {
-                return rankingTotal.map((u, i) => ({
-                  rank: i + 1,
-                  nickname: u.nickname,
-                  isStarMode: true,
-                  primaryNum: u.starCount ?? 0,
-                  secondary: `${u.totalScore ?? 0}점`,
-                }));
-              }
-              return (categoryRanking[rankingTab] || []).map((u, i) => ({
-                rank: i + 1,
-                nickname: u.nickname,
-                isStarMode: false,
-                primaryNum: u.score,
-                secondary: `/30`,
-              }));
-            })().map((row) => (
+            {rankingTotal.map((u, i) => ({
+              rank: i + 1,
+              nickname: u.nickname,
+              isStarMode: true,
+              primaryNum: u.starCount ?? 0,
+              secondary: `${u.totalScore ?? 0}점`,
+            })).map((row) => (
               <li key={row.rank} className={`ranking-row rank-${row.rank}`}>
                 <span className="rank-medal" aria-hidden="true">
                   {row.rank <= 3 ? (
@@ -634,43 +595,85 @@ function App() {
         </div>
       </section>
 
-      {/* ④ 카테고리 선택 */}
+      {/* ④ 카테고리 그룹 (가로 스크롤) */}
       <main className="category-section">
-        <p className="section-label">SELECT CATEGORY</p>
-        <div className="category-grid">
-          {CATEGORIES.map((cat) => (
-            <div
-              key={cat.id}
-              className={`card category-card ${cat.comingSoon ? "category-card-soon" : ""}`}
-              onClick={() => openModal(cat)}
-            >
-              {cat.comingSoon && (
-                <div className="category-soon-badge">COMING SOON</div>
-              )}
-              <div className="card-image-wrap">
-                <img
-                  src={`/assets/main-cards/${cat.id}.png`}
-                  alt={cat.name}
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-                <div className="card-image-placeholder" style={{ display: "none" }}>
-                  {cat.emoji}
-                </div>
-                <div className="card-body">
-                  <div className="card-name">{cat.name}</div>
-                  <div className="card-modes" />
-                </div>
+        {CATEGORY_GROUPS.map((group) => (
+          <div key={group.id} className={`category-group group-${group.theme}`}>
+            <div className="group-header">
+              <span className="group-icon" aria-hidden="true">{group.icon}</span>
+              <div className="group-meta">
+                <h2 className="group-name">{group.name}</h2>
+                <p className="group-subtitle">{group.subtitle}</p>
               </div>
             </div>
-          ))}
-          <div className="category-card-coming">
-            <div className="coming-icon">＋</div>
-            <div className="coming-text">COMING SOON</div>
+            <div
+              className="group-scroll"
+              style={{
+                "--cols": Math.max(1, Math.ceil((group.items.length + 1) / 2)),
+              }}
+            >
+              {group.items.map((cat) => (
+                cat.textCard ? (
+                  <div
+                    key={cat.id}
+                    className={`card category-card theme-text-card theme-tone-${cat.cardTone || "default"}`}
+                    onClick={() => openModal(cat)}
+                  >
+                    <div className="theme-card-aurora" aria-hidden="true" />
+                    <div className="theme-card-orbs" aria-hidden="true">
+                      <span className="theme-orb theme-orb-1" />
+                      <span className="theme-orb theme-orb-2" />
+                      <span className="theme-orb theme-orb-3" />
+                    </div>
+                    <div className="theme-card-grain" aria-hidden="true" />
+                    <div className="theme-card-border" aria-hidden="true" />
+                    <div className="theme-card-emoji-bg" aria-hidden="true">
+                      {cat.emoji}
+                    </div>
+                    <div className="theme-card-inner">
+                      <div className="theme-card-emoji" aria-hidden="true">{cat.emoji}</div>
+                      <div className="theme-card-name">{cat.name}</div>
+                      {cat.subtitle && (
+                        <div className="theme-card-subtitle">{cat.subtitle}</div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    key={cat.id}
+                    className={`card category-card ${cat.comingSoon ? "category-card-soon" : ""}`}
+                    onClick={() => openModal(cat)}
+                  >
+                    {cat.comingSoon && (
+                      <div className="category-soon-badge">COMING SOON</div>
+                    )}
+                    <div className="card-image-wrap">
+                      <img
+                        src={`/assets/main-cards/${cat.id}.png`}
+                        alt={cat.name}
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                      <div className="card-image-placeholder" style={{ display: "none" }}>
+                        {cat.emoji}
+                      </div>
+                      <div className="card-body">
+                        <div className="card-name">{cat.name}</div>
+                        <div className="card-modes" />
+                      </div>
+                    </div>
+                  </div>
+                )
+              ))}
+              <div className="category-card-coming">
+                <div className="coming-icon">＋</div>
+                <div className="coming-text">COMING SOON</div>
+              </div>
+            </div>
           </div>
-        </div>
+        ))}
       </main>
 
       {/* ⑥ 사용자 의견 푸터 폼 */}
@@ -741,7 +744,7 @@ function App() {
                   <span>별딱지 도감</span>
                 </div>
                 <span className="stars-count">
-                  <strong>{starCount}</strong> / {MAX_STARS}
+                  <strong>{starCount}</strong>개 수집
                 </span>
               </div>
               <div className="stars-grid">
@@ -787,7 +790,7 @@ function App() {
                 })}
               </div>
               <p className="stars-hint">
-                각 카테고리를 <strong>30/30 만점</strong>으로 클리어하면 별딱지를 받아요 ✦
+                ✦ <strong>이미지 퀴즈</strong> 27점 이상 · <strong>스피드 퀴즈</strong> 20점 이상 · <strong>테마 퀴즈</strong> 15점 이상 — 카테고리 클리어 시 별딱지 1개!
               </p>
             </div>
           </div>

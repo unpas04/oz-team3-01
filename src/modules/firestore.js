@@ -27,7 +27,30 @@ export const submitSuggestion = async ({ message, uid = null, nickname = null })
   });
 };
 
-const STAR_THRESHOLD = 27; // 별딱지 지급 기준 (30점 만점 중 27점 이상)
+// 별딱지 지급 기준 — 카테고리 종류별로 다르게 적용
+//   IP 이미지 퀴즈(귀멸/포켓몬 등): 27/30 (90%) — 4지선다라 난이도 높음
+//   스피드퀴즈 (IP, 5초/문제 OX): 20/30 (66%) — 시간 압박
+//   테마퀴즈 (30초 총합, OX):     15/30 (50%) — 30초 안에 다 못 풀 가능성
+const STAR_THRESHOLDS = {
+  image: 27,
+  speed: 20,
+  theme: 15,
+};
+// 카테고리 ID 패턴으로 모드 판별
+//   "theme_*"            → 테마퀴즈
+//   스피드 IP 9개         → 스피드퀴즈
+//   그 외(귀멸/포켓몬 등) → 이미지 퀴즈
+const SPEED_IP_IDS = new Set([
+  "onepiece", "naruto", "slamdunk", "conan", "shinchan",
+  "doraemon", "hxh", "yugioh", "digimon",
+]);
+const getStarThreshold = (category) => {
+  if (typeof category === "string" && category.startsWith("theme_")) return STAR_THRESHOLDS.theme;
+  if (SPEED_IP_IDS.has(category)) return STAR_THRESHOLDS.speed;
+  return STAR_THRESHOLDS.image;
+};
+export { getStarThreshold };
+
 const STAR_WEIGHT = 1000; // compositeScore = starCount * 1000 + totalScore
 
 export const getCurrentMonth = () => {
@@ -104,9 +127,10 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
   const bestScores = { ...(cur.bestScores || {}), [category]: newBest };
   const totalScore = Object.values(bestScores).reduce((a, b) => a + b, 0);
 
+  const threshold = getStarThreshold(category);
   let stars = Array.isArray(cur.stars) ? [...cur.stars] : [];
   const wasAlreadyEarnedThisMonth = stars.includes(category);
-  if (score >= STAR_THRESHOLD && !wasAlreadyEarnedThisMonth) {
+  if (score >= threshold && !wasAlreadyEarnedThisMonth) {
     stars.push(category);
   }
 
@@ -129,7 +153,7 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
   );
 
   // 영구 별딱지 (users/{uid}.stars 누적)
-  if (score >= STAR_THRESHOLD) {
+  if (score >= threshold) {
     const userRef = doc(db, "users", uid);
     const userSnap = await getDoc(userRef);
     const userStars = userSnap.exists() ? (userSnap.data().stars || []) : [];
@@ -141,7 +165,7 @@ export const submitQuizScore = async ({ uid, nickname, category, score }) => {
   return {
     newBest,
     prevBest,
-    gotStar: score >= STAR_THRESHOLD && !wasAlreadyEarnedThisMonth,
+    gotStar: score >= threshold && !wasAlreadyEarnedThisMonth,
   };
 };
 

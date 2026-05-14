@@ -6,6 +6,7 @@ import QuizPage from "./pages/QuizPage"
 import ResultPage from "./pages/ResultPage"
 import SharePage from "./pages/SharePage"
 import TestResultPage from "./pages/TestResultPage"
+import SpeedQuizPage from "./pages/SpeedQuizPage"
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/result" element={<ResultPage />} />
           <Route path="/share" element={<SharePage />} />
           <Route path="/test-result" element={<TestResultPage />} />
+          <Route path="/speed-quiz" element={<SpeedQuizPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
