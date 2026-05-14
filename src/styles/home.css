@@ -2148,3 +2148,162 @@
       60%  { opacity: 1; transform: scale(1.04); }
       100% { opacity: 1; transform: scale(1); }
     }
+
+    /* ════════════════════════════════════════════════════
+       퀴즈 준비중 로딩 오버레이
+       메인 → 스피드/테마 페이지 전환 끊김 해소용
+       ════════════════════════════════════════════════════ */
+    .quiz-loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: qloFadeIn 0.18s ease-out;
+      overflow: hidden;
+    }
+    @keyframes qloFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* 톤별 배경 — 스피드: 다크 + 골드, 테마: 페스티벌 파스텔 */
+    .quiz-loading-overlay.tone-speed {
+      background:
+        radial-gradient(circle at 50% 40%, #2a1a2e 0%, #1a0f1a 70%);
+      color: #fff;
+    }
+    .quiz-loading-overlay.tone-theme {
+      background:
+        radial-gradient(circle at 30% 30%, #fff7e8 0%, #ffe8f4 50%, #e8f0ff 100%);
+      color: #2a1f3d;
+    }
+
+    /* 떠다니는 큰 orb 3개 */
+    .qlo-bg { position: absolute; inset: 0; pointer-events: none; }
+    .qlo-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.5;
+      animation: qloOrbFloat 6s ease-in-out infinite;
+    }
+    .quiz-loading-overlay.tone-speed .qlo-orb-1 { width: 340px; height: 340px; top: -8%;  left: -10%; background: #ffd700; }
+    .quiz-loading-overlay.tone-speed .qlo-orb-2 { width: 420px; height: 420px; bottom: -15%; right: -8%; background: #ff85a1; animation-delay: -2s; }
+    .quiz-loading-overlay.tone-speed .qlo-orb-3 { width: 260px; height: 260px; top: 40%; right: 30%; background: #c084fc; animation-delay: -4s; opacity: 0.35; }
+    .quiz-loading-overlay.tone-theme .qlo-orb-1 { width: 340px; height: 340px; top: -8%;  left: -10%; background: #ffd23f; }
+    .quiz-loading-overlay.tone-theme .qlo-orb-2 { width: 420px; height: 420px; bottom: -15%; right: -8%; background: #ff6fa3; animation-delay: -2s; }
+    .quiz-loading-overlay.tone-theme .qlo-orb-3 { width: 260px; height: 260px; top: 40%; right: 30%; background: #6fc8ff; animation-delay: -4s; opacity: 0.4; }
+    @keyframes qloOrbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50%      { transform: translate(20px, -30px) scale(1.12); }
+    }
+
+    /* 중앙 카드 */
+    .qlo-card {
+      position: relative;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 28px;
+      padding: 32px 36px 28px;
+      min-width: 260px;
+      max-width: 360px;
+      text-align: center;
+      box-shadow:
+        0 12px 40px rgba(60, 40, 80, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      animation: qloCardPop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes qloCardPop {
+      0%   { opacity: 0; transform: scale(0.85) translateY(12px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .quiz-loading-overlay.tone-speed .qlo-card {
+      background: rgba(30, 20, 35, 0.85);
+      color: #fff;
+      box-shadow:
+        0 12px 40px rgba(255, 215, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .qlo-emoji {
+      font-family: "MonaEmoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+      font-size: 3.6rem;
+      line-height: 1;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 4px 12px rgba(60, 40, 80, 0.25));
+      animation: qloEmojiBob 1.6s ease-in-out infinite;
+    }
+    @keyframes qloEmojiBob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-6px) rotate(3deg); }
+    }
+
+    .qlo-tag {
+      display: inline-block;
+      font-family: "Pretendard", -apple-system, sans-serif;
+      font-weight: 800;
+      font-size: 0.7rem;
+      letter-spacing: 3px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .quiz-loading-overlay.tone-speed .qlo-tag {
+      background: linear-gradient(135deg, #ffd700, #ff8a5b);
+      color: #2a1500;
+    }
+    .quiz-loading-overlay.tone-theme .qlo-tag {
+      background: linear-gradient(135deg, #c084fc, #7fbdef);
+      color: #fff;
+    }
+
+    .qlo-name {
+      font-family: "YPairingFont", "Nanum Myeongjo", serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+      line-height: 1.2;
+    }
+
+    /* 3-dot 펄스 로딩 */
+    .qlo-loading {
+      display: inline-flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .qlo-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: qloDotPulse 1.2s ease-in-out infinite;
+    }
+    .qlo-dot:nth-child(2) { animation-delay: 0.15s; }
+    .qlo-dot:nth-child(3) { animation-delay: 0.3s; }
+    .quiz-loading-overlay.tone-speed .qlo-dot {
+      background: linear-gradient(135deg, #ffd700, #ff8a5b);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+    }
+    .quiz-loading-overlay.tone-theme .qlo-dot {
+      background: linear-gradient(135deg, #ff6fa3, #c084fc);
+      box-shadow: 0 0 10px rgba(255, 111, 163, 0.4);
+    }
+    @keyframes qloDotPulse {
+      0%, 100% { transform: scale(0.6); opacity: 0.5; }
+      50%      { transform: scale(1.2); opacity: 1; }
+    }
+
+    .qlo-status {
+      font-family: "MonaS12TextHK", -apple-system, "Apple SD Gothic Neo", sans-serif;
+      font-size: 0.78rem;
+      opacity: 0.7;
+      letter-spacing: 0.5px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .qlo-orb, .qlo-emoji, .qlo-dot { animation: none !important; }
+    }

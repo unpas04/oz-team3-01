@@ -100,6 +100,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [starsModalOpen, setStarsModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [navigating, setNavigating] = useState(null); // { name, emoji, isTheme } | null
   const [authMode, setAuthMode] = useState("signin"); // "signin" | "signup"
   const [pendingCategory, setPendingCategory] = useState(null); // 비로그인 시 클릭한 카테고리 저장
   const navigate = useNavigate();
@@ -225,10 +226,18 @@ function App() {
       return;
     }
 
-    // route 명시 카테고리(스피드/테마) → 바로 이동
+    // route 명시 카테고리(스피드/테마) → 로딩 오버레이 띄우고 다음 프레임에 이동
     if (category.route) {
       trackCategorySelect(category.id);
-      navigate(category.route);
+      setNavigating({
+        name: category.name,
+        emoji: category.emoji,
+        isTheme: category.id?.startsWith("theme_"),
+      });
+      // 오버레이가 그려진 다음 프레임에 navigate → 화면 전환 끊김 없음
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => navigate(category.route));
+      });
       return;
     }
 
@@ -243,10 +252,17 @@ function App() {
     if (pendingCategory && user && profile?.nickname) {
       const cat = pendingCategory;
       setPendingCategory(null);
-      // route가 있으면 바로 이동, 없으면 카테고리 선택 모달
+      // route가 있으면 로딩 오버레이 띄우고 이동, 없으면 카테고리 선택 모달
       if (cat.route) {
         trackCategorySelect(cat.id);
-        navigate(cat.route);
+        setNavigating({
+          name: cat.name,
+          emoji: cat.emoji,
+          isTheme: cat.id?.startsWith("theme_"),
+        });
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => navigate(cat.route));
+        });
       } else {
         setSelectedCategory(cat);
         setIsModalOpen(true);
@@ -789,6 +805,34 @@ function App() {
                 ✦ <strong>이미지 퀴즈</strong> 27점 이상 · <strong>스피드 퀴즈</strong> 20점 이상 · <strong>테마 퀴즈</strong> 15점 이상 — 카테고리 클리어 시 별딱지 1개!
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 퀴즈 준비중 로딩 오버레이 — navigate 직전 풀스크린 */}
+      {navigating && (
+        <div
+          className={`quiz-loading-overlay ${navigating.isTheme ? "tone-theme" : "tone-speed"}`}
+          aria-live="polite"
+          role="status"
+        >
+          <div className="qlo-bg" aria-hidden="true">
+            <span className="qlo-orb qlo-orb-1" />
+            <span className="qlo-orb qlo-orb-2" />
+            <span className="qlo-orb qlo-orb-3" />
+          </div>
+          <div className="qlo-card">
+            <div className="qlo-emoji" aria-hidden="true">{navigating.emoji || "✦"}</div>
+            <div className="qlo-tag">
+              {navigating.isTheme ? "⚜︎ THEME" : "⚡ SPEED"}
+            </div>
+            <div className="qlo-name">{navigating.name}</div>
+            <div className="qlo-loading">
+              <span className="qlo-dot" />
+              <span className="qlo-dot" />
+              <span className="qlo-dot" />
+            </div>
+            <div className="qlo-status">퀴즈 준비중…</div>
           </div>
         </div>
       )}
