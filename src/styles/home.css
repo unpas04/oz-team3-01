@@ -2296,3 +2296,39 @@
     @media (prefers-reduced-motion: reduce) {
       .qlo-orb, .qlo-emoji, .qlo-dot { animation: none !important; }
     }
+
+    /* ════════════════════════════════════════════════════
+       메인 페이지(body.home) — 모든 무한 애니메이션 정지
+       GPU 부담 최소화. 퀴즈 페이지로 이동하면 자동으로 해제됨.
+       퀴즈 자체의 애니메이션은 body.speed-quiz 컨텍스트라 그대로 작동.
+       ════════════════════════════════════════════════════ */
+    body.home .blob,
+    body.home .pixel-floats span,
+    body.home .summary-pill,
+    body.home .pill-count strong,
+    body.home .sticker-icon,
+    body.home .mini-star.filled,
+    body.home .stars-title-icon,
+    body.home .star-slot.owned .star-slot-inner,
+    body.home .star-slot.owned .star-slot-bg,
+    body.home .crown-icon,
+    body.home .ranking-tab.active::after,
+    body.home .empty-sparkle,
+    body.home .me-star,
+    body.home .me-shine,
+    body.home .me-icon,
+    body.home .champion-shine,
+    body.home .champion-trophy,
+    body.home .champion-star,
+    body.home .group-icon,
+    body.home .theme-text-card .theme-card-aurora,
+    body.home .theme-text-card .theme-orb,
+    body.home .me-info-star {
+      animation: none !important;
+    }
+
+    /* 메인 전용 — 무한 애니메이션 깔끔 정지. 단, 로딩 오버레이는 navigate 시 등장하므로 예외 */
+    body.home .quiz-loading-overlay,
+    body.home .quiz-loading-overlay * {
+      animation: revert !important;
+    }

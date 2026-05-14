@@ -100,6 +100,7 @@ export default function SpeedQuizPage() {
   const [phase, setPhase] = useState("loading"); // loading | ready | playing | done
   const [remainSec, setRemainSec] = useState(initSeconds);
   const [submitResult, setSubmitResult] = useState(null); // { gotStar, newBest, prevBest }
+  const [bgReady, setBgReady] = useState(false); // 배경 애니메이션 지연 활성화
   const [readyCount, setReadyCount] = useState(READY_SECONDS);
   const [flash, setFlash] = useState(null); // 'correct' | 'wrong' | null
   const [shakeQuestion, setShakeQuestion] = useState(false);
@@ -351,8 +352,8 @@ export default function SpeedQuizPage() {
           ✕
         </button>
         <div className="sq-mode-tag">
-          <span aria-hidden="true">{isThemeMode ? "⚜︎" : "⚡"}</span>
-          <span>{isThemeMode ? "THEME · " : "SPEED · "}{categoryLabel}</span>
+          <span className="sq-mode-icon" aria-hidden="true">{isThemeMode ? "⚜︎" : "⚡"}</span>
+          <span className="sq-mode-name">{categoryLabel}</span>
         </div>
       </header>
 
