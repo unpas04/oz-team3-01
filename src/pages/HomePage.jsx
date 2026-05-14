@@ -20,7 +20,7 @@ import "../styles/home.css"
 const CATEGORY_GROUPS = [
   {
     id: "ip",
-    name: "IP 캐릭터 퀴즈",
+    name: "이미지 퀴즈",
     subtitle: "내가 좋아하는 IP의 진짜 덕력 테스트",
     icon: "🎴",
     theme: "pink",
@@ -216,14 +216,8 @@ function App() {
       return;
     }
 
-    // route 가 명시된 카테고리 (스피드 퀴즈 등) → 바로 이동
-    if (category.route) {
-      trackCategorySelect(category.id);
-      navigate(category.route);
-      return;
-    }
-
     // 비로그인이면 회원가입 모달 띄우고, 성공 후 자동으로 이 카테고리 진입
+    // (스피드/테마 등 route 카테고리도 포함 — 비로그인 시 점수가 저장 안 되므로)
     if (!user || !profile?.nickname) {
       setPendingCategory(category);
       setAuthMode("signup");
@@ -231,7 +225,14 @@ function App() {
       return;
     }
 
-    // 로그인 상태 → 카테고리 선택 모달 열기
+    // route 명시 카테고리(스피드/테마) → 바로 이동
+    if (category.route) {
+      trackCategorySelect(category.id);
+      navigate(category.route);
+      return;
+    }
+
+    // 그 외(이미지 퀴즈) → 카테고리 선택 모달
     setSelectedCategory(category);
     setIsModalOpen(true);
     trackCategorySelect(category.id);
@@ -242,9 +243,15 @@ function App() {
     if (pendingCategory && user && profile?.nickname) {
       const cat = pendingCategory;
       setPendingCategory(null);
-      setSelectedCategory(cat);
-      setIsModalOpen(true);
-      trackCategorySelect(cat.id);
+      // route가 있으면 바로 이동, 없으면 카테고리 선택 모달
+      if (cat.route) {
+        trackCategorySelect(cat.id);
+        navigate(cat.route);
+      } else {
+        setSelectedCategory(cat);
+        setIsModalOpen(true);
+        trackCategorySelect(cat.id);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingCategory, user, profile]);
@@ -285,18 +292,7 @@ function App() {
                 로그아웃
               </button>
             </div>
-          ) : (
-            <button
-              type="button"
-              className="header-auth-btn"
-              onClick={() => {
-                setAuthMode("signin");
-                setAuthModalOpen(true);
-              }}
-            >
-              로그인 / 가입
-            </button>
-          )}
+          ) : null}
         </div>
         <span className="header-tag">CHARACTER QUIZ</span>
         <h1 className="main-title">덕력 감별소</h1>

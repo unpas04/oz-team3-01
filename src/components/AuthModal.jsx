@@ -56,11 +56,24 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
 
   return (
     <div className="modal-overlay active auth-modal-overlay" onClick={close}>
-      <div className="modal-card auth-modal-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`modal-card auth-modal-card auth-modal-${mode}`}
+        onClick={(e) => e.stopPropagation()}
+        key={mode}
+      >
         <button className="modal-close" onClick={close} aria-label="닫기">✕</button>
 
+        <div className="auth-mode-badge">
+          <span className="auth-mode-icon" aria-hidden="true">
+            {mode === "signup" ? "✦" : "🔑"}
+          </span>
+          <span className="auth-mode-tag">
+            {mode === "signup" ? "SIGN UP" : "SIGN IN"}
+          </span>
+        </div>
+
         <h2 className="auth-title">
-          {mode === "signup" ? "닉네임 만들기" : "로그인"}
+          {mode === "signup" ? "닉네임 만들기" : "다시 만나서 반가워요"}
         </h2>
         <p className="auth-subtitle">
           {mode === "signup"
@@ -100,7 +113,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "sig
           {error && <div className="auth-error">{error}</div>}
 
           <button className="auth-submit-btn" type="submit" disabled={busy}>
-            {busy ? "처리 중..." : "테스트 시작"}
+            {busy ? "처리 중..." : mode === "signup" ? "가입하고 시작" : "로그인"}
           </button>
         </form>
 

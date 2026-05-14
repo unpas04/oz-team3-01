@@ -122,3 +122,79 @@
 .auth-switch:hover {
   color: #C060A0;
 }
+
+/* ════════════════════════════════════════════════════════════
+   모드별 시각 차별 (signin ↔ signup)
+   사용자가 모드 전환했을 때 "다른 창"이라고 느끼도록 색/뱃지 변경
+   ════════════════════════════════════════════════════════════ */
+
+/* 카드 자체 — 모드별 미세하게 다른 배경 + 상단 액센트 바 */
+.auth-modal-card {
+  position: relative;
+  overflow: hidden;
+  animation: authModalFade 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes authModalFade {
+  0%   { opacity: 0; transform: scale(0.92) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.auth-modal-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #FF85A1, #C084FC);
+}
+.auth-modal-signin { background: linear-gradient(180deg, #fffafc 0%, #fff5fa 100%) !important; }
+.auth-modal-signin::before { background: linear-gradient(90deg, #FF85A1 0%, #FFB347 100%); }
+.auth-modal-signup { background: linear-gradient(180deg, #fbf6ff 0%, #f4ecff 100%) !important; }
+.auth-modal-signup::before { background: linear-gradient(90deg, #C084FC 0%, #7FBDEF 100%); }
+
+/* 상단 모드 뱃지 */
+.auth-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin: 0 auto 14px;
+  font-family: "Pretendard", -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 2.5px;
+}
+.auth-mode-icon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.auth-modal-signin .auth-mode-badge {
+  background: linear-gradient(135deg, #fff0e0 0%, #ffe0ec 100%);
+  color: #c44a6a;
+  box-shadow: 0 2px 6px rgba(255, 133, 161, 0.25);
+}
+.auth-modal-signup .auth-mode-badge {
+  background: linear-gradient(135deg, #ece4ff 0%, #e0eaff 100%);
+  color: #6e4ec9;
+  box-shadow: 0 2px 6px rgba(180, 140, 255, 0.25);
+}
+
+/* 제출 버튼 색 — 모드별 다르게 */
+.auth-modal-signin .auth-submit-btn {
+  background: linear-gradient(135deg, #FFB347 0%, #FF85A1 100%);
+  box-shadow:
+    0 6px 18px rgba(255, 133, 161, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+.auth-modal-signup .auth-submit-btn {
+  background: linear-gradient(135deg, #C084FC 0%, #7FBDEF 100%);
+  box-shadow:
+    0 6px 18px rgba(192, 132, 252, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+/* 제목 톤도 살짝 다르게 */
+.auth-modal-signin .auth-title { color: #b8456e; }
+.auth-modal-signup .auth-title { color: #6e4ec9; }
+
+/* 모달 카드 안 padding은 상단 액센트 바 6px 만큼 추가 */
+.auth-modal-card { padding-top: 38px !important; }
